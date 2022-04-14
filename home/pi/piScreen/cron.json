@@ -1,0 +1,1 @@
+{"scheduleExclude":{"enabled":false,"from":{"year":2022,"month":4,"day":5,"hour":0,"minute":0},"to":{"year":2022,"month":4,"day":9,"hour":0,"minute":0}},"schedule":[{"enabled":true,"day":0,"hour":7,"minute":0,"mode":1},{"enabled":true,"day":0,"hour":18,"minute":0,"mode":0},{"enabled":true,"day":4,"hour":19,"minute":10,"mode":2}]}

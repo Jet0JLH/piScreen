@@ -1,0 +1,26 @@
+#idle {
+	opacity: 0;
+	animation: fadeout 2s;
+}
+
+
+@keyframes fadeout {
+	from { opacity: 1; }
+	to   { opacity: 0; }
+}
+@keyframes fadein {
+	from { opacity: 0; }
+	to   { opacity: 1; }
+}
+
+.scheduleLine>input.form-control {
+	width: auto;
+	float: left;
+}
+.scheduleLine>div.form-switch {
+	float: left;
+}
+.scheduleLine>select.form-select {
+	width: auto;
+	float: left;
+}
