@@ -34,6 +34,8 @@ scheduleExclusionActiv = document.getElementById("scheduleExclusionActiv");
 scheduleExclusionFrom = document.getElementById("scheduleExclusionFrom");
 scheduleExclusionTo = document.getElementById("scheduleExclusionTo");
 
+versionInfoBtn = document.getElementById("versionInfoBtn");
+
 function generateScheduleLine() {
 	newLine = document.createElement("div");
 	newLine.className = "scheduleLine my-1";
@@ -148,6 +150,22 @@ displayStandbyBtn.onclick = function() {
 }
 newScheduleLine.onclick = function() {
 	schedule.appendChild(generateScheduleLine());
+}
+
+versionInfoBtn.onclick = function() {
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.onload = function() {
+		let jsonData = JSON.parse(xmlhttp.responseText);
+		modalTitle.innerHTML = "piScreen Info";
+		modalBody.innerHTML = `<h4><i class='bi bi-file-earmark-code'></i> piScreen Versionsinfo</h4>piScreen befindet sich auf Version ${jsonData.version.major}.${jsonData.version.minor}<br><br>piScreen ist ein kleines Bastelprojekt von zwei befreundeten Hobbyentwicklern und ist <a href='https://github.com/Jet0JLH/piScreen' target='popup'>hier</a> zu finden.`;
+		modalAcceptBtn.innerHTML = "X";
+		modalAcceptBtn.onclick = function() {
+			modal.toggle(1);
+		}
+		modal.toggle(1);
+	}
+	xmlhttp.open('GET', 'cmd.php?id=11', true);
+	xmlhttp.send();
 }
 
 function createScheduleEntryJSON(htmlElement) {
