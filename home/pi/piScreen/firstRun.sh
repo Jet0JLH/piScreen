@@ -52,7 +52,7 @@ sudo systemctl start apache2
 #www-data        ALL=(ALL:ALL)   NOPASSWD:/usr/bin/hostnamectl
 #www-data        ALL=(ALL:ALL)   NOPASSWD:/home/pi/piScreen/changePwd.sh
 
-#PythonCron in Crontab von www-data eintragen
+#PythonCron in Crontab von Benutzer pi eintragen
 #raspi-config display blanking disable
 #/etc/xdg/lxsession/LXDE-pi/autostart #@lxpanel --profile LXDE-pi
 #Hintergrundbid auf no-image ändern

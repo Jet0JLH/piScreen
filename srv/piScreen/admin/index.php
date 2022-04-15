@@ -5,11 +5,11 @@
 		<link rel="stylesheet" href="/bootstrap/icons/bootstrap-icons.css">
 		<link rel="stylesheet" href="styles.css">
 		<link rel='icon' type='image/x-icon' href='/favicon.ico'>
-		<title>PiScreen Adminpage</title>
+		<title>piScreen Adminpage</title>
 	</head>
 	<body>
 		<div class='px-4 py-5 my-2 text-center'>
-			<h1 class='display-5 fw-bold'><img src="/PiScreen.svg" alt="Logo" width="128" height="128"> PiScreen Adminpage</h1>
+			<h1 class='display-5 fw-bold'><img src="/piScreen.svg" alt="Logo" width="128" height="128"> piScreen Adminpage</h1>
 			<p class='lead mb-4'>Hier lassen sich die wichtigsten PiScreen Funktionen bequem administrieren</p>
 		</div>
 		<div class='container px-4'>

@@ -6,6 +6,8 @@
 rm -R /home/pi/piScreen
 rm -R /srv/piScreen
 rm /etc/apache2/sites-available/piScreen.conf
+rm /home/pi/.config/autostart/piScreenCore.desktop
+
 
 chmod +x /home/pi/piScreenDev/piScreen/home/pi/piScreen/*.sh
 chmod +x /home/pi/piScreenDev/piScreen/home/pi/piScreen/*.py
@@ -13,6 +15,10 @@ chmod +x /home/pi/piScreenDev/piScreen/home/pi/piScreen/*.py
 ln -s /home/pi/piScreenDev/piScreen/home/pi/piScreen/ /home/pi/piScreen
 ln -s /home/pi/piScreenDev/piScreen/srv/piScreen/ /srv/piScreen
 ln -s /home/pi/piScreenDev/piScreen/etc/apache2/sites-available/piScreen.conf /etc/apache2/sites-available/piScreen.conf
+mkdir -p /home/pi/.config/autostart/
+ln -s /home/pi/piScreenDev/piScreen/home/pi/.config/autostart/piScreenCore.desktop /home/pi/.config/autostart/piScreenCore.desktop
+chown -R pi:pi /home/pi/.config/autostart/
+
 
 setfacl -Rm d:u:www-data:rwx /home/pi/piScreen
 setfacl -Rm u:www-data:rwx /home/pi/piScreen
