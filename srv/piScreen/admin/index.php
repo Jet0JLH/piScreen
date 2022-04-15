@@ -96,7 +96,15 @@
 							</div><br>
 							<input class="btn btn-primary" type="submit"/>
 						</form>-->
-						<div><div style='float:left;width:auto' class='form-check form-switch'><input id='scheduleExclusionActiv' class='form-check-input' type='checkbox' checked></input></div>Unten stehenden Zeitplan ignorieren.<br>Von <input id='scheduleExclusionFrom' style='display:inline;width:auto' type='date' class='form-control'></input> bis <input id='scheduleExclusionTo' style='display:inline;width:auto' type='date' class='form-control'></input></div>
+						<div>
+							<div style='float:left;width:auto' class='form-check form-switch'>
+							<input id='scheduleExclusionActiv' class='form-check-input' type='checkbox' checked></input>
+						</div>
+						Unten stehenden Zeitplan ignorieren.
+						<div style='display:flex;flex-flow:row wrap;align-items:center;'>
+							
+							Von <input id='scheduleExclusionFrom' style='display:inline;width:auto' type='date' class='form-control mx-2'></input> bis <input id='scheduleExclusionTo' style='display:inline;width:auto' type='date' class='form-control mx-2'></input></div>
+						</div>
 						<hr>
 						<div id='schedule'>
 
