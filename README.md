@@ -5,7 +5,7 @@
   * Reload page
   * Restart browser / pi
   * Turn on info display or set it to standby
-  * Use weekly schedule for commands
+  * You can use weekly schedule for commands
   * Get info about current state of your system
     * Display status
     * Pi load
