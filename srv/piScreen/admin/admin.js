@@ -34,28 +34,34 @@ scheduleExclusionActiv = document.getElementById("scheduleExclusionActiv");
 scheduleExclusionFrom = document.getElementById("scheduleExclusionFrom");
 scheduleExclusionTo = document.getElementById("scheduleExclusionTo");
 
+versionInfoBtn = document.getElementById("versionInfoBtn");
+
 function generateScheduleLine() {
 	newLine = document.createElement("div");
 	newLine.className = "scheduleLine my-1";
+	newLine.style = "display:flex;flex-flow:row wrap;align-items:center;";
 
 	scheduleActiv = document.createElement("div");
-	scheduleActiv.className = "form-check form-switch my-2";
+	scheduleActiv.className = "form-check form-switch mx-1";
 	scheduleActiv.innerHTML = "<input class='form-check-input' type='checkbox' checked></input>";
-	
+		
 	scheduleDay = document.createElement("select");
-	scheduleDay.className = "form-select me-2";
-	scheduleDay.innerHTML = "<option selected value=0>Montag</option><option value=1>Dienstag</option><option value=2>Mittwoch</option><option value=3>Donnerstag</option><option value=4>Freitag</option><option value=5>Samstag</option><option value=6>Sonntag</option>";
+	scheduleDay.className = "form-select mx-1";
+	scheduleDay.innerHTML = "<option selected value=0 label='Mo'>Montag</option><option value=1 label='Di'>Dienstag</option><option value=2 label='Mi'>Mittwoch</option><option value=3 label='Do'>Donnerstag</option><option value=4 label='Fr'>Freitag</option><option value=5 label='Sa'>Samstag</option><option value=6 label='So'>Sonntag</option>";
+	scheduleDay.style = "width:auto";
 
 	scheduleTime = document.createElement("input");
-	scheduleTime.className = "form-control me-2";
+	scheduleTime.className = "form-control mx-1";
 	scheduleTime.setAttribute("type","time");
+	scheduleTime.style = "width:auto";
 
 	scheduleAction = document.createElement("select");
-	scheduleAction.className = "form-select me-2";
+	scheduleAction.className = "form-select mx-1";
 	scheduleAction.innerHTML = "<option selected value=0>Bildschirm ausschalten</option><option value=1>Bildschirm einschalten</option><option value=2>Browser neustarten</option><option value=3>Gerät neustarten</option><option value=4>Gerät ausschalten</option>";
+	scheduleAction.style = "width:auto";
 
 	scheduleDelete = document.createElement("button");
-	scheduleDelete.className = "btn btn-danger";
+	scheduleDelete.className = "btn btn-danger mx-1";
 	scheduleDelete.innerHTML = "<i class='bi bi-trash'></i>";
 	scheduleDelete.onclick = function() {
 		this.parentElement.remove();
@@ -144,6 +150,22 @@ displayStandbyBtn.onclick = function() {
 }
 newScheduleLine.onclick = function() {
 	schedule.appendChild(generateScheduleLine());
+}
+
+versionInfoBtn.onclick = function() {
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.onload = function() {
+		let jsonData = JSON.parse(xmlhttp.responseText);
+		modalTitle.innerHTML = "piScreen Info";
+		modalBody.innerHTML = `<h4><i class='bi bi-file-earmark-code'></i> piScreen Versionsinfo</h4>piScreen befindet sich auf Version ${jsonData.version.major}.${jsonData.version.minor}<br><br>piScreen ist ein kleines Bastelprojekt von zwei befreundeten Hobbyentwicklern und ist <a href='https://github.com/Jet0JLH/piScreen' target='popup'>hier</a> zu finden.`;
+		modalAcceptBtn.innerHTML = "X";
+		modalAcceptBtn.onclick = function() {
+			modal.toggle(1);
+		}
+		modal.toggle(1);
+	}
+	xmlhttp.open('GET', 'cmd.php?id=11', true);
+	xmlhttp.send();
 }
 
 function createScheduleEntryJSON(htmlElement) {
