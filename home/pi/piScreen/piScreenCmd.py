@@ -60,7 +60,7 @@ def getStatus():
 	upDays = round(upTime / 60 / 60 / 24)
 	displayState = open("/media/ramdisk/piScreenDisplay.txt","r").read().strip()
 	cpuTemp = round(psutil.sensors_temperatures()["cpu_thermal"][0].current * 1000)
-	return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s}}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,os.path.isfile("/media/ramdisk/piScreenDisplayStandby"),os.path.isfile("/media/ramdisk/piScreenDisplayOn"))
+	return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s}}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,str(os.path.isfile("/media/ramdisk/piScreenDisplayStandby")).lower(),str(os.path.isfile("/media/ramdisk/piScreenDisplayOn")).lower())
 
 verbose = False
 sys.argv.pop(0) #Remove Path
@@ -89,8 +89,3 @@ for item in sys.argv:
 		shutdown()
 	elif item == "--get-status":
 		print(getStatus())
-
-
-
-
-#print (settingsJson["settings"]["appearence"])

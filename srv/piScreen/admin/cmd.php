@@ -1,15 +1,16 @@
 <?php
+	$syscall = '/home/pi/piScreen/piScreenCmd.py';
 	if($_GET['id'] == 1) { //Restart Browser
-		shell_exec("sudo -u pi /home/pi/piScreen/killBrowser.sh");
+		shell_exec("sudo $syscall --stop-browser");
 		header('Location: .');
 	}
 	elseif ($_GET['id'] == 2) { //reboot
 		header('Location: .');
-		shell_exec("sudo reboot");
+		shell_exec("sudo $syscall --reboot");
 	}
 	elseif ($_GET['id'] == 3) { //Poweroff
 		header('Location: .');
-		shell_exec("sudo poweroff");
+		shell_exec("sudo $syscall --shutdown");
 	}
 	elseif ($_GET['id'] == 4) {
 		$hostname = shell_exec('hostname');
@@ -32,37 +33,7 @@
 	}
 	elseif ($_GET['id'] == 5) { //Get Infos
 		header("Content-Type: application/json; charset=UTF-8");
-		$str   = @file_get_contents('/proc/uptime');
-		$num   = floatval($str);
-		$uptime = new stdClass();
-		$uptime->secs = fmod($num, 60); $num = intdiv($num, 60);
-		$uptime->mins = $num % 60;      $num = intdiv($num, 60);
-		$uptime->hours =$num % 24;      $num = intdiv($num, 24);
-		$uptime->days = $num;
-		$systemInfo = new stdClass();
-		$systemInfo->uptime = $uptime;
-		$systemInfo->displayState = trim(file_get_contents('/media/ramdisk/piScreenDisplay.txt'));
-		$systemInfo->cpuTemp = (int)file_get_contents('/sys/class/thermal/thermal_zone0/temp');
-		$systemInfo->cpuLoad = sys_getloadavg()[0];
-
-		$free = shell_exec('free');
-		$free = (string)trim($free);
-		$free_arr = explode("\n", $free);
-		$mem = explode(" ", $free_arr[1]);
-		$mem = array_filter($mem);
-		$mem = array_merge($mem);
-		$memory_usage = $mem[2]/$mem[1]*100;
-
-		$systemInfo->ramTotal = (int)$mem[1];
-		$systemInfo->ramUsed = (int)$mem[2];
-		//$systemInfo->ramUsage = $memory_usage;
-
-		$display = new stdClass();
-		$display->standbySet = file_exists('/media/ramdisk/piScreenDisplayStandby');
-		$display->onSet = file_exists('/media/ramdisk/piScreenDisplayOn');
-		$systemInfo->display = $display;
-		echo json_encode($systemInfo);
-		//echo "$days Tage, $hours Stunden, $mins Minuten";
+		echo shell_exec("$syscall --get-Status");
 	}
 	/*elseif ($_GET['id'] == 6) { //Old get Crons, ID can used for other command
 		
