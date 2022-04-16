@@ -1,28 +1,4 @@
 <?php
-	class cronEntry {
-		public function importLine($line) {
-			$cutting = true;
-			while ($cutting) {
-				$cutLine = str_replace("\t\t","\t", $line);
-				if (strlen($cutLine) != strlen($line)) {
-					$line = $cutLine;
-				}
-				else {
-					$cutting = false;
-				}
-			}
-			$segments = explode("\t", $line);
-			if (count($segments) == 6) { //Check if the cron entry is correct
-				$this->minute = $segments[0];
-				$this->hour = $segments[1];
-				$this->day = $segments[2];
-				$this->month = $segments[3];
-				$this->weekday = $segments[4];
-				$this->command = $segments[5];
-			}
-		}
-	}
-
 	if($_GET['id'] == 1) { //Restart Browser
 		shell_exec("sudo -u pi /home/pi/piScreen/killBrowser.sh");
 		header('Location: .');
@@ -88,70 +64,12 @@
 		echo json_encode($systemInfo);
 		//echo "$days Tage, $hours Stunden, $mins Minuten";
 	}
-	elseif ($_GET['id'] == 6) { //Get Crons
-		header("Content-Type: application/json; charset=UTF-8");
-		$crons = shell_exec("crontab -l");
-		$foundIndex = strpos($crons,"#<piScreen>");
-		if ($foundIndex === false) {
-			//ERROR
-			die();
-		}
-		$crons = substr($crons, $foundIndex);
-		$foundIndex = strpos($crons,"#</piScreen>");
-		if ($foundIndex === false) {
-			//ERROR
-			die();
-		}
-		$crons = substr($crons,0,$foundIndex + strlen("#</piScreen>"));
-		$crons = explode("\n", $crons);
-
-		for ($i = 0; $i < count($crons); $i++) { //Find lines for reboot and screenOff Cron
-			if ($crons[$i]) {
-				if (substr( $crons[$i], 0, strlen('#<reboot>') ) === '#<reboot>') {
-					$rebootLine = $i;
-				}
-				elseif (substr( $crons[$i], 0, strlen('#</reboot>') ) === '#</reboot>') {
-					$rebootEndLine = $i;
-				}
-				elseif (substr( $crons[$i], 0, strlen('#<screenOff>') ) === '#<screenOff>') {
-					$screenOffLine = $i;
-				}
-				elseif (substr( $crons[$i], 0, strlen('#</screenOff>') ) === '#</screenOff>') {
-					$screenOffLineEnd = $i;
-				}
-			}
-		}
-		$rebootCrons = [];
-		$screenOffCrons = [];
-		if ($rebootLine < $rebootEndLine) { //Check if reboot lines in correct Order
-			for ($i = $rebootLine + 1; $i < $rebootEndLine; $i++) { //Load lines between
-				if (substr($crons[$i],0,1) !== '#') { //Check if line starts with #
-					$entry = new cronEntry();
-					$entry->importLine($crons[$i]);
-					if($entry->command) {
-						array_push($rebootCrons,$entry);
-					}
-				}
-			}
-		}
-		if ($screenOffLine < $screenOffLineEnd) { //Check if screenOff lines in correct Order
-			for ($i = $screenOffLine + 1; $i < $screenOffLineEnd; $i++) { //Load lines between
-				if (substr($crons[$i],0,1) !== '#') { //Check if line starts with #
-					$entry = new cronEntry();
-					$entry->importLine($crons[$i]);
-					if($entry->command) {
-						array_push($screenOffCrons,$entry);
-					}
-				}
-			}
-		}
+	/*elseif ($_GET['id'] == 6) { //Old get Crons, ID can used for other command
 		
-		echo json_encode(array(rebootCrons => $rebootCrons, screenOffCrons => $screenOffCrons));
+	}*/
+	/*elseif ($_GET['id'] == 7) { //Old test, can Used for other command
 
-	}
-	elseif ($_GET['id'] == 7) {
-		var_dump($_POST);
-	}
+	}*/
 	elseif ($_GET['id'] == 8) { //Display Control
 		if ($_GET['cmd'] == 0) {
 			shell_exec("touch /media/ramdisk/piScreenDisplayStandby");
