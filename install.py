@@ -111,6 +111,8 @@ executeWait("a2enmod ssl")
 if srvApacheConfig not in readFile("/etc/apache2/apache2.conf"):
     appendToFile("/etc/apache2/sites-available/piScreen.conf", srvApacheConfig)
 
+executeWait("systemctl start apache2")
+
 
 #Generate SSL certificates
 print("Generating SSL certificates")
