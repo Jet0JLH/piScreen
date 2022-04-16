@@ -62,40 +62,6 @@
 				<div class='col col-sm-12 col-lg-6 p-2'>
 					<div class='p-3 rounded-3 border shadow'>
 						<h1>Zeitplan</h1>
-						<!--<h3>Rebootzeiten</h3>
-						<form method="POST" action="cmd.php?id=7">
-							<div class="row g-2">
-								<div class="col-md">
-										<label for="reboot-1-time">Mo</label>
-										<input class="form-control" name="reboot-1-time" id="reboot-1-time" type="time"/>
-								</div>
-								<div class="col-md">
-										<label for="reboot-2-time">Di</label>
-										<input class="form-control" name="reboot-2-time" id="reboot-2-time" type="time"/>
-								</div>
-								<div class="col-md">
-										<label for="reboot-3-time">Mi</label>
-										<input class="form-control" name="reboot-3-time" id="reboot-3-time" type="time"/>
-								</div>
-								<div class="col-md">
-										<label for="reboot-4-time">Do</label>
-										<input class="form-control" name="reboot-4-time" id="reboot-4-time" type="time"/>
-								</div>
-								<div class="col-md">
-										<label for="reboot-5-time">Fr</label>
-										<input class="form-control" name="reboot-5-time" id="reboot-5-time" type="time"/>
-								</div>
-								<div class="col-md">
-										<label for="reboot-6-time">Sa</label>
-										<input class="form-control" name="reboot-6-time" id="reboot-6-time" type="time"/>
-								</div>
-								<div class="col-md">
-										<label for="reboot-0-time">So</label>
-										<input class="form-control" name="reboot-0-time" id="reboot-0-time" type="time"/>
-								</div>
-							</div><br>
-							<input class="btn btn-primary" type="submit"/>
-						</form>-->
 						<div>
 							<div style='float:left;width:auto' class='form-check form-switch'>
 							<input id='scheduleExclusionActiv' class='form-check-input' type='checkbox' checked></input>
