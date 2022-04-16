@@ -157,7 +157,7 @@ versionInfoBtn.onclick = function() {
 	xmlhttp.onload = function() {
 		let jsonData = JSON.parse(xmlhttp.responseText);
 		modalTitle.innerHTML = "piScreen Info";
-		modalBody.innerHTML = `<h4><i class='bi bi-file-earmark-code'></i> piScreen Versionsinfo</h4>piScreen befindet sich auf Version ${jsonData.version.major}.${jsonData.version.minor}<br><br>piScreen ist ein kleines Bastelprojekt von zwei befreundeten Hobbyentwicklern und ist <a href='https://github.com/Jet0JLH/piScreen' target='popup'>hier</a> zu finden.`;
+		modalBody.innerHTML = `<h4><i class='bi bi-file-earmark-code'></i> piScreen Versionsinfo</h4>piScreen befindet sich auf Version ${jsonData.version.major}.${jsonData.version.minor}.${jsonData.version.patch}<br><br>piScreen ist ein kleines Bastelprojekt von zwei befreundeten Hobbyentwicklern und ist <a href='https://github.com/Jet0JLH/piScreen' target='popup'>hier</a> zu finden.`;
 		modalAcceptBtn.innerHTML = "X";
 		modalAcceptBtn.onclick = function() {
 			modal.toggle(1);
@@ -333,7 +333,6 @@ function sortSchedule() {
 	while (found) {
 		found = false;
 		for (let i=1;i < schedule.childElementCount;i++) {
-			//parseInt(schedule.children[1].children[2].value.replace(":",""))
 			if (schedule.children[i-1].children[1].selectedIndex > schedule.children[i].children[1].selectedIndex || (schedule.children[i-1].children[1].selectedIndex == schedule.children[i].children[1].selectedIndex && parseInt(schedule.children[i-1].children[2].value.replace(":","")) > parseInt(schedule.children[i].children[2].value.replace(":","")))) {
 				schedule.insertBefore(schedule.children[i], schedule.children[i-1]);
 				found = true;
