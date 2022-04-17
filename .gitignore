@@ -2,3 +2,4 @@ home/pi/piScreen/certs/
 home/pi/piScreen/page.txt
 home/pi/piScreen/cron.json
 home/pi/piScreen/settings.json
+etc/apache2/.htpasswd
