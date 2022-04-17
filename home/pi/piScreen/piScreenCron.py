@@ -4,27 +4,27 @@ import datetime
 import sys
 import os
 
+syscall = '/home/pi/piScreen/piScreenCmd.py'
+
 def printHelp():
 	print("Run this cron skript with the following parameter\n\n--check-now\n\tThis will check if there is something to do now\n\n--do-last-run\n\tThis will execute the command that should run last\n\tIntended for reboot sequence")
 
 def executeCommand(jsonData):
 	if jsonData["mode"] == 0:
 		verbose and print("Trigger Standby")
-		f = open("/media/ramdisk/piScreenDisplayStandby","w")
-		f.close()
+		os.system(f"{syscall} --screen-standby")
 	elif jsonData["mode"] == 1:
 		verbose and print("Trigger Display On")
-		f = open("/media/ramdisk/piScreenDisplayOn","w")
-		f.close()
+		os.system(f"{syscall} --screen-on")
 	elif jsonData["mode"] == 2:
 		verbose and print("Restart Browser")
-		os.system("/home/pi/piScreen/killBrowser.sh")
+		os.system(f"{syscall} --stop-browser")
 	elif jsonData["mode"] == 3:
 		verbose and print("Reboot")
-		os.system("sudo reboot")
+		os.system(f"sudo {syscall} --reboot")
 	elif jsonData["mode"] == 4:
 		verbose and print("Shutdown")
-		os.system("sudo poweroff")
+		os.system(f"sudo {syscall} --shutdown")
 
 now = datetime.datetime.today()
 jsonFile = "/home/pi/piScreen/cron.json"
