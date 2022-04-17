@@ -12,12 +12,10 @@ def printHelp():
 def executeCommand(jsonData):
 	if jsonData["mode"] == 0:
 		verbose and print("Trigger Standby")
-		f = open("/media/ramdisk/piScreenDisplayStandby","w")
-		f.close()
+		os.system(f"{syscall} --screen-standby")
 	elif jsonData["mode"] == 1:
 		verbose and print("Trigger Display On")
-		f = open("/media/ramdisk/piScreenDisplayOn","w")
-		f.close()
+		os.system(f"{syscall} --screen-on")
 	elif jsonData["mode"] == 2:
 		verbose and print("Restart Browser")
 		os.system(f"{syscall} --stop-browser")

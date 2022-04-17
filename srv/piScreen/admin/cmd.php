@@ -43,16 +43,16 @@
 	}*/
 	elseif ($_GET['id'] == 8) { //Display Control
 		if ($_GET['cmd'] == 0) {
-			shell_exec("touch /media/ramdisk/piScreenDisplayStandby");
+			shell_exec("$syscall --screen-standby");
 		}
 		elseif ($_GET['cmd'] == 1) {
-			shell_exec("touch /media/ramdisk/piScreenDisplayOn");
+			shell_exec("$syscall --screen-on");
 		}
 		elseif ($_GET['cmd'] == 2) {
-			shell_exec("touch /media/ramdisk/piScreenDisplayOff");
+			shell_exec("$syscall --screen-off");
 		}
 		elseif ($_GET['cmd'] == 3) {
-			shell_exec("touch /media/ramdisk/piScreenDisplaySwitch");
+			shell_exec("$syscall --screen-switch-input");
 		}
 	}
 	elseif ($_GET['id'] == 9) { //Set Display Schedule

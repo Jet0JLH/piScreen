@@ -19,9 +19,18 @@ def printHelp():
 	Restarts the Device
 --shutdown
 	Shutdown the Device
- --get-status
+--get-status
 	Returns a JSON String with statusinfos
-	""")
+--screen-on
+	Turns the screen on
+--screen-standby
+	Turns the screen in standby
+--screen-off
+	Turns the screen off
+--screen-switch-input
+	Tells the display to change the input to our system,
+ 	if it is not currently displayed
+""")
 
 def loadSettings():
 	return json.load(open(f"{os.path.dirname(__file__)}/settings.json"))
@@ -46,6 +55,22 @@ def reboot():
 def shutdown():
 	verbose and print("Shutdown system")
 	os.system("poweroff")
+ 
+def screenOn():
+	verbose and print("Create file for turning on the screen")
+	open("/media/ramdisk/piScreenDisplayOn","w").close()
+ 
+def screenStandby():
+	verbose and print("Create file for turning screen to standby")
+	open("/media/ramdisk/piScreenDisplayStandby","w").close()
+
+def screenOff():
+	verbose and print("Create file for turning of the screen")
+	open("/media/ramdisk/piScreenDisplayOff","w").close()
+
+def screenSwitchInput():
+	verbose and print("Create file for switching display input")
+	open("/media/ramdisk/piScreenDisplaySwitch","w").close()
 
 def getStatus():
 	import psutil
@@ -89,3 +114,11 @@ for item in sys.argv:
 		shutdown()
 	elif item == "--get-status":
 		print(getStatus())
+	elif item == "--screen-on":
+		screenOn()
+	elif item == "--screen-standby":
+		screenStandby()
+	elif item == "--screen-off":
+		screenOff()
+	elif item == "--screen-switch-input":
+		screenSwitchInput()
