@@ -1,14 +1,21 @@
+#!/usr/bin/python
 import os, sys, shutil, json, subprocess
-from venv import create
+
+isUpdate = False
+isInstall = not isUpdate
 
 srvApacheConfig = "<Directory /srv/>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride None\n\tRequire all granted\n</Directory>"
 apache2ConfPath = "/etc/apache2/apache2.conf"
-sslCertDirectory = "/home/pi/piScreen/certs"
+certPath = "/home/pi/piScreen/certs"
 fstabPath = "/etc/fstab"
 fstabEntry = "tmpfs    /media/ramdisk  tmpfs   defaults,size=5%        0       0"
 sudoersFilePath = "/etc/sudoers.d/piScreen-nopasswd"
-
-oldManifest = json.loads('{"application-name": "piScreen", "version": {"major": "-", "minor": "-"}}')
+cronJsonPath = "/home/pi/piScreen/cron.json"
+settingsJsonPath = "/home/pi/piScreen/settings.json"
+crontabPath = "/var/spool/cron/crontabs/pi"
+crontabConfig = "*\t*\t*\t*\t*\t/home/pi/piScreen/piScreenCron.py --check-now"
+htpasswdPath = "/etc/apache2/.htpasswd"
+oldManifest = json.loads('{"application-name": "piScreen", "version": { "major": "-",	"minor": "-",	"patch": "-"}}')
 
 def executeWait(command):
     args = command.split(" ")
@@ -37,17 +44,16 @@ def checkForRootPrivileges():
         exit("Please run this script with root privileges.")
 
 def loadManifests():
-    try:
+    global oldManifest
+    if os.path.exists("/home/pi/piScreen/manifest.json"):
         oldManifest = json.loads(readFile("/home/pi/piScreen/manifest.json"))
-    except:
-        pass
-    newManifest = json.loads(readFile(f"{os.getcwd()}/home/pi/piScreen/manifest.json"))
+    newManifest = json.loads(readFile("home/pi/piScreen/manifest.json"))
 
     print(f"Starting {oldManifest['application-name']} setup.")
-    print(f"Old version: {oldManifest['version']['major']}.{oldManifest['version']['minor']}")
-    print(f"New version: {newManifest['version']['major']}.{newManifest['version']['minor']}")
+    print(f"Old version: {oldManifest['version']['major']}.{oldManifest['version']['minor']}.{oldManifest['version']['patch']}")
+    print(f"New version: {newManifest['version']['major']}.{newManifest['version']['minor']}.{newManifest['version']['patch']}")
     if oldManifest['version'] == newManifest['version']:
-        print("You have already installed the current verion. Do you want to reinstall? [y/N]: ", end="")
+        print("You have already installed the current version. Do you want to reinstall? [y/N]: ", end="")
         if "y" != input().lower():
             sys.exit()
 
@@ -60,7 +66,7 @@ def removeFiles():
     except: pass
     try: os.remove("/etc/apache2/sites-available/piScreen.conf")
     except: pass
-    try: os.remove("/etc/apache2/.htpasswd")
+    try: os.remove(htpasswdPath)
     except: pass
     try: os.remove("/home/pi/.config/autostart/piScreenCore.desktop")
     except: pass
@@ -84,14 +90,14 @@ def removeFiles():
         appendToFile(fstabPath, fstabConf)
 
 def copyFiles():
-    print("Coping files")
+    print("Copying files")
     shutil.copy(f"{os.getcwd()}/etc/apache2/sites-available/piScreen.conf", "/etc/apache2/sites-available/")
     createFolder("/home/pi/.config")
     createFolder("/home/pi/.config/autostart")
     shutil.copy(f"{os.getcwd()}/home/pi/.config/autostart/piScreenCore.desktop", "/home/pi/.config/autostart/")
     executeWait("cp -R home/pi/piScreen /home/pi/piScreen")
-    executeWait(f"rm -R {sslCertDirectory}")
-    createFolder(sslCertDirectory)
+    executeWait(f"rm -R {certPath}")
+    createFolder(certPath)
     executeWait("cp -R srv/piScreen/ /srv/piScreen/")
 
 def setPermissions():
@@ -116,9 +122,10 @@ def configureWebserver():
     print("Configuring Webserver")
     executeWait("systemctl stop apache2")
 
-    print("Type your username for weblogin: ", end="")
-    webusername = input()
-    executeWait(f"htpasswd -c /etc/apache2/.htpasswd {webusername}")
+    if isInstall:
+        print("Type your username for weblogin: ", end="")
+        webusername = input()
+        executeWait(f"htpasswd -c /etc/apache2/.htpasswd {webusername}")
 
     executeWait("a2dissite 000-default")
     executeWait("a2ensite piScreen")
@@ -126,20 +133,19 @@ def configureWebserver():
     executeWait("a2enmod ssl")
     
     if srvApacheConfig not in readFile(apache2ConfPath):
-        print(True)
-        print(srvApacheConfig)
         appendToFile(apache2ConfPath, f"\n{srvApacheConfig}")
 
-    generateSslCertificates()
+    if not isUpdate:
+        generateSslCertificates()
 
     executeWait("systemctl start apache2")
 
 def generateSslCertificates():
     print("Generating SSL certificates")
-    executeWait(f"openssl genrsa -out {sslCertDirectory}/server.key 4096")
-    executeWait(f"openssl req -new -key {sslCertDirectory}/server.key -out {sslCertDirectory}/server.csr -sha256 -subj /C=DE/ST=BW/L=/O=PiScreen/OU=/CN=")
-    executeWait(f"openssl req -noout -text -in {sslCertDirectory}/server.csr")
-    executeWait(f"openssl x509 -req -days 3650 -in {sslCertDirectory}/server.csr -signkey {sslCertDirectory}/server.key -out {sslCertDirectory}/server.crt")
+    executeWait(f"openssl genrsa -out {certPath}/server.key 4096")
+    executeWait(f"openssl req -new -key {certPath}/server.key -out {certPath}/server.csr -sha256 -subj /C=DE/ST=BW/L=/O=PiScreen/OU=/CN=")
+    executeWait(f"openssl req -noout -text -in {certPath}/server.csr")
+    executeWait(f"openssl x509 -req -days 3650 -in {certPath}/server.csr -signkey {certPath}/server.key -out {certPath}/server.crt")
 
 def configureSudoersFile():
     print("Configuring sudoers file")
@@ -153,6 +159,34 @@ def configureSudoersFile():
 
     executeWait(f"visudo -cf {sudoersFilePath}")
 
+def configureCrontab():
+    print("Configuring crontab")
+    if crontabConfig not in readFile(crontabPath):
+        os.system("echo '*\t*\t*\t*\t*\t/home/pi/piScreen/piScreenCron.py --check-now' | crontab -u pi -")
+
+def prepareUpdate():
+    print("Prepare for update")
+    global cronjson, settingsjson, htpasswd, certcsr, certkey, certcrt
+    cronjson = readFile(cronJsonPath)
+    settingsjson = readFile(settingsJsonPath)
+    htpasswd = readFile(htpasswdPath)
+    certcsr = readFile(f"{certPath}/server.crt")
+    certkey = readFile(f"{certPath}/server.csr")
+    certcrt = readFile(f"{certPath}/server.key")
+
+
+def postpareUpdate():
+    print("Postpare update")
+    os.remove(cronJsonPath)
+    os.remove(settingsJsonPath)
+    appendToFile(cronJsonPath, cronjson + "\n")
+    appendToFile(settingsJsonPath, settingsjson + "\n")
+    appendToFile(htpasswdPath, htpasswd + "\n")
+    appendToFile(f"{certPath}/server.crt", certcsr)
+    appendToFile(f"{certPath}/server.csr", certkey)
+    appendToFile(f"{certPath}/server.key", certcrt)
+
+
 def install():
     checkForRootPrivileges()
 
@@ -160,9 +194,15 @@ def install():
 
     installDependencies()
 
+    if isUpdate:
+        prepareUpdate()
+
     removeFiles()
 
     copyFiles()
+
+    if isUpdate:
+        postpareUpdate()
 
     configureRamDisk()
 
@@ -172,12 +212,20 @@ def install():
 
     configureSudoersFile()
 
+    configureCrontab()
+
+def update():
+    global isUpdate
+    global isInstall
+    isUpdate = True
+    isInstall = not isUpdate
+    install()
+
 def uninstall():
     removeFiles()
 
 def printHelp():
-    exit(f"""
-This script installs {oldManifest['application-name']}. 
+    exit(f"""This script installs {oldManifest['application-name']}. 
 Parameters:
     --help
         Show this help
@@ -185,7 +233,8 @@ Parameters:
         Installs {oldManifest['application-name']}
     --uninstall
         Uninstalls {oldManifest['application-name']}
-    """)
+    --update
+        Updates {oldManifest['application-name']}""")
 
 sys.argv.pop(0)
 
@@ -194,6 +243,9 @@ if len(sys.argv) == 0:
 
 elif len(sys.argv) == 1 and sys.argv[0].lower() == "--install":
     install()
+
+elif len(sys.argv) == 1 and sys.argv[0].lower() == "--update":
+    update()
 
 elif len(sys.argv) == 1 and sys.argv[0].lower() == "--uninstall":
     uninstall()
