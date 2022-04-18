@@ -1,3 +1,5 @@
 theme: jekyll-theme-architect
 title: piScreen
 description: The control surface for info displays
+logo: https://raw.githubusercontent.com/Jet0JLH/piScreen/main/srv/piScreen/piScreen.svg
+show_downloads: false
