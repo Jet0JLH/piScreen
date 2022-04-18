@@ -1,4 +1,6 @@
 #!/bin/bash
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "$parent_path"
 touch /media/ramdisk/piScreenDisplayOn
 touch /media/ramdisk/piScreenDisplaySwitch
 sleep 10
@@ -7,16 +9,15 @@ browser=firefox-esr
 processID=$(pgrep -x $browser)
 
 unclutter -idle 5 &
-/home/pi/piScreen/piScreenDisplay.sh &
+./piScreenDisplay.sh &
 
 while [ true ] ; do
 	kill -0 $processID
 	if [ $? -gt 0 ] ; then
 		echo Kein Browserprozess aktiv
-		cat /home/pi/piScreen/page.txt | xargs firefox -kiosk -private-window &
+		./piScreenCmd.py --start-browser
 		sleep 5
 		processID=$(pgrep -x $browser)
 	fi
 	sleep 1
-	#echo 'pow 0' | cec-client -s -d 1 | grep 'power status:' | sed 's/^.*: //' > /media/ramdisk/piScreenDisplay.txt
 done

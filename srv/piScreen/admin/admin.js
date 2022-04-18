@@ -5,6 +5,7 @@ cpuTemp = document.getElementById("cpuTemp");
 modal = new bootstrap.Modal(document.getElementById("modal"));
 modalTitle = document.getElementById("modal-title");
 modalBody = document.getElementById("modal-body");
+modalCancelBtn = document.getElementById("modal-cancelBtn");
 modalAcceptBtn = document.getElementById("modal-acceptBtn");
 rebootTimes = [];
 rebootTimes[0] = document.getElementById("reboot-0-time");
@@ -35,6 +36,11 @@ scheduleExclusionFrom = document.getElementById("scheduleExclusionFrom");
 scheduleExclusionTo = document.getElementById("scheduleExclusionTo");
 
 versionInfoBtn = document.getElementById("versionInfoBtn");
+
+modal._element.addEventListener('hidden.bs.modal', function (event) {
+    modalAcceptBtn.hidden = false;
+	modalCancelBtn.hidden = false;
+});
 
 function generateScheduleLine() {
 	newLine = document.createElement("div");
@@ -153,6 +159,8 @@ newScheduleLine.onclick = function() {
 }
 
 versionInfoBtn.onclick = function() {
+	modalAcceptBtn.hidden = true;
+	modalCancelBtn.hidden = true;
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.onload = function() {
 		let jsonData = JSON.parse(xmlhttp.responseText);

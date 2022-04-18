@@ -3,20 +3,23 @@
 # This script will delete the real directories
 [ "$UID" -eq 0 ] || exec sudo "$0" "$@"
 
+parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+cd "$parent_path"
+
 rm -R /home/pi/piScreen
 rm -R /srv/piScreen
 rm /etc/apache2/sites-available/piScreen.conf
 rm /home/pi/.config/autostart/piScreenCore.desktop
 
 
-chmod +x /home/pi/piScreenDev/piScreen/home/pi/piScreen/*.sh
-chmod +x /home/pi/piScreenDev/piScreen/home/pi/piScreen/*.py
+chmod +x ./home/pi/piScreen/*.sh
+chmod +x ./home/pi/piScreen/*.py
 
-ln -s /home/pi/piScreenDev/piScreen/home/pi/piScreen/ /home/pi/piScreen
-ln -s /home/pi/piScreenDev/piScreen/srv/piScreen/ /srv/piScreen
-ln -s /home/pi/piScreenDev/piScreen/etc/apache2/sites-available/piScreen.conf /etc/apache2/sites-available/piScreen.conf
+ln -s "$parent_path/home/pi/piScreen/" /home/pi/piScreen
+ln -s "$parent_path/srv/piScreen/" /srv/piScreen
+ln -s "$parent_path/etc/apache2/sites-available/piScreen.conf" /etc/apache2/sites-available/piScreen.conf
 mkdir -p /home/pi/.config/autostart/
-ln -s /home/pi/piScreenDev/piScreen/home/pi/.config/autostart/piScreenCore.desktop /home/pi/.config/autostart/piScreenCore.desktop
+ln -s "$parent_path/home/pi/.config/autostart/piScreenCore.desktop" /home/pi/.config/autostart/piScreenCore.desktop
 chown -R pi:pi /home/pi/.config/autostart/
 
 
@@ -25,11 +28,12 @@ setfacl -Rm u:www-data:rwx /home/pi/piScreen
 setfacl -Rm d:u:pi:rwx /home/pi/piScreen
 setfacl -Rm u:pi:rwx /home/pi/piScreen
 
-setfacl -Rm d:u:www-data:rwx /home/pi/piScreenDev/piScreen/home/pi/piScreen/
-setfacl -Rm u:www-data:rwx /home/pi/piScreenDev/piScreen/home/pi/piScreen/
-setfacl -Rm d:u:pi:rwx /home/pi/piScreenDev/piScreen/srv/piScreen/
-setfacl -Rm u:pi:rwx /home/pi/piScreenDev/piScreen/srv/piScreen/
+setfacl -Rm d:u:www-data:rwx ./home/pi/piScreen/
+setfacl -Rm u:www-data:rwx ./home/pi/piScreen/
+setfacl -Rm d:u:pi:rwx ./srv/piScreen/
+setfacl -Rm u:pi:rwx ./srv/piScreen/
 
-
+git update-index --skip-worktree home/pi/piScreen/settings.json
+git update-index --skip-worktree home/pi/piScreen/cron.json
 
 systemctl restart apache2

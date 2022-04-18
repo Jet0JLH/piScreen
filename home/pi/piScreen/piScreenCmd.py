@@ -29,15 +29,24 @@ def printHelp():
 	Turns the screen off
 --screen-switch-input
 	Tells the display to change the input to our system,
- 	if it is not currently displayed
+	if it is not currently displayed
+--set-website [website]
+	Changes the website
+--get-website
+	Get the current in settings configured website
+--check-update
+	Check for updates
 """)
 
 def loadSettings():
 	return json.load(open(f"{os.path.dirname(__file__)}/settings.json"))
 
+def loadMainifest():
+    return json.load(open(f"{os.path.dirname(__file__)}/manifest.json"))
+
 def startBrowser():
 	verbose and print("Load settings")
-	settingsJson = json.load(open(f"{os.path.dirname(__file__)}/settings.json"))
+	settingsJson = loadSettings()
 	verbose and print("Start browser")
 	os.environ['DISPLAY'] = ":0"
 	os.system(f'firefox -kiosk -private-window {settingsJson["settings"]["website"]}')
@@ -55,11 +64,11 @@ def reboot():
 def shutdown():
 	verbose and print("Shutdown system")
 	os.system("poweroff")
- 
+
 def screenOn():
 	verbose and print("Create file for turning on the screen")
 	open("/media/ramdisk/piScreenDisplayOn","w").close()
- 
+
 def screenStandby():
 	verbose and print("Create file for turning screen to standby")
 	open("/media/ramdisk/piScreenDisplayStandby","w").close()
@@ -79,21 +88,37 @@ def getStatus():
 	ramTotal = round(psutil.virtual_memory().total / 1024)
 	ramUsed = round(ramTotal - psutil.virtual_memory().available / 1024)
 	upTime = time.time() - psutil.boot_time()
-	upSecound = round(upTime % 60)
-	upMinutes = round((upTime / 60) % 60)
-	upHours = round((upTime / 60 / 60) % 24)
-	upDays = round(upTime / 60 / 60 / 24)
+	upSecound = int(upTime % 60)
+	upMinutes = int((upTime / 60) % 60)
+	upHours = int((upTime / 60 / 60) % 24)
+	upDays = int(upTime / 60 / 60 / 24)
 	displayState = open("/media/ramdisk/piScreenDisplay.txt","r").read().strip()
 	cpuTemp = round(psutil.sensors_temperatures()["cpu_thermal"][0].current * 1000)
 	return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s}}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,str(os.path.isfile("/media/ramdisk/piScreenDisplayStandby")).lower(),str(os.path.isfile("/media/ramdisk/piScreenDisplayOn")).lower())
+
+def setWebsite(website):
+    verbose and print(f"Write {website} as website in settings.json")
+    settingsJson = loadSettings()
+    settingsJson["settings"]["website"] = website
+    settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
+    settingsFile.write(json.dumps(settingsJson,indent=4))
+    settingsFile.close()
+    
+def getWebsite():
+    settingsJson = loadSettings()
+    print(settingsJson["settings"]["website"])
+
+def checkUpdates():
+    manifest = loadMainifest()
+    print(f"Current version {manifest['version']['major']}.{manifest['version']['minor']}.{manifest['version']['patch']}")
 
 verbose = False
 sys.argv.pop(0) #Remove Path
 if len(sys.argv) < 1:
 	printHelp()
 
-for item in sys.argv:
-	item = item.lower()
+for i,origItem in enumerate(sys.argv):
+	item = origItem.lower()
 	if (
 		item == "-v" or
 		item == "--verbose"
@@ -122,3 +147,12 @@ for item in sys.argv:
 		screenOff()
 	elif item == "--screen-switch-input":
 		screenSwitchInput()
+	elif item == "--set-website":
+		if i + 1 < len(sys.argv):
+			setWebsite(sys.argv[i + 1])
+		else:
+			verbose and print("Not enough arguments")
+	elif item == "--get-website":
+		getWebsite()
+	elif item == "--check-updates":
+		checkUpdates()
