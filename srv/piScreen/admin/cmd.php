@@ -14,14 +14,14 @@
 	}
 	elseif ($_GET['id'] == 4) {
 		$hostname = shell_exec('hostname');
-		$page = shell_exec("cat /home/pi/piScreen/page.txt");
+		$page = shell_exec("$syscall --get-website");
 		if($hostname != $_POST['hostname']) {
 			//Hostname hat sich geändert
 			shell_exec("sudo hostnamectl set-hostname '{$_POST['hostname']}'");
 		}
 		if($page != $_POST['page']) {
 			//Page hat sich geändert
-			file_put_contents('/home/pi/piScreen/page.txt',$_POST['page']);
+			shell_exec($syscall . " --set-website " . $_POST['page']);
 		}
 		if($_POST['pwd']) {
 			$file = '/media/ramdisk/piScreenPwd.txt';

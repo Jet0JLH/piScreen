@@ -1,3 +1,4 @@
+<?php $syscall = '/home/pi/piScreen/piScreenCmd.py';?>
 <!doctype html>
 <html>
 	<head>
@@ -48,7 +49,7 @@
 								<label for='hostname'>Hostname</label>
 							</div>
 							<div class='form-floating mb-3'>
-								<input type='text' class='form-control' name='page' id='page' value='<?php echo shell_exec('cat /home/pi/piScreen/page.txt'); ?>'>
+								<input type='text' class='form-control' name='page' id='page' value='<?php echo shell_exec("$syscall --get-website"); ?>'>
 								<label for='page'>Zu öffnende Seite</label>
 							</div>
 							<div class='form-floating mb-3'>
