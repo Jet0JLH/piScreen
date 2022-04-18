@@ -9,7 +9,7 @@ browser=firefox-esr
 processID=$(pgrep -x $browser)
 
 unclutter -idle 5 &
-/home/pi/piScreen/piScreenDisplay.sh &
+./piScreenDisplay.sh &
 
 while [ true ] ; do
 	kill -0 $processID
