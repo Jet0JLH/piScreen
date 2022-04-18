@@ -93,7 +93,7 @@
 						<p id='modal-body'></p>
 					</div>
 					<div class='modal-footer'>
-						<button type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Abbruch</button>
+						<button id='modal-cancelBtn' type='button' class='btn btn-secondary' data-bs-dismiss='modal'>Abbruch</button>
 						<button id='modal-acceptBtn' type='button' class='btn btn-danger'></button>
 					</div>
 				</div>
