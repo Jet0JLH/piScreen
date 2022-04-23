@@ -1,15 +1,13 @@
 #!/usr/bin/python
-import os, sys, shutil, json, subprocess
+import os, sys, shutil, json, subprocess, pwd
 
 isUpdate = False
 isInstall = not isUpdate
 
-srvApacheConfig = "<Directory /srv/>\n\tOptions Indexes FollowSymLinks\n\tAllowOverride None\n\tRequire all granted\n</Directory>"
-apache2ConfPath = "/etc/apache2/apache2.conf"
 certPath = "/home/pi/piScreen/certs"
 fstabPath = "/etc/fstab"
 fstabEntry = "tmpfs    /media/ramdisk  tmpfs   defaults,size=5%        0       0"
-sudoersFilePath = "/etc/sudoers.d/piScreen-nopasswd"
+sudoersFilePath = "/etc/sudoers.d/050_piScreen-nopasswd"
 cronJsonPath = "/home/pi/piScreen/cron.json"
 settingsJsonPath = "/home/pi/piScreen/settings.json"
 crontabPath = "/var/spool/cron/crontabs/pi"
@@ -19,6 +17,9 @@ lxdePath = "/etc/xdg/lxsession/LXDE-pi/autostart"
 lxdeConfig1 = "@lxpanel --profile LXDE-pi"
 lxdeConfig2 = "@xset s 0"
 lxdeConfig3 = "@xset -dpms"
+desktopConfigPath = "/home/pi/.config/pcmanfm/LXDE-pi/desktop-items-0.conf"
+desktopConfig1 = "show_trash=1"
+desktopConfig2 = "show_mounts=1"
 oldManifest = json.loads('{"application-name": "piScreen", "version": { "major": "-",	"minor": "-",	"patch": "-"}}')
 defaultSettingsPath = f"{os.path.dirname(__file__)}/defaults/default_settings.json"
 defaultCronPath = f"{os.path.dirname(__file__)}/defaults/default_cron.json"
@@ -75,6 +76,7 @@ def removeFiles():
     print("Removing files")
     try: os.remove(sudoersFilePath)
     except: pass
+    executeWait("a2dissite piScreen")
     try: os.remove("/etc/apache2/sites-available/piScreen.conf")
     except: pass
     try: os.remove(htpasswdPath)
@@ -85,13 +87,6 @@ def removeFiles():
     except: pass
     try: executeWait("rm -R /srv/piScreen")
     except: pass
-
-    apache2conf = readFile(apache2ConfPath)
-    if srvApacheConfig in apache2conf:
-        apache2conf = apache2conf.replace(srvApacheConfig, "")
-        try: os.remove(apache2ConfPath)
-        except: pass
-        appendToFile(apache2ConfPath, apache2conf)
     
     fstabConf = readFile(fstabPath)
     if fstabEntry in fstabConf:
@@ -123,6 +118,9 @@ def setPermissions():
     executeWait("setfacl -Rm d:u:pi:rwx /srv/piScreen/")
     executeWait("setfacl -Rm u:pi:rwx /srv/piScreen/")
 
+    executeWait("setfacl -Rm d:u:pi:rwx /home/pi/.config/autostart/")
+    executeWait("setfacl -Rm u:pi:rwx /home/pi/.config/autostart/")
+
 def configureRamDisk():
     print("Configuring RAM disk")
     createFolder("/media/ramdisk")
@@ -143,13 +141,10 @@ def configureWebserver():
     executeWait("a2enmod rewrite")
     executeWait("a2enmod ssl")
     
-    if srvApacheConfig not in readFile(apache2ConfPath):
-        appendToFile(apache2ConfPath, f"\n{srvApacheConfig}")
-
     if not isUpdate:
         generateSslCertificates()
 
-    executeWait("systemctl start apache2")
+    executeWait("systemctl restart apache2")
 
 def generateSslCertificates():
     print("Generating SSL certificates")
@@ -168,14 +163,20 @@ def configureSudoersFile():
     appendToFile(sudoersFilePath, suhostnamectl + "\n")
     appendToFile(sudoersFilePath, suchangePwd + "\n")
 
+    executeWait(f"chmod 0440 {sudoersFilePath}")
+
     executeWait(f"visudo -cf {sudoersFilePath}")
 
 def configureCrontab():
     print("Configuring crontab")
-    if crontabConfig not in readFile(crontabPath):
-        os.system(f"echo '{crontabConfig}' | crontab -u pi -")
+    if os.path.isfile(crontabPath):
+        if crontabConfig not in readFile(crontabPath):
+            os.system(f"(crontab -l -u pi; echo '{crontabConfig}') | crontab -u pi -")
+    else:
+        os.system(f"echo '' | crontab -u pi -")
 
 def disableScreensaver():
+    print("Disabling screensaver")
     lxdeConfig = readFile(lxdePath)
     print(lxdeConfig)
     print(lxdeConfig.find(f"{lxdeConfig1}"))
@@ -191,14 +192,40 @@ def disableScreensaver():
 
     writeNewFile(lxdePath, lxdeConfig)
 
+def configureDesktop():
+    print("Configuring desktop")
+    os.system("export DISPLAY=:0;export XAUTHORITY=/home/pi/.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --wallpaper-mode=color")
+    desktopConfig = readFile(desktopConfigPath)
+    if desktopConfig1 in desktopConfig:
+        desktopConfig = desktopConfig.replace(desktopConfig1, "show_trash=0")
+        os.remove(desktopConfigPath)
+        writeNewFile(desktopConfigPath, desktopConfig)
+    else:
+        appendToFile(desktopConfigPath, "show_trash=0")
+
+    desktopConfig = readFile(desktopConfigPath)
+    if desktopConfig2 in desktopConfig:
+        desktopConfig = desktopConfig.replace(desktopConfig2, "show_mounts=0")
+        os.remove(desktopConfigPath)
+        writeNewFile(desktopConfigPath, desktopConfig)
+    else:
+        appendToFile(desktopConfigPath, "show_mounts=0")
+
+    os.system("export DISPLAY=:0;export XAUTHORITY=/home/pi/.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --reconfigure")
+
+def wannaReboot():
+    print("Please reboot your system to run piScreen properly. Reboot now? [Y/n]: ", end="")
+    inp = input()
+    if "y" == inp.lower() or "" == inp:
+        os.system("reboot now")
+
 def prepareUpdate():
     print("Prepare for update")
-    global cronjson, settingsjson, htpasswd, certcsr, certkey, certcrt
+    global htpasswd, certcsr, certkey, certcrt
     htpasswd = readFile(htpasswdPath)
     certcsr = readFile(f"{certPath}/server.crt")
     certkey = readFile(f"{certPath}/server.csr")
     certcrt = readFile(f"{certPath}/server.key")
-
 
 def postpareUpdate():
     print("Postpare update")
@@ -206,7 +233,13 @@ def postpareUpdate():
     appendToFile(f"{certPath}/server.crt", certcsr)
     appendToFile(f"{certPath}/server.csr", certkey)
     appendToFile(f"{certPath}/server.key", certcrt)
-    updateJson()
+
+def checkForPiUser():
+    print("Checking for pi user")
+    try:
+        pwd.getpwnam('pi')
+    except KeyError:
+        print('User pi does not exist. Script is working only with username pi.')
 
 def updateJson():
     if os.path.isfile(settingsJsonPath):
@@ -229,10 +262,13 @@ def updateJson():
     else:
         shutil.copyfile(defaultCronPath,cronJsonPath)
     
-    
+def test():
+    wannaReboot()
 
 def install():
     checkForRootPrivileges()
+
+    checkForPiUser()
 
     loadManifests()
 
@@ -257,6 +293,15 @@ def install():
     configureSudoersFile()
 
     configureCrontab()
+    
+    updateJson()
+
+    disableScreensaver()
+
+    executeWait("systemctl restart apache2")
+
+    wannaReboot()
+
 
 def update():
     global isUpdate
@@ -266,6 +311,8 @@ def update():
     install()
 
 def uninstall():
+    checkForRootPrivileges()
+
     removeFiles()
 
 def printHelp():
@@ -294,7 +341,7 @@ elif len(sys.argv) == 1 and sys.argv[0].lower() == "--update":
 elif len(sys.argv) == 1 and sys.argv[0].lower() == "--uninstall":
     uninstall()
 elif len(sys.argv) == 1 and sys.argv[0].lower() == "test":
-    disableScreensaver()
+    test()
     
 else:
     printHelp()
