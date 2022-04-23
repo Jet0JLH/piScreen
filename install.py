@@ -15,7 +15,12 @@ settingsJsonPath = "/home/pi/piScreen/settings.json"
 crontabPath = "/var/spool/cron/crontabs/pi"
 crontabConfig = "*\t*\t*\t*\t*\t/home/pi/piScreen/piScreenCron.py --check-now"
 htpasswdPath = "/etc/apache2/.htpasswd"
+lxdePath = "/etc/xdg/lxsession/LXDE-pi/autostart"
+lxdeConfig1 = "@lxpanel --profile LXDE-pi"
+lxdeConfig2 = "@xset s 0"
+lxdeConfig3 = "@xset -dpms"
 oldManifest = json.loads('{"application-name": "piScreen", "version": { "major": "-",	"minor": "-",	"patch": "-"}}')
+
 
 def executeWait(command):
     args = command.split(" ")
@@ -38,6 +43,11 @@ def readFile(filepath):
 def createFolder(folderpath):
     if not os.path.exists(folderpath):
         os.mkdir(folderpath)
+
+def writeNewFile(filepath, text):
+    file = open(filepath, "w")
+    file.write(text)
+    file.close()
 
 def checkForRootPrivileges():
     if os.geteuid() != 0:
@@ -162,7 +172,23 @@ def configureSudoersFile():
 def configureCrontab():
     print("Configuring crontab")
     if crontabConfig not in readFile(crontabPath):
-        os.system("echo '*\t*\t*\t*\t*\t/home/pi/piScreen/piScreenCron.py --check-now' | crontab -u pi -")
+        os.system(f"echo '{crontabConfig}' | crontab -u pi -")
+
+def disableScreensaver():
+    lxdeConfig = readFile(lxdePath)
+    print(lxdeConfig)
+    print(lxdeConfig.find(f"{lxdeConfig1}"))
+    if lxdeConfig.find(lxdeConfig1) >= 0 and lxdeConfig.find(f"#{lxdeConfig1}") < 0:
+        print("ofuhsadifhewipfhewifbüebfüew")
+        lxdeConfig = lxdeConfig.replace(lxdeConfig1, f"#{lxdeConfig1}")
+        print(lxdeConfig)
+
+    if lxdeConfig2 not in lxdeConfig:
+        lxdeConfig += f"\n{lxdeConfig2}"
+    if lxdeConfig3 not in lxdeConfig:
+        lxdeConfig += f"\n{lxdeConfig3}"
+
+    writeNewFile(lxdePath, lxdeConfig)
 
 def prepareUpdate():
     print("Prepare for update")
@@ -249,6 +275,8 @@ elif len(sys.argv) == 1 and sys.argv[0].lower() == "--update":
 
 elif len(sys.argv) == 1 and sys.argv[0].lower() == "--uninstall":
     uninstall()
+elif len(sys.argv) == 1 and sys.argv[0].lower() == "test":
+    disableScreensaver()
     
 else:
     printHelp()
