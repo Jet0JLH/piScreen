@@ -212,6 +212,32 @@ def postpareUpdate():
     appendToFile(f"{certPath}/server.csr", certkey)
     appendToFile(f"{certPath}/server.key", certcrt)
 
+def updateJson():
+    settingsPath = "/home/pi/piScreen/settings.json"
+    defaultSettingsPath = f"{os.path.dirname(__file__)}/defaults/default_settings.json"
+    cronPath = "/home/pi/piScreen/cron.json"
+    defaultCronPath = f"{os.path.dirname(__file__)}/defaults/default_cron.json"
+    if os.path.isfile(settingsPath):
+        settingsJson = json.load(open(settingsPath))
+        defaultSettingsJson = json.load(open(defaultSettingsPath))
+        if "website" in settingsJson["settings"] and settingsJson["settings"]["website"] != "":
+            defaultSettingsJson["settings"]["website"] = settingsJson["settings"]["website"]
+        if "appearence" in settingsJson["settings"] and settingsJson["settings"]["appearence"] != "":
+            defaultSettingsJson["settings"]["appearence"] = settingsJson["settings"]["appearence"]
+        settingsFile = open(settingsPath, "w")
+        settingsFile.write(json.dumps(defaultSettingsJson,indent=4))
+        settingsFile.close()
+    else:
+        shutil.copyfile(defaultSettingsPath,settingsPath)
+    if os.path.isfile(cronPath):
+        #Do nothing. User has this file allready
+        pass
+        cronJson = json.load(open(cronPath))
+        defaultCronJson = json.load(open(defaultCronPath))
+    else:
+        shutil.copyfile(defaultCronPath,cronPath)
+    
+    
 
 def install():
     checkForRootPrivileges()
