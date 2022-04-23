@@ -26,10 +26,9 @@ defaultCronPath = f"{os.path.dirname(__file__)}/defaults/default_cron.json"
 
 def executeWait(command):
     args = command.split(" ")
-#    for arg in args:
-#        print(arg)
     process = subprocess.Popen(args)
     process.wait()
+    return process.returncode
 
 def appendToFile(filepath, text):
     file = open(filepath, "a")
@@ -137,7 +136,12 @@ def configureWebserver():
     if isInstall:
         print("Type your username for weblogin: ", end="")
         webusername = input()
-        executeWait(f"htpasswd -c /etc/apache2/.htpasswd {webusername}")
+        returncode = executeWait(f"htpasswd -c /etc/apache2/.htpasswd {webusername}")
+        while returncode != 0:
+            print("Passwords doesn't match!")
+            print("Type your username for weblogin: ", end="")
+            webusername = input()
+            returncode = executeWait(f"htpasswd -c /etc/apache2/.htpasswd {webusername}")
 
     executeWait("a2dissite 000-default")
     executeWait("a2ensite piScreen")
@@ -261,9 +265,6 @@ def updateJson():
     else:
         shutil.copyfile(defaultCronPath,cronJsonPath)
     
-def test():
-    wannaReboot()
-
 def install():
     checkForRootPrivileges()
 
@@ -343,8 +344,6 @@ elif len(sys.argv) == 1 and sys.argv[0].lower() == "--update":
 
 elif len(sys.argv) == 1 and sys.argv[0].lower() == "--uninstall":
     uninstall()
-elif len(sys.argv) == 1 and sys.argv[0].lower() == "test":
-    test()
     
 else:
     printHelp()
