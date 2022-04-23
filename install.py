@@ -20,7 +20,8 @@ lxdeConfig1 = "@lxpanel --profile LXDE-pi"
 lxdeConfig2 = "@xset s 0"
 lxdeConfig3 = "@xset -dpms"
 oldManifest = json.loads('{"application-name": "piScreen", "version": { "major": "-",	"minor": "-",	"patch": "-"}}')
-
+defaultSettingsPath = f"{os.path.dirname(__file__)}/defaults/default_settings.json"
+defaultCronPath = f"{os.path.dirname(__file__)}/defaults/default_cron.json"
 
 def executeWait(command):
     args = command.split(" ")
@@ -193,8 +194,6 @@ def disableScreensaver():
 def prepareUpdate():
     print("Prepare for update")
     global cronjson, settingsjson, htpasswd, certcsr, certkey, certcrt
-    cronjson = readFile(cronJsonPath)
-    settingsjson = readFile(settingsJsonPath)
     htpasswd = readFile(htpasswdPath)
     certcsr = readFile(f"{certPath}/server.crt")
     certkey = readFile(f"{certPath}/server.csr")
@@ -203,39 +202,32 @@ def prepareUpdate():
 
 def postpareUpdate():
     print("Postpare update")
-    os.remove(cronJsonPath)
-    os.remove(settingsJsonPath)
-    appendToFile(cronJsonPath, cronjson + "\n")
-    appendToFile(settingsJsonPath, settingsjson + "\n")
     appendToFile(htpasswdPath, htpasswd + "\n")
     appendToFile(f"{certPath}/server.crt", certcsr)
     appendToFile(f"{certPath}/server.csr", certkey)
     appendToFile(f"{certPath}/server.key", certcrt)
+    updateJson()
 
 def updateJson():
-    settingsPath = "/home/pi/piScreen/settings.json"
-    defaultSettingsPath = f"{os.path.dirname(__file__)}/defaults/default_settings.json"
-    cronPath = "/home/pi/piScreen/cron.json"
-    defaultCronPath = f"{os.path.dirname(__file__)}/defaults/default_cron.json"
-    if os.path.isfile(settingsPath):
-        settingsJson = json.load(open(settingsPath))
+    if os.path.isfile(settingsJsonPath):
+        settingsJson = json.load(open(settingsJsonPath))
         defaultSettingsJson = json.load(open(defaultSettingsPath))
         if "website" in settingsJson["settings"] and settingsJson["settings"]["website"] != "":
             defaultSettingsJson["settings"]["website"] = settingsJson["settings"]["website"]
         if "appearence" in settingsJson["settings"] and settingsJson["settings"]["appearence"] != "":
             defaultSettingsJson["settings"]["appearence"] = settingsJson["settings"]["appearence"]
-        settingsFile = open(settingsPath, "w")
+        settingsFile = open(settingsJsonPath, "w")
         settingsFile.write(json.dumps(defaultSettingsJson,indent=4))
         settingsFile.close()
     else:
-        shutil.copyfile(defaultSettingsPath,settingsPath)
-    if os.path.isfile(cronPath):
+        shutil.copyfile(defaultSettingsPath,settingsJsonPath)
+    if os.path.isfile(cronJsonPath):
         #Do nothing. User has this file allready
         pass
-        cronJson = json.load(open(cronPath))
+        cronJson = json.load(open(cronJsonPath))
         defaultCronJson = json.load(open(defaultCronPath))
     else:
-        shutil.copyfile(defaultCronPath,cronPath)
+        shutil.copyfile(defaultCronPath,cronJsonPath)
     
     
 
