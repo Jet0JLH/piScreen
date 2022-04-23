@@ -58,7 +58,7 @@ def loadManifests():
     global oldManifest
     if os.path.exists("/home/pi/piScreen/manifest.json"):
         oldManifest = json.loads(readFile("/home/pi/piScreen/manifest.json"))
-    newManifest = json.loads(readFile("home/pi/piScreen/manifest.json"))
+    newManifest = json.loads(readFile(f"{os.path.dirname(__file__)}/home/pi/piScreen/manifest.json"))
 
     print(f"Starting {oldManifest['application-name']} setup.")
     print(f"Old version: {oldManifest['version']['major']}.{oldManifest['version']['minor']}.{oldManifest['version']['patch']}")
@@ -99,14 +99,13 @@ def removeFiles():
 
 def copyFiles():
     print("Copying files")
-    shutil.copy(f"{os.getcwd()}/etc/apache2/sites-available/piScreen.conf", "/etc/apache2/sites-available/")
-    createFolder("/home/pi/.config")
+    shutil.copy(f"{os.path.dirname(__file__)}/etc/apache2/sites-available/piScreen.conf", "/etc/apache2/sites-available/")
     createFolder("/home/pi/.config/autostart")
-    shutil.copy(f"{os.getcwd()}/home/pi/.config/autostart/piScreenCore.desktop", "/home/pi/.config/autostart/")
-    executeWait("cp -R home/pi/piScreen /home/pi/piScreen")
+    shutil.copy(f"{os.path.dirname(__file__)}/home/pi/.config/autostart/piScreenCore.desktop", "/home/pi/.config/autostart/")
+    executeWait(f"cp -R {os.path.dirname(__file__)}/home/pi/piScreen /home/pi/piScreen")
     executeWait(f"rm -R {certPath}")
     createFolder(certPath)
-    executeWait("cp -R srv/piScreen/ /srv/piScreen/")
+    executeWait(f"cp -R {os.path.dirname(__file__)}/srv/piScreen/ /srv/piScreen/")
 
 def setPermissions():
     print("Setting permissions")
