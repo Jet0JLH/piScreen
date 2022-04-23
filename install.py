@@ -69,6 +69,9 @@ def loadManifests():
         if "y" != input().lower():
             sys.exit()
 
+def updateDependencies():
+    executeWait("apt update")
+
 def installDependencies():
     executeWait("apt install firefox-esr unclutter apache2 php7.4 cec-utils -y")
 
@@ -178,12 +181,8 @@ def configureCrontab():
 def disableScreensaver():
     print("Disabling screensaver")
     lxdeConfig = readFile(lxdePath)
-    print(lxdeConfig)
-    print(lxdeConfig.find(f"{lxdeConfig1}"))
     if lxdeConfig.find(lxdeConfig1) >= 0 and lxdeConfig.find(f"#{lxdeConfig1}") < 0:
-        print("ofuhsadifhewipfhewifbüebfüew")
         lxdeConfig = lxdeConfig.replace(lxdeConfig1, f"#{lxdeConfig1}")
-        print(lxdeConfig)
 
     if lxdeConfig2 not in lxdeConfig:
         lxdeConfig += f"\n{lxdeConfig2}"
@@ -272,6 +271,8 @@ def install():
 
     loadManifests()
 
+    updateDependencies()
+
     installDependencies()
 
     if isUpdate:
@@ -299,6 +300,8 @@ def install():
     disableScreensaver()
 
     executeWait("systemctl restart apache2")
+
+    configureDesktop()
 
     wannaReboot()
 
