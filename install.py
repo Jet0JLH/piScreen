@@ -23,6 +23,7 @@ desktopConfig2 = "show_mounts=1"
 oldManifest = json.loads('{"application-name": "piScreen", "version": { "major": "-",	"minor": "-",	"patch": "-"}}')
 defaultSettingsPath = f"{os.path.dirname(__file__)}/defaults/default_settings.json"
 defaultCronPath = f"{os.path.dirname(__file__)}/defaults/default_cron.json"
+firefoxConfigPath = "/etc/firefox-esr/piScreen.js"
 
 def executeWait(command):
     args = command.split(" ")
@@ -88,6 +89,8 @@ def removeFiles():
     try: executeWait("rm -R /home/pi/piScreen")
     except: pass
     try: executeWait("rm -R /srv/piScreen")
+    except: pass
+    try: os.remove(firefoxConfigPath)
     except: pass
     
     fstabConf = readFile(fstabPath)
@@ -263,6 +266,9 @@ def updateJson():
         defaultCronJson = json.load(open(defaultCronPath))
     else:
         shutil.copyfile(defaultCronPath,cronJsonPath)
+        
+def configureWebbrowser():
+    shutil.copyfile(f"{os.path.dirname(__file__)}/defaults/firefoxPiScreen.js", firefoxConfigPath)
     
 def install():
     checkForRootPrivileges()
@@ -302,6 +308,8 @@ def install():
     executeWait("systemctl restart apache2")
 
     configureDesktop()
+    
+    configureWebbrowser()
 
     wannaReboot()
 

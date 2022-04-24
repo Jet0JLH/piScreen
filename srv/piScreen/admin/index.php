@@ -11,7 +11,7 @@
 	<body class='d-flex flex-column min-vh-100'>
 		<div class='px-4 py-5 my-2 text-center'>
 			<h1 class='display-5 fw-bold'><img src='/piScreen.svg' alt='Logo' width='128' height='128'> piScreen Adminpage</h1>
-			<p class='lead mb-4'>Hier lassen sich die wichtigsten PiScreen Funktionen bequem administrieren</p>
+			<p class='lead mb-4'>Hier lassen sich die wichtigsten piScreen Funktionen bequem administrieren</p>
 		</div>
 		<div class='container px-4'>
 			<div class='row gx-5'>

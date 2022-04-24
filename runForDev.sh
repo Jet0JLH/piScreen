@@ -10,6 +10,7 @@ rm -R /home/pi/piScreen
 rm -R /srv/piScreen
 rm /etc/apache2/sites-available/piScreen.conf
 rm /home/pi/.config/autostart/piScreenCore.desktop
+rm /etc/firefox-esr/piScreen.js
 
 
 chmod +x ./home/pi/piScreen/*.sh
@@ -21,6 +22,7 @@ ln -s "$parent_path/etc/apache2/sites-available/piScreen.conf" /etc/apache2/site
 mkdir -p /home/pi/.config/autostart/
 ln -s "$parent_path/home/pi/.config/autostart/piScreenCore.desktop" /home/pi/.config/autostart/piScreenCore.desktop
 chown -R pi:pi /home/pi/.config/autostart/
+ln -s "$parent_path/defaults/firefoxPiScreen.js" /etc/firefox-esr/piScreen.js
 
 
 setfacl -Rm d:u:www-data:rwx /home/pi/piScreen
