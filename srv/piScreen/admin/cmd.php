@@ -23,11 +23,10 @@
 			//Page hat sich geändert
 			shell_exec($syscall . " --set-website " . $_POST['page']);
 		}
-		if($_POST['pwd']) {
+		if($_POST['user'] && $_POST['pwd']) {
 			$file = '/media/ramdisk/piScreenPwd.txt';
 			file_put_contents($file,$_POST['pwd']);
-			shell_exec("sudo /home/pi/piScreen/changePwd.sh");
-			unlink($file);
+			shell_exec("sudo $syscall --set-pw '" . $_POST['user'] . "' -f '$file'");
 		}
 		header('Location: .');
 	}

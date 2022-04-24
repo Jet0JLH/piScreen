@@ -12,7 +12,7 @@ cronJsonPath = "/home/pi/piScreen/cron.json"
 settingsJsonPath = "/home/pi/piScreen/settings.json"
 crontabPath = "/var/spool/cron/crontabs/pi"
 crontabConfig = "*\t*\t*\t*\t*\t/home/pi/piScreen/piScreenCron.py --check-now"
-htpasswdPath = "/etc/apache2/.htpasswd"
+htpasswdPath = "/etc/apache2/.piScreen_htpasswd"
 lxdePath = "/etc/xdg/lxsession/LXDE-pi/autostart"
 lxdeConfig1 = "@lxpanel --profile LXDE-pi"
 lxdeConfig2 = "@xset s 0"
@@ -135,12 +135,14 @@ def configureWebserver():
     if isInstall:
         print("Type your username for weblogin: ", end="")
         webusername = input()
-        returncode = executeWait(f"htpasswd -c /etc/apache2/.htpasswd {webusername}")
+        returncode = executeWait(f"htpasswd -c {htpasswdPath} {webusername}")
         while returncode != 0:
             print("Passwords doesn't match!")
             print("Type your username for weblogin: ", end="")
             webusername = input()
-            returncode = executeWait(f"htpasswd -c /etc/apache2/.htpasswd {webusername}")
+            returncode = executeWait(f"htpasswd -c {htpasswdPath} {webusername}")
+        os.system(f"chown root:www-data {htpasswdPath}")
+        os.system(f"chmod 640 {htpasswdPath}")
 
     executeWait("a2dissite 000-default")
     executeWait("a2ensite piScreen")
@@ -163,11 +165,9 @@ def configureSudoersFile():
     print("Configuring sudoers file")
     supiscreencmd = "www-data        ALL=(ALL:ALL)   NOPASSWD:/home/pi/piScreen/piScreenCmd.py"
     suhostnamectl = "www-data        ALL=(ALL:ALL)   NOPASSWD:/usr/bin/hostnamectl"
-    suchangePwd =   "www-data        ALL=(ALL:ALL)   NOPASSWD:/home/pi/piScreen/changePwd.sh"
     
     appendToFile(sudoersFilePath, supiscreencmd + "\n")
     appendToFile(sudoersFilePath, suhostnamectl + "\n")
-    appendToFile(sudoersFilePath, suchangePwd + "\n")
 
     executeWait(f"chmod 0440 {sudoersFilePath}")
 

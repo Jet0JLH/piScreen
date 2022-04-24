@@ -53,8 +53,12 @@
 								<label for='page'>Zu öffnende Seite</label>
 							</div>
 							<div class='form-floating mb-3'>
+								<input type='text' class='form-control' name='user' id='user'>
+								<label for='user'>Benutzername für weblogin</label>
+							</div>
+							<div class='form-floating mb-3'>
 								<input type='password' class='form-control' name='pwd' id='pwd'>
-								<label for='pwd'>Neues Passwort für den Pi Benutzer</label>
+								<label for='pwd'>Passwort für weblogin</label>
 							</div>
 							<button type='submit' class='btn btn-primary'><i class='bi bi-save'></i> Speichern</button>
 						</form>

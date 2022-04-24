@@ -11,6 +11,7 @@ def printHelp():
 	Show this information
 -v or --verbose
 	Shows detailed informations during execution
+	It have to ste befor other parameters!
 --start-browser
 	Starts the Browser
 --stop-browser
@@ -30,11 +31,17 @@ def printHelp():
 --screen-switch-input
 	Tells the display to change the input to our system,
 	if it is not currently displayed
---set-website [website]
+--set-website <website>
 	Changes the website
 --get-website
 	Get the current in settings configured website
---check-update
+--set-pw <user> [-f <file with password>] [password]
+	Change the password for the weblogin user. Removes the old password.
+	You can set the password directly --change-pw <user> <password>
+	or you can set the password by file --change-pw <user> -f <file>
+	File will be erased after command!
+	Special characters in password are only in file mode available!
+--check-update [NOT READY!!!]
 	Check for updates
 """)
 
@@ -42,7 +49,7 @@ def loadSettings():
 	return json.load(open(f"{os.path.dirname(__file__)}/settings.json"))
 
 def loadMainifest():
-    return json.load(open(f"{os.path.dirname(__file__)}/manifest.json"))
+	return json.load(open(f"{os.path.dirname(__file__)}/manifest.json"))
 
 def startBrowser():
 	verbose and print("Load settings")
@@ -97,20 +104,20 @@ def getStatus():
 	return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s}}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,str(os.path.isfile("/media/ramdisk/piScreenDisplayStandby")).lower(),str(os.path.isfile("/media/ramdisk/piScreenDisplayOn")).lower())
 
 def setWebsite(website):
-    verbose and print(f"Write {website} as website in settings.json")
-    settingsJson = loadSettings()
-    settingsJson["settings"]["website"] = website
-    settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
-    settingsFile.write(json.dumps(settingsJson,indent=4))
-    settingsFile.close()
-    
+	verbose and print(f"Write {website} as website in settings.json")
+	settingsJson = loadSettings()
+	settingsJson["settings"]["website"] = website
+	settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
+	settingsFile.write(json.dumps(settingsJson,indent=4))
+	settingsFile.close()
+	
 def getWebsite():
-    settingsJson = loadSettings()
-    print(settingsJson["settings"]["website"])
+	settingsJson = loadSettings()
+	print(settingsJson["settings"]["website"])
 
 def checkUpdates():
-    manifest = loadMainifest()
-    print(f"Current version {manifest['version']['major']}.{manifest['version']['minor']}.{manifest['version']['patch']}")
+	manifest = loadMainifest()
+	print(f"Current version {manifest['version']['major']}.{manifest['version']['minor']}.{manifest['version']['patch']}")
 
 verbose = False
 sys.argv.pop(0) #Remove Path
@@ -154,5 +161,22 @@ for i,origItem in enumerate(sys.argv):
 			verbose and print("Not enough arguments")
 	elif item == "--get-website":
 		getWebsite()
+	elif item == "--set-pw":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 2].lower() == "-f": #Check file Mode
+				verbose and print("Set weblogin password with file")
+				if i + 3 < len(sys.argv):
+					if os.path.isfile(sys.argv[i + 3]):
+						os.system(f"head -1 {sys.argv[i + 3]} | tr -d '\n' | sudo xargs -0 htpasswd -c -b /etc/apache2/.piScreen_htpasswd '{sys.argv[i + 1]}'")
+						os.remove(sys.argv[i + 3])
+					else:
+						verbose and print("Passwordfile dosen't exist")
+				else:
+					verbose and print("No Passwordfile specified")
+			else: #Check direct mode
+				verbose and print("Set weblogin password with next parameter")
+				os.system(f"sudo htpasswd -c -b /etc/apache2/.piScreen_htpasswd '{sys.argv[i + 1]}' '{sys.argv[i + 2]}'")
+		else:
+			verbose and print("Not enough arguments")
 	elif item == "--check-updates":
 		checkUpdates()

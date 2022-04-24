@@ -46,5 +46,13 @@ if test -f "./home/pi/piScreen/cron.json"; then
 else
 	cp ./defaults/default_cron.json ./home/pi/piScreen/cron.json
 fi
+if test -f "/etc/apache2/.piScreen_htpasswd"; then
+	echo "[Ignore] Weblogin Credentials alrady exists"
+else
+	echo -e "[INFO] Default Credentials for Weblogin are set!\nuser: pi\npw: piScreen"
+	cp ./defaults/.piScreen_htpasswd /etc/apache2/.piScreen_htpasswd
+	chown root:www-data /etc/apache2/.piScreen_htpasswd
+	chmod 640 /etc/apache2/.piScreen_htpasswd
+fi
 
 systemctl restart apache2
