@@ -1,4 +1,4 @@
-![piScreen](https://raw.githubusercontent.com/Jet0JLH/piScreen/main/piScreenBanner.jpg)
+![piScreen](https://raw.githubusercontent.com/Jet0JLH/piScreen/gh-pages/img/piScreenBanner.jpg)
 ## The control surface for info displays
 
   * Show a webpage on your info display
