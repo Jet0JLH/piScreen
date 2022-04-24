@@ -1,37 +1,14 @@
-## Welcome to GitHub Pages
+## Was ist piScreen?
+Das Projekt um aus einem einfachen TV und einem Raspberry Pi eine große Anzeigetafel zu machen.
+Verwende piScreen um Werbeanzeigen in Schaufenstern zu zeigen, Informationen für Mitarbeiter "auszuhängen" oder einen digitalen Stundenplan an Schulen zu verwirklichen.
 
-You can use the [editor on GitHub](https://github.com/Jet0JLH/piScreen/edit/gh-pages/index.md) to maintain and preview the content for your website in Markdown files.
+## Was wird für das Projekt benötigt?
+- Aktuell ist das Projekt sehr für Raspberrys mit einem Raspberry OS optimiert. Dies sollte daher momentan als Voraussetzung für das System selber gelten.
+- Ebenso sollte ein HDMI-CEC fähiger TV eingesetzt werden. Das Projekt selber läuft auch ohne CEC, aber dadurch sind Funktionen, die das Steuern des Displays anbelangt, nicht verfügbar. (Das Ansteuern von weitere Standards wird ggf. noch nachgereicht)
+- Eine Website die den gewünschten darzustellenden Inhalt bereitstellt und ggf. selber scrollt oder sich aktualisiert. piScreen selber kann aktuell nur den ganzen Browser neu laden und nicht scrollen. Diese Funktionen werden noch in Zukunft entwickelt werden.
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+## Wohin geht der Weg des Projektes noch?
+Hierzu ist es immer gut einen Blick auf die aktuelle [Roadmap](https://github.com/Jet0JLH/piScreen/wiki/Roadmap) zu werfen. Hier werden die Ideen und Pläne für das Projekt gesammelt.
 
-### Markdown
-
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
-
-```markdown
-Syntax highlighted code block
-
-# Header 1
-## Header 2
-### Header 3
-
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
-```
-
-For more details see [Basic writing and formatting syntax](https://docs.github.com/en/github/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/Jet0JLH/piScreen/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+## Wer steckt hinter dem Projekt?
+piScreen ist ein kleines Bastelprojekt von zwei befreundeten Hobbyentwicklern. Dementsprechend ist der Code weit entfernt von perfekt und wird aktuell nicht ständig weiterentwickelt. Wir haben aber vor immer wieder Funktionen nachzureichen und das Projekt somit am Laufen zu halten.
