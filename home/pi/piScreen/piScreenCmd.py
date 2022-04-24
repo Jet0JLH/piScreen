@@ -1,4 +1,5 @@
 #!/usr/bin/python
+from doctest import ELLIPSIS_MARKER
 import json
 import sys
 import os
@@ -41,8 +42,9 @@ def printHelp():
 	or you can set the password by file --change-pw <user> -f <file>
 	File will be erased after command!
 	Special characters in password are only in file mode available!
---check-update [NOT READY!!!]
-	Check for updates
+--check-update [--draft] [--pre-release]
+	Check for updates on Github
+	If you are using --draft or --pre-release parameter, then you check this channels too
 """)
 
 def loadSettings():
@@ -115,9 +117,58 @@ def getWebsite():
 	settingsJson = loadSettings()
 	print(settingsJson["settings"]["website"])
 
-def checkUpdates():
+def checkUpdates(draft,prerelease):
 	manifest = loadMainifest()
-	print(f"Current version {manifest['version']['major']}.{manifest['version']['minor']}.{manifest['version']['patch']}")
+	verbose and print(f"Current version {manifest['version']['major']}.{manifest['version']['minor']}.{manifest['version']['patch']}")
+	latestRelease = getLatestVersion(draft,prerelease)
+	if latestRelease:
+		releaseVersion = latestRelease["tag_name"][1:].split(".")
+		releaseVersion[0] = int(releaseVersion[0])
+		releaseVersion[1] = int(releaseVersion[1])
+		releaseVersion[2] = int(releaseVersion[2])
+		if (
+		manifest['version']['major'] < releaseVersion[0] or
+		(manifest['version']['major'] == releaseVersion[0] and manifest['version']['minor'] < releaseVersion[1]) or
+		(manifest['version']['major'] == releaseVersion[0] and manifest['version']['minor'] == releaseVersion[1] and manifest['version']['patch'] < releaseVersion[2])):
+			if verbose:
+				releaseChannel = "Stable"
+				if latestRelease["prerelease"]:
+					releaseChannel = "Pre-release"
+				if latestRelease["draft"]:
+					releaseChannel = "Draft"    
+				print(f"New version {releaseVersion[0]}.{releaseVersion[1]}.{releaseVersion[2]} ({releaseChannel}) available")
+			else:
+				print(f"{releaseVersion[0]}.{releaseVersion[1]}.{releaseVersion[2]}")
+				return latestRelease
+		else:
+			verbose and print("No new release available")
+			return	
+	else:
+		verbose and print("No new release available")
+		return	
+	
+
+def getLatestVersion(draft,prerelease):
+	import requests
+	releases = requests.get("https://api.github.com/repos/Jet0JLH/piScreen/releases")
+	if releases.status_code != 200:
+		verbose and print("Don't able to connect to Github API")
+		return
+	for release in releases.json():
+		isPrerelease = release["prerelease"]
+		isDraft = release["draft"]
+		if not isDraft and not isPrerelease:
+			#Stable Release
+			return release
+		elif isPrerelease and not isDraft:
+			#Prerelease
+			if prerelease:
+				return release
+		elif isDraft:
+			#Draft
+			if draft:
+				return release
+	return
 
 verbose = False
 sys.argv.pop(0) #Remove Path
@@ -179,4 +230,17 @@ for i,origItem in enumerate(sys.argv):
 		else:
 			verbose and print("Not enough arguments")
 	elif item == "--check-updates":
-		checkUpdates()
+		prerelease = False
+		draft = False
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 2].lower() == "--draft":
+				draft = True
+			elif sys.argv[i + 2].lower() == "--pre-release":
+				prerelease = True
+		if i + 1 < len(sys.argv):
+			if sys.argv[i + 1].lower() == "--draft":
+				draft = True
+			elif sys.argv[i + 1].lower() == "--pre-release":
+				prerelease = True
+		
+		checkUpdates(draft,prerelease)
