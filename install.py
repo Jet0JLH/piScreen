@@ -183,6 +183,7 @@ def configureCrontab():
             os.system(f"(crontab -l -u pi; echo '{crontabConfig}') | crontab -u pi -")
     else:
         os.system(f"echo '' | crontab -u pi -")
+        os.system(f"(crontab -l -u pi; echo '{crontabConfig}') | crontab -u pi -")
 
 def disableScreensaver():
     print("Disabling screensaver")
