@@ -36,4 +36,15 @@ setfacl -Rm u:pi:rwx ./srv/piScreen/
 git update-index --skip-worktree home/pi/piScreen/settings.json
 git update-index --skip-worktree home/pi/piScreen/cron.json
 
+if test -f "./home/pi/piScreen/settings.json"; then
+	echo "[Ignore] Settings already exists"
+else
+	cp ./defaults/default_settings.json ./home/pi/piScreen/settings.json
+fi
+if test -f "./home/pi/piScreen/cron.json"; then
+	echo "[Ignore] Cron already exists"
+else
+	cp ./defaults/default_cron.json ./home/pi/piScreen/cron.json
+fi
+
 systemctl restart apache2
