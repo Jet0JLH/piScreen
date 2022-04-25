@@ -14,3 +14,8 @@ Hierzu ist es immer gut einen Blick auf die aktuelle [Roadmap](https://github.co
 
 ## Wer steckt hinter dem Projekt?
 piScreen ist ein kleines Bastelprojekt von zwei befreundeten Hobbyentwicklern. Dementsprechend ist der Code weit entfernt von perfekt und wird aktuell nicht ständig weiterentwickelt. Wir haben aber vor immer wieder Funktionen nachzureichen und das Projekt somit am Laufen zu halten.
+
+## Wie wird piScreen installiert?
+1. Setze einen Raspberry Pi mit Raspberry OS (**Desktop Variante**, am besten 64 Bit) auf.
+2. Die install.zip aus dem aktuellsten [Release](https://github.com/Jet0JLH/piScreen/releases) herunterladen.
+3. Die install.zip nun auspacken und die darin befindliche install.py ausführen und der Installation folgen.
