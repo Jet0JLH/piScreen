@@ -1,5 +1,4 @@
 #!/usr/bin/python
-from doctest import ELLIPSIS_MARKER
 import json
 import sys
 import os
