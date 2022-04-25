@@ -45,6 +45,8 @@ def printHelp():
 --check-update [--draft] [--pre-release]
 	Check for updates on Github
 	If you are using --draft or --pre-release parameter, then you check this channels too
+--do-upgrade [--draft] [--pre-release]
+	Check for updates, download install files if release is available and do upgrade
 """)
 
 def loadSettings():
@@ -117,7 +119,7 @@ def getWebsite():
 	settingsJson = loadSettings()
 	print(settingsJson["settings"]["website"])
 
-def checkUpdates(draft,prerelease):
+def checkUpdate(draft,prerelease,silent):
 	manifest = loadMainifest()
 	verbose and print(f"Current version {manifest['version']['major']}.{manifest['version']['minor']}.{manifest['version']['patch']}")
 	latestRelease = getLatestVersion(draft,prerelease)
@@ -138,8 +140,8 @@ def checkUpdates(draft,prerelease):
 					releaseChannel = "Draft"    
 				print(f"New version {releaseVersion[0]}.{releaseVersion[1]}.{releaseVersion[2]} ({releaseChannel}) available")
 			else:
-				print(f"{releaseVersion[0]}.{releaseVersion[1]}.{releaseVersion[2]}")
-				return latestRelease
+				not silent and print(f"{releaseVersion[0]}.{releaseVersion[1]}.{releaseVersion[2]}")
+			return latestRelease
 		else:
 			verbose and print("No new release available")
 			return	
@@ -169,6 +171,46 @@ def getLatestVersion(draft,prerelease):
 			if draft:
 				return release
 	return
+
+def downloadUpdate(draft,prerelease):
+	import requests
+	verbose and print("Check for updates")
+	update = checkUpdate(draft,prerelease,True)
+	if update:
+		verbose and print("Download update")
+		updateVersion = update["tag_name"][1:].split(".")
+		downloadDir = f"/tmp/piScreen{updateVersion[0]}.{updateVersion[1]}.{updateVersion[2]}"
+		os.path.isdir(downloadDir) and rmDir(downloadDir)
+		os.mkdir(downloadDir)
+		downloadUrl = ""
+		for asset in update["assets"]:
+			if asset["name"] == "install.zip" and asset["state"] == "uploaded":
+				downloadUrl = asset["browser_download_url"]
+				break
+		if downloadUrl != "":
+			verbose and print(downloadUrl)
+			open(f"{downloadDir}/install.zip","wb").write(requests.get(downloadUrl).content)
+			verbose and print("Download finished")
+			verbose and print("Extract files")
+			import zipfile
+			with zipfile.ZipFile(f"{downloadDir}/install.zip", 'r') as installZip:
+				installZip.extractall(downloadDir)
+			verbose and print("Start installation")
+			#Do InstallStuff
+		else:
+			verbose and print("Something went wrong while downloading Updatefile")
+		verbose and print("Cleanup installation")
+		rmDir(downloadDir)
+	else:
+		verbose and print("Update not possible")
+
+def rmDir(path):
+	for root, dirs, files in os.walk(path, topdown=False):
+		for name in files:
+			os.remove(os.path.join(root, name))
+		for name in dirs:
+			os.rmdir(os.path.join(root, name))
+	os.rmdir(path)
 
 verbose = False
 sys.argv.pop(0) #Remove Path
@@ -229,7 +271,7 @@ for i,origItem in enumerate(sys.argv):
 				os.system(f"sudo htpasswd -c -b /etc/apache2/.piScreen_htpasswd '{sys.argv[i + 1]}' '{sys.argv[i + 2]}'")
 		else:
 			verbose and print("Not enough arguments")
-	elif item == "--check-updates":
+	elif item == "--check-update":
 		prerelease = False
 		draft = False
 		if i + 2 < len(sys.argv):
@@ -243,4 +285,18 @@ for i,origItem in enumerate(sys.argv):
 			elif sys.argv[i + 1].lower() == "--pre-release":
 				prerelease = True
 		
-		checkUpdates(draft,prerelease)
+		checkUpdate(draft,prerelease,False)
+	elif item == "--do-upgrade":
+		prerelease = False
+		draft = False
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 2].lower() == "--draft":
+				draft = True
+			elif sys.argv[i + 2].lower() == "--pre-release":
+				prerelease = True
+		if i + 1 < len(sys.argv):
+			if sys.argv[i + 1].lower() == "--draft":
+				draft = True
+			elif sys.argv[i + 1].lower() == "--pre-release":
+				prerelease = True
+		downloadUpdate(draft,prerelease)
