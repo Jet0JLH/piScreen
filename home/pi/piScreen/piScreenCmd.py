@@ -42,8 +42,14 @@ def printHelp():
 	Check for updates on Github
 	If you are using --draft or --pre-release parameter, then you check this channels too
 --do-upgrade [--draft] [--pre-release]
-	Check for updates, download install files if release is available and do upgrade
-""")
+	Check for updates, download install files if release is available and do upgrade.
+	Sudo rights are requiered!""")
+
+def checkForRootPrivileges():
+	if os.geteuid() != 0:
+		verbose and print("Please run this function with root privileges.")
+		return False
+	return True
 
 def loadSettings():
 	return json.load(open(f"{os.path.dirname(__file__)}/settings.json"))
@@ -288,6 +294,7 @@ for i,origItem in enumerate(sys.argv):
 		
 		checkUpdate(draft,prerelease,False)
 	elif item == "--do-upgrade":
+		not checkForRootPrivileges() and sys.exit(1)
 		prerelease = False
 		draft = False
 		if i + 2 < len(sys.argv):
