@@ -191,9 +191,11 @@ def downloadUpdate(draft,prerelease):
 			import zipfile
 			with zipfile.ZipFile(f"{downloadDir}/install.zip", 'r') as installZip:
 				installZip.extractall(downloadDir)
+			verbose and print("Set rights for installation routine")
+			os.system(f"chmod +x {downloadDir}/install/install.py")
 			verbose and print("Start installation")
 			import subprocess
-			updateProcess = subprocess.Popen(f"{downloadDir}/install/install.py --update")
+			updateProcess = subprocess.Popen(f"{downloadDir}/install/install.py", "--update")
 			updateProcess.wait()
 			updateProcess.returncode != 0 and verbose and print("Something went wrong during installation")
 		else:
