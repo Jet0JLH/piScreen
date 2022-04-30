@@ -108,6 +108,12 @@
 	<footer class='bg-dark text-center text-white mt-auto'>
 		<div class='text-center p-3'>
 			<a id='versionInfoBtn' class='text-white' href='#'>piScreen Info</a>
+			<?php 
+				$updateAvailable = shell_exec("$syscall --check-update");
+				if ($updateAvailable) {
+					echo "<br><span class='blink text-danger'>Update auf Version $updateAvailable vorhanden</span>";
+				}
+			?>
 		</div>
 	</footer>
 	<script src='/bootstrap/js/bootstrap.bundle.min.js'></script>
