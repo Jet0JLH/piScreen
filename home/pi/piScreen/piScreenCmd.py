@@ -1,8 +1,5 @@
 #!/usr/bin/python
-import json
-import sys
-import os
-import time
+import json, sys, os, time
 
 def printHelp():
 	print("This tool is desigend for syscalls.\nSo you have one script, which controlls everything and get every info about.")
@@ -195,7 +192,10 @@ def downloadUpdate(draft,prerelease):
 			with zipfile.ZipFile(f"{downloadDir}/install.zip", 'r') as installZip:
 				installZip.extractall(downloadDir)
 			verbose and print("Start installation")
-			#Do InstallStuff
+			import subprocess
+			updateProcess = subprocess.Popen(f"{downloadDir}/install/install.py --update")
+			updateProcess.wait()
+			updateProcess.returncode != 0 and verbose and print("Something went wrong during installation")
 		else:
 			verbose and print("Something went wrong while downloading Updatefile")
 		verbose and print("Cleanup installation")
