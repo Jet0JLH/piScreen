@@ -1,5 +1,5 @@
 #!/usr/bin/python
-import os, sys, shutil, json, subprocess, pwd
+import os, sys, shutil, json, subprocess, pwd, time
 
 isUpdate = False
 isInstall = not isUpdate
@@ -24,6 +24,8 @@ oldManifest = json.loads('{"application-name": "piScreen", "version": { "major":
 defaultSettingsPath = f"{os.path.dirname(__file__)}/defaults/default_settings.json"
 defaultCronPath = f"{os.path.dirname(__file__)}/defaults/default_cron.json"
 firefoxConfigPath = "/etc/firefox-esr/piScreen.js"
+continuousInstall = False
+standardWebPassword = "piScreen"
 
 def executeWait(command):
     args = command.split(" ")
@@ -65,30 +67,33 @@ def loadManifests():
     print(f"Old version: {oldManifest['version']['major']}.{oldManifest['version']['minor']}.{oldManifest['version']['patch']}")
     print(f"New version: {newManifest['version']['major']}.{newManifest['version']['minor']}.{newManifest['version']['patch']}")
     if oldManifest['version'] == newManifest['version']:
-        print("You have already installed the current version. Do you want to reinstall? [y/N]: ", end="")
-        if "y" != input().lower():
-            sys.exit()
+        if not continuousInstall:
+            print("You have already installed the current version. Do you want to reinstall? [y/N]: ", end="")
+            if "y" != input().lower():
+                exit("No need to reinstall.")
 
 def updateDependencies():
-    executeWait("apt update")
+    print("Updating dependencies")
+    executeWait("apt update -qq")
 
 def installDependencies():
-    executeWait("apt install firefox-esr unclutter apache2 php7.4 cec-utils -y")
+    print("Installing dependencies")
+    executeWait("apt install firefox-esr unclutter apache2 php7.4 cec-utils -y -qq")
 
 def removeFiles():
     print("Removing files")
     try: os.remove(sudoersFilePath)
     except: pass
-    executeWait("a2dissite piScreen")
+    executeWait("a2dissite -q piScreen")
     try: os.remove("/etc/apache2/sites-available/piScreen.conf")
     except: pass
     try: os.remove(htpasswdPath)
     except: pass
     try: os.remove("/home/pi/.config/autostart/piScreenCore.desktop")
     except: pass
-    try: executeWait("rm -R /home/pi/piScreen")
+    try: executeWait("rm -f -R /home/pi/piScreen")
     except: pass
-    try: executeWait("rm -R /srv/piScreen")
+    try: executeWait("rm -f -R /srv/piScreen")
     except: pass
     try: os.remove(firefoxConfigPath)
     except: pass
@@ -106,7 +111,7 @@ def copyFiles():
     createFolder("/home/pi/.config/autostart")
     shutil.copy(f"{os.path.dirname(__file__)}/home/pi/.config/autostart/piScreenCore.desktop", "/home/pi/.config/autostart/")
     executeWait(f"cp -R {os.path.dirname(__file__)}/home/pi/piScreen /home/pi/piScreen")
-    executeWait(f"rm -R {certPath}")
+    executeWait(f"rm -f -R {certPath}")
     createFolder(certPath)
     executeWait(f"cp -R {os.path.dirname(__file__)}/srv/piScreen/ /srv/piScreen/")
 
@@ -136,21 +141,25 @@ def configureWebserver():
     executeWait("systemctl stop apache2")
 
     if isInstall:
-        print("Type your username for weblogin: ", end="")
-        webusername = input()
-        returncode = executeWait(f"htpasswd -c {htpasswdPath} {webusername}")
-        while returncode != 0:
-            print("Passwords doesn't match!")
+        if continuousInstall:
+            print("Webinterface login: Username: 'pi' Password: 'piScreen'")
+            executeWait(f"htpasswd -c {htpasswdPath} {webusername} {standardWebPassword}")
+        else:
             print("Type your username for weblogin: ", end="")
             webusername = input()
             returncode = executeWait(f"htpasswd -c {htpasswdPath} {webusername}")
+            while returncode != 0:
+                print("Passwords doesn't match!")
+                print("Type your username for weblogin: ", end="")
+                webusername = input()
+                returncode = executeWait(f"htpasswd -c {htpasswdPath} {webusername}")
         os.system(f"chown root:www-data {htpasswdPath}")
         os.system(f"chmod 640 {htpasswdPath}")
 
-    executeWait("a2dissite 000-default")
-    executeWait("a2ensite piScreen")
-    executeWait("a2enmod rewrite")
-    executeWait("a2enmod ssl")
+    executeWait("a2dissite -q 000-default")
+    executeWait("a2ensite -q piScreen")
+    executeWait("a2enmod -q rewrite")
+    executeWait("a2enmod -q ssl")
     
     if not isUpdate:
         generateSslCertificates()
@@ -174,7 +183,7 @@ def configureSudoersFile():
 
     executeWait(f"chmod 0440 {sudoersFilePath}")
 
-    executeWait(f"visudo -cf {sudoersFilePath}")
+    #executeWait(f"visudo -cf {sudoersFilePath}")
 
 def configureCrontab():
     print("Configuring crontab")
@@ -220,10 +229,17 @@ def configureDesktop():
     os.system("export DISPLAY=:0;export XAUTHORITY=/home/pi/.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --reconfigure")
 
 def wannaReboot():
-    print("Please reboot your system to run piScreen properly. Reboot now? [Y/n]: ", end="")
-    inp = input()
-    if "y" == inp.lower() or "" == inp:
-        os.system("reboot now")
+    if continuousInstall:
+        print("Rebooting in 5 seconds...")
+        time.sleep(5)
+        os.system("reboot")
+    else:
+        print("Please reboot your system to run piScreen properly. Reboot now? [Y/n]: ", end="")
+        inp = input()
+        if "y" == inp.lower() or "" == inp:
+            print("Rebooting in 5 seconds...")
+            time.sleep(5)
+            os.system("reboot")
 
 def prepareUpdate():
     print("Prepare for update")
@@ -332,6 +348,8 @@ def printHelp():
 Parameters:
     --help
         Show this help
+    -y or --skip-user-input
+        Skips the user input, or fills it with standard values
     --install
         Installs {oldManifest['application-name']}
     --uninstall
@@ -341,20 +359,28 @@ Parameters:
 
 sys.argv.pop(0)
 
+if "-y" in sys.argv or "--skip-user-input" in sys.argv:
+    continuousInstall = True
+    try: sys.argv.remove("-y")
+    except ValueError: pass 
+    try: sys.argv.remove("--skip-user-input")
+    except ValueError: pass
+
+if "--help" in sys.argv:
+    printHelp()
+
 if len(sys.argv) == 0:
     install()
 
-elif len(sys.argv) == 1 and sys.argv[0].lower() == "--install":
-    install()
+if "--uninstall" in sys.argv:
+    uninstall()
 
-elif len(sys.argv) == 1 and sys.argv[0].lower() == "--update":
+if "--update" in sys.argv:
     update()
 
-elif len(sys.argv) == 1 and sys.argv[0].lower() == "--uninstall":
-    uninstall()
-    
-else:
-    printHelp()
+if "--install" in sys.argv:
+    install()
 
 
 print("Done.")
+sys.exit(os.EX_OK)
