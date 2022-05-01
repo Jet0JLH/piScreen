@@ -33,7 +33,7 @@
 	}
 	else {
 		header('Refresh:1; url=update.php?reload&count=0');
-		shell_exec("sudo $syscall -v --do-upgrade > $updateStatusFile &");
+		shell_exec("sudo $syscall -v --do-upgrade > $updateStatusFile 2>&1 &");
 	}
 ?>
 <script>window.scrollTo(0, document.body.scrollHeight);</script>
