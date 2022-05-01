@@ -111,7 +111,7 @@
 			<?php 
 				$updateAvailable = shell_exec("$syscall --check-update");
 				if ($updateAvailable) {
-					echo "<br><span class='blink text-danger'>Update auf Version $updateAvailable vorhanden</span>";
+					echo "<br><a href='#' id='updateAvaiableBtn' class='blink text-danger' onclick='updateAvaiable()'>Update auf Version $updateAvailable vorhanden</a>";
 				}
 			?>
 		</div>

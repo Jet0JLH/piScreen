@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python -u
 import json, sys, os, time
 
 def printHelp():
@@ -166,7 +166,7 @@ def getLatestVersion(draft,prerelease):
 			return release
 		elif isPrerelease and not isDraft:
 			#Prerelease
-			if prerelease:
+			if prerelease or draft:
 				return release
 		elif isDraft:
 			#Draft
@@ -208,6 +208,10 @@ def downloadUpdate(draft,prerelease):
 			verbose and print("Something went wrong while downloading Updatefile")
 		verbose and print("Cleanup installation")
 		rmDir(downloadDir)
+		try:
+			os.remove("/media/ramdisk/piScreenUpdateStatus.txt")
+		except:
+			print("Could not remove Updatestatus File")
 	else:
 		verbose and print("Update not possible")
 

@@ -176,6 +176,22 @@ versionInfoBtn.onclick = function() {
 	xmlhttp.send();
 }
 
+function updateAvaiable() {
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.onload = function() {
+		let jsonData = JSON.parse(xmlhttp.responseText);
+		modalTitle.innerHTML = "Update";
+		modalBody.innerHTML = `Aktuelle Version: ${jsonData.version.major}.${jsonData.version.minor}.${jsonData.version.patch}<br>Verfügbare Version: ${updateAvaiableBtn.innerText}<br>Soll das Update durchgeführt werden?<br>Ein Neustart des Systems ist anschließend notwendig!`;
+		modalAcceptBtn.innerHTML = "Update";
+		modalAcceptBtn.onclick = function() {
+			window.location.href = "update.php";
+		}
+		modal.toggle(1);
+	}
+	xmlhttp.open('GET', 'cmd.php?id=11', true);
+	xmlhttp.send();
+}
+
 function createScheduleEntryJSON(htmlElement) {
 	if (htmlElement.children[2].value == "") {
 		return null;
@@ -336,7 +352,6 @@ function loadSchedule() {
 }
 
 function sortSchedule() {
-	console.info("SortStart");
 	let found = true;
 	while (found) {
 		found = false;
