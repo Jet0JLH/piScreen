@@ -1,8 +1,5 @@
-#!/usr/bin/python
-import json
-import sys
-import os
-import time
+#!/usr/bin/python -u
+import json, sys, os, time
 
 def printHelp():
 	print("This tool is desigend for syscalls.\nSo you have one script, which controlls everything and get every info about.")
@@ -41,9 +38,18 @@ def printHelp():
 	or you can set the password by file --change-pw <user> -f <file>
 	File will be erased after command!
 	Special characters in password are only in file mode available!
---check-update [NOT READY!!!]
-	Check for updates
-""")
+--check-update [--draft] [--pre-release]
+	Check for updates on Github
+	If you are using --draft or --pre-release parameter, then you check this channels too
+--do-upgrade [--draft] [--pre-release]
+	Check for updates, download install files if release is available and do upgrade.
+	Sudo rights are requiered!""")
+
+def checkForRootPrivileges():
+	if os.geteuid() != 0:
+		verbose and print("Please run this function with root privileges.")
+		return False
+	return True
 
 def loadSettings():
 	return json.load(open(f"{os.path.dirname(__file__)}/settings.json"))
@@ -115,9 +121,107 @@ def getWebsite():
 	settingsJson = loadSettings()
 	print(settingsJson["settings"]["website"])
 
-def checkUpdates():
+def checkUpdate(draft,prerelease,silent):
 	manifest = loadMainifest()
-	print(f"Current version {manifest['version']['major']}.{manifest['version']['minor']}.{manifest['version']['patch']}")
+	verbose and print(f"Current version {manifest['version']['major']}.{manifest['version']['minor']}.{manifest['version']['patch']}")
+	latestRelease = getLatestVersion(draft,prerelease)
+	if latestRelease:
+		releaseVersion = latestRelease["tag_name"][1:].split(".")
+		releaseVersion[0] = int(releaseVersion[0])
+		releaseVersion[1] = int(releaseVersion[1])
+		releaseVersion[2] = int(releaseVersion[2])
+		if (
+		manifest['version']['major'] < releaseVersion[0] or
+		(manifest['version']['major'] == releaseVersion[0] and manifest['version']['minor'] < releaseVersion[1]) or
+		(manifest['version']['major'] == releaseVersion[0] and manifest['version']['minor'] == releaseVersion[1] and manifest['version']['patch'] < releaseVersion[2])):
+			if verbose:
+				releaseChannel = "Stable"
+				if latestRelease["prerelease"]:
+					releaseChannel = "Pre-release"
+				if latestRelease["draft"]:
+					releaseChannel = "Draft"    
+				print(f"New version {releaseVersion[0]}.{releaseVersion[1]}.{releaseVersion[2]} ({releaseChannel}) available")
+			else:
+				not silent and print(f"{releaseVersion[0]}.{releaseVersion[1]}.{releaseVersion[2]}")
+			return latestRelease
+		else:
+			verbose and print("No new release available")
+			return	
+	else:
+		verbose and print("No new release available")
+		return	
+	
+
+def getLatestVersion(draft,prerelease):
+	import requests
+	releases = requests.get("https://api.github.com/repos/Jet0JLH/piScreen/releases")
+	if releases.status_code != 200:
+		verbose and print("Don't able to connect to Github API")
+		return
+	for release in releases.json():
+		isPrerelease = release["prerelease"]
+		isDraft = release["draft"]
+		if not isDraft and not isPrerelease:
+			#Stable Release
+			return release
+		elif isPrerelease and not isDraft:
+			#Prerelease
+			if prerelease or draft:
+				return release
+		elif isDraft:
+			#Draft
+			if draft:
+				return release
+	return
+
+def downloadUpdate(draft,prerelease):
+	import requests
+	verbose and print("Check for updates")
+	update = checkUpdate(draft,prerelease,True)
+	if update:
+		verbose and print("Download update")
+		updateVersion = update["tag_name"][1:].split(".")
+		downloadDir = f"/tmp/piScreen{updateVersion[0]}.{updateVersion[1]}.{updateVersion[2]}"
+		os.path.isdir(downloadDir) and rmDir(downloadDir)
+		os.mkdir(downloadDir)
+		downloadUrl = ""
+		for asset in update["assets"]:
+			if asset["name"] == "install.zip" and asset["state"] == "uploaded":
+				downloadUrl = asset["browser_download_url"]
+				break
+		if downloadUrl != "":
+			verbose and print(downloadUrl)
+			open(f"{downloadDir}/install.zip","wb").write(requests.get(downloadUrl).content)
+			verbose and print("Download finished")
+			verbose and print("Extract files")
+			import zipfile
+			with zipfile.ZipFile(f"{downloadDir}/install.zip", 'r') as installZip:
+				installZip.extractall(downloadDir)
+			verbose and print("Set rights for installation routine")
+			os.system(f"chmod +x {downloadDir}/install/install.py")
+			verbose and print("Start installation")
+			import subprocess
+			updateProcess = subprocess.Popen([f"{downloadDir}/install/install.py", "--update", "-y"])
+			updateProcess.wait()
+			updateProcess.returncode != 0 and verbose and print("Something went wrong during installation")
+		else:
+			verbose and print("Something went wrong while downloading Updatefile")
+		verbose and print("Cleanup installation")
+		rmDir(downloadDir)
+		try:
+			os.remove("/media/ramdisk/piScreenUpdateStatus.txt")
+		except:
+			print("Could not remove Updatestatus File")
+	else:
+		verbose and print("Update not possible")
+
+def rmDir(path):
+	for root, dirs, files in os.walk(path, topdown=False):
+		for name in files:
+			os.remove(os.path.join(root, name))
+		for name in dirs:
+			os.rmdir(os.path.join(root, name))
+	os.rmdir(path)
 
 verbose = False
 sys.argv.pop(0) #Remove Path
@@ -178,5 +282,33 @@ for i,origItem in enumerate(sys.argv):
 				os.system(f"sudo htpasswd -c -b /etc/apache2/.piScreen_htpasswd '{sys.argv[i + 1]}' '{sys.argv[i + 2]}'")
 		else:
 			verbose and print("Not enough arguments")
-	elif item == "--check-updates":
-		checkUpdates()
+	elif item == "--check-update":
+		prerelease = False
+		draft = False
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 2].lower() == "--draft":
+				draft = True
+			elif sys.argv[i + 2].lower() == "--pre-release":
+				prerelease = True
+		if i + 1 < len(sys.argv):
+			if sys.argv[i + 1].lower() == "--draft":
+				draft = True
+			elif sys.argv[i + 1].lower() == "--pre-release":
+				prerelease = True
+		
+		checkUpdate(draft,prerelease,False)
+	elif item == "--do-upgrade":
+		not checkForRootPrivileges() and sys.exit(1)
+		prerelease = False
+		draft = False
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 2].lower() == "--draft":
+				draft = True
+			elif sys.argv[i + 2].lower() == "--pre-release":
+				prerelease = True
+		if i + 1 < len(sys.argv):
+			if sys.argv[i + 1].lower() == "--draft":
+				draft = True
+			elif sys.argv[i + 1].lower() == "--pre-release":
+				prerelease = True
+		downloadUpdate(draft,prerelease)

@@ -2,6 +2,9 @@
 	opacity: 0;
 	animation: fadeout 2s;
 }
+.blink {
+	animation: blinker 1s linear infinite;
+}
 
 
 @keyframes fadeout {
@@ -11,4 +14,9 @@
 @keyframes fadein {
 	from { opacity: 0; }
 	to   { opacity: 1; }
+}
+@keyframes blinker {
+	50% {
+		opacity: 0;
+	}
 }

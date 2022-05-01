@@ -54,11 +54,11 @@
 							</div>
 							<div class='form-floating mb-3'>
 								<input type='text' class='form-control' name='user' id='user'>
-								<label for='user'>Benutzername für weblogin</label>
+								<label for='user'>Benutzername für Weblogin</label>
 							</div>
 							<div class='form-floating mb-3'>
 								<input type='password' class='form-control' name='pwd' id='pwd'>
-								<label for='pwd'>Passwort für weblogin</label>
+								<label for='pwd'>Passwort für Weblogin</label>
 							</div>
 							<button type='submit' class='btn btn-primary'><i class='bi bi-save'></i> Speichern</button>
 						</form>
@@ -108,6 +108,12 @@
 	<footer class='bg-dark text-center text-white mt-auto'>
 		<div class='text-center p-3'>
 			<a id='versionInfoBtn' class='text-white' href='#'>piScreen Info</a>
+			<?php 
+				$updateAvailable = shell_exec("$syscall --check-update");
+				if ($updateAvailable) {
+					echo "<br><a href='#' id='updateAvaiableBtn' class='blink text-danger' onclick='updateAvaiable()'>Update auf Version $updateAvailable vorhanden</a>";
+				}
+			?>
 		</div>
 	</footer>
 	<script src='/bootstrap/js/bootstrap.bundle.min.js'></script>
