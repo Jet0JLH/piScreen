@@ -231,15 +231,13 @@ def configureDesktop():
 def wannaReboot():
     if continuousInstall:
         print("Rebooting in 5 seconds...")
-        time.sleep(5)
-        os.system("reboot")
+        os.system("sleep 5 && reboot &")
     else:
         print("Please reboot your system to run piScreen properly. Reboot now? [Y/n]: ", end="")
         inp = input()
         if "y" == inp.lower() or "" == inp:
             print("Rebooting in 5 seconds...")
-            time.sleep(5)
-            os.system("reboot")
+            os.system("sleep 5 && reboot &")
 
 def prepareUpdate():
     print("Prepare for update")
