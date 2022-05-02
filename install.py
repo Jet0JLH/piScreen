@@ -26,6 +26,8 @@ defaultCronPath = f"{os.path.dirname(__file__)}/defaults/default_cron.json"
 firefoxConfigPath = "/etc/firefox-esr/piScreen.js"
 continuousInstall = False
 standardWebPassword = "piScreen"
+standardWebUsername = "pi"
+skipDependencyUpdate = False
 
 def executeWait(command):
     args = command.split(" ")
@@ -143,7 +145,7 @@ def configureWebserver():
     if isInstall:
         if continuousInstall:
             print("Webinterface login: Username: 'pi' Password: 'piScreen'")
-            executeWait(f"htpasswd -c {htpasswdPath} {webusername} {standardWebPassword}")
+            executeWait(f"htpasswd -c -b {htpasswdPath} {standardWebUsername} {standardWebPassword}")
         else:
             print("Type your username for weblogin: ", end="")
             webusername = input()
@@ -292,9 +294,10 @@ def install():
 
     loadManifests()
 
-    updateDependencies()
+    if not skipDependencyUpdate:
+        updateDependencies()
 
-    installDependencies()
+        installDependencies()
 
     if isUpdate:
         prepareUpdate()
@@ -345,9 +348,11 @@ def printHelp():
     exit(f"""This script installs {oldManifest['application-name']}. 
 Parameters:
     --help
-        Show this help
+        Shows this help
     -y or --skip-user-input
         Skips the user input, or fills it with standard values
+    -s
+        Skips update and installation of dependencies
     --install
         Installs {oldManifest['application-name']}
     --uninstall
@@ -363,6 +368,11 @@ if "-y" in sys.argv or "--skip-user-input" in sys.argv:
     except ValueError: pass 
     try: sys.argv.remove("--skip-user-input")
     except ValueError: pass
+
+if "-s" in sys.argv:
+    skipDependencyUpdate = True
+    try: sys.argv.remove("-s")
+    except ValueError: pass 
 
 if "--help" in sys.argv:
     printHelp()
