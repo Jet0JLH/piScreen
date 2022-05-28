@@ -6,9 +6,8 @@ def printHelp():
 	print("""
 -h or --help
 	Show this information
--v or --verbose
+-v
 	Shows detailed informations during execution
-	It have to ste befor other parameters!
 --start-browser
 	Starts the Browser
 --stop-browser
@@ -228,14 +227,13 @@ sys.argv.pop(0) #Remove Path
 if len(sys.argv) < 1:
 	printHelp()
 
+if "-v" in sys.argv:
+    verbose = True
+    sys.argv.remove("-v")
+
 for i,origItem in enumerate(sys.argv):
 	item = origItem.lower()
 	if (
-		item == "-v" or
-		item == "--verbose"
-	):
-		verbose = True
-	elif (
 		item == "-h" or
 		item == "--help"
 	):
