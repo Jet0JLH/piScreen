@@ -32,8 +32,9 @@
 		echo("<h1>Das Update hat zu lange gebraucht. Etwas scheint schief gelaufen zu sein!</h1>");
 	}
 	else {
-		header('Refresh:1; url=update.php?reload&count=0');
-		shell_exec("sudo $syscall -v --do-upgrade > $updateStatusFile 2>&1 &");
+		#header('Refresh:1; url=update.php?reload&count=0');
+		#shell_exec("sudo $syscall -v --do-upgrade > $updateStatusFile 2>&1 &");
+		#Not operational. Function may be added later
 	}
 ?>
 <script>window.scrollTo(0, document.body.scrollHeight);</script>

@@ -179,10 +179,12 @@ versionInfoBtn.onclick = function() {
 function updateAvaiable() {
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.onload = function() {
+		modalAcceptBtn.hidden = true;
+		modalCancelBtn.hidden = true;
 		let jsonData = JSON.parse(xmlhttp.responseText);
-		modalTitle.innerHTML = "Update";
-		modalBody.innerHTML = `Aktuelle Version: ${jsonData.version.major}.${jsonData.version.minor}.${jsonData.version.patch}<br>Verfügbare Version: ${updateAvaiableBtn.innerText}<br>Soll das Update durchgeführt werden?<br>Ein Neustart des Systems ist anschließend notwendig!`;
-		modalAcceptBtn.innerHTML = "Update";
+		modalTitle.innerHTML = "Update verfügbar";
+		modalBody.innerHTML = `Aktuelle Version: ${jsonData.version.major}.${jsonData.version.minor}.${jsonData.version.patch}<br>Verfügbare Version: ${updateAvaiableBtn.innerText}<br><br><code>sudo /home/pi/piScreen/piScreenCmd.py --do-upgrade -v</code>`;
+		modalAcceptBtn.innerHTML = "OK";
 		modalAcceptBtn.onclick = function() {
 			window.location.href = "update.php";
 		}
