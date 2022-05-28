@@ -6,7 +6,7 @@
 parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$parent_path"
 
-rm /home/pi/piScreen/*
+rm -R /home/pi/piScreen
 rm -R /srv/piScreen
 rm /etc/apache2/sites-available/piScreen.conf
 rm /home/pi/.config/autostart/piScreenCore.desktop
