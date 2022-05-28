@@ -1,7 +1,6 @@
 #!/usr/bin/python
 
 import os, sys, subprocess
-from re import template
 
 operationPath = "/tmp/"
 destinationPath = operationPath + "install/"
