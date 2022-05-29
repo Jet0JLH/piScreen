@@ -42,7 +42,9 @@ def printHelp():
 	If you are using --draft or --pre-release parameter, then you check this channels too
 --do-upgrade [--draft] [--pre-release]
 	Check for updates, download install files if release is available and do upgrade.
-	Sudo rights are requiered!""")
+	Sudo rights are requiered!
+--create-screenshot
+	Creates a screenshot of the display content""")
 
 def checkForRootPrivileges():
 	if os.geteuid() != 0:
@@ -310,3 +312,10 @@ for i,origItem in enumerate(sys.argv):
 			elif sys.argv[i + 1].lower() == "--pre-release":
 				prerelease = True
 		downloadUpdate(draft,prerelease)
+	elif item == "--create-screenshot":
+		screenshotPath = "/media/ramdisk/piScreenScreenshot.png"
+		verbose and print("Create new screenshot")
+		os.system(f"export DISPLAY=:0 && scrot {screenshotPath}.png")
+		verbose and print("Remove old screenshot")
+		os.system(f"mv {screenshotPath}.png {screenshotPath}")
+		

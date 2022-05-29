@@ -37,6 +37,8 @@ scheduleExclusionTo = document.getElementById("scheduleExclusionTo");
 
 versionInfoBtn = document.getElementById("versionInfoBtn");
 
+screenshot = document.getElementById("screenshot"); 
+
 modal._element.addEventListener('hidden.bs.modal', function (event) {
     modalAcceptBtn.hidden = false;
 	modalCancelBtn.hidden = false;
@@ -311,6 +313,8 @@ window.onload = function(){
 		ramUsed.innerHTML = Number(jsonData.ramUsed / 1000 / 1000).toFixed(2) + " GiB";
 		ramTotal.innerHTML = Number(jsonData.ramTotal / 1000 / 1000).toFixed(2) + " GiB";
 		ramUsage.innerHTML = Number(jsonData.ramUsed/jsonData.ramTotal*100).toFixed(2);
+		screenshot.src = "piScreenScreenshot.png?t=" + new Date().getTime();
+		
 	}
 	xmlhttp.onerror = function() {
 		setToUnknownValues();

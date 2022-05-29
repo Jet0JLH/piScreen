@@ -13,7 +13,7 @@
 			<h1 class='display-5 fw-bold'><img src='/piScreen.svg' alt='Logo' width='128' height='128'> piScreen Adminpage</h1>
 			<p class='lead mb-4'>Hier lassen sich die wichtigsten piScreen Funktionen bequem administrieren</p>
 		</div>
-		<div class='container px-4'>
+		<div class='container gx-0'>
 			<div class='row gx-5'>
 				<div class='col col-sm-12 col-lg-6 p-2'>
 					<div class='p-3 rounded-3 border shadow'>
@@ -27,17 +27,21 @@
 							<i class='bi bi-memory'></i> RAM: <span id='ramUsed'>???</span> von <span id='ramTotal'>???</span> belegt (<span id='ramUsage'>???</span> %)
 						</p>
 					</div>
-				</div>
-				<div class='col col-sm-12 col-lg-6 p-2'>
-					<div class='p-3 rounded-3 border shadow'>
+					<div class='p-3 rounded-3 border shadow mt-3'>
 						<h1>Steuern</h1>
-						<button id='reloadBtn' type='button' class='btn btn-primary'><i class='bi bi-arrow-clockwise'></i> Browser neu starten</button>
-						<button id='restartBtn' type='button' class='btn btn-warning'><i class='bi bi-bootstrap-reboot'></i> Neustarten</button>
-						<button id='shutdownBtn' type='button' class='btn btn-danger'><i class='bi bi-power'></i> Herunterfahren</button>
+						<button id='reloadBtn' type='button' class='btn btn-primary my-1'><i class='bi bi-arrow-clockwise'></i> Browser neu starten</button>
+						<button id='restartBtn' type='button' class='btn btn-warning my-1'><i class='bi bi-bootstrap-reboot'></i> Neustarten</button>
+						<button id='shutdownBtn' type='button' class='btn btn-danger my-1'><i class='bi bi-power'></i> Herunterfahren</button>
 						<br><br>
 						<button id='displayOnBtn' type='button' class='btn btn-success'><span id='spinnerDisplayOn' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display'></i> Display an</button>
 						<button id='displayStandbyBtn' type='button' class='btn btn-danger'><span id='spinnerDisplayStandby' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display'></i> Display Standby</button>
 						<br>
+					</div>
+				</div>
+				<div class='col col-sm-12 col-lg-6 p-2'>
+					<div class='p-3 rounded-3 border shadow'>
+						<h1>Info</h1>
+						<img id='screenshot' src='piScreenScreenshot.png' style='max-width: 100%' class='border'></img>
 					</div>
 				</div>
 				<div class='col col-sm-12 col-lg-6 p-2'>

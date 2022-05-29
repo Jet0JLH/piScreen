@@ -10,6 +10,7 @@ processID=$(pgrep -x $browser)
 
 unclutter -idle 5 &
 ./piScreenDisplay.sh &
+./piScreenScreenshot.py &
 
 while [ true ] ; do
 	kill -0 $processID
