@@ -41,7 +41,10 @@
 				<div class='col col-sm-12 col-lg-6 p-2'>
 					<div class='p-3 rounded-3 border shadow'>
 						<h1>Info</h1>
-						<img id='screenshot' src='piScreenScreenshot.png' style='max-width: 100%' class='border'></img>
+						<figure class='figure mb-0'>
+							<img id='screenshot' src='piScreenScreenshot.png' style='max-width: 100%' class='border figure-img img-fluid'></img>
+							<figcaption id='screenshotTime' class='figure-caption'></figcaption>
+						</figure>
 					</div>
 				</div>
 				<div class='col col-sm-12 col-lg-6 p-2'>

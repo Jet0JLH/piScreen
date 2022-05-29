@@ -108,7 +108,10 @@ def getStatus():
 	upDays = int(upTime / 60 / 60 / 24)
 	displayState = open("/media/ramdisk/piScreenDisplay.txt","r").read().strip()
 	cpuTemp = round(psutil.sensors_temperatures()["cpu_thermal"][0].current * 1000)
-	return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s}}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,str(os.path.isfile("/media/ramdisk/piScreenDisplayStandby")).lower(),str(os.path.isfile("/media/ramdisk/piScreenDisplayOn")).lower())
+	screenshotTime = 0
+	if os.path.isfile("/media/ramdisk/piScreenScreenshot.png"):
+		screenshotTime = os.path.getctime("/media/ramdisk/piScreenScreenshot.png")
+	return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s},"screenshotTime":%d}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,str(os.path.isfile("/media/ramdisk/piScreenDisplayStandby")).lower(),str(os.path.isfile("/media/ramdisk/piScreenDisplayOn")).lower(),screenshotTime)
 
 def setWebsite(website):
 	verbose and print(f"Write {website} as website in settings.json")
