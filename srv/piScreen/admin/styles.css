@@ -1,10 +1,22 @@
 #idle {
+	height: 20px;
+	width: 20px;
+	vertical-align: super;
 	opacity: 0;
 	animation: fadeout 2s;
+}
+#notIdle {
+	height: 20px;
+	width: 20px;
+	vertical-align: super;
 }
 .blink {
 	animation: blinker 1s linear infinite;
 }
+.btn-icon-xxxl {
+	font-size: xxx-large;
+}
+
 
 
 @keyframes fadeout {
