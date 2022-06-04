@@ -33,21 +33,21 @@
 						<h1 class='pb-2'>Steuern</h1>
 						<div class='row'>
 							<div class='col-4'>
-								<button id='reloadBtn' type='button' class='btn btn-primary w-100 my-1'><i class='bi bi-arrow-clockwise btn-icon-xxxl'></i><br>Browser neu starten</button>
+								<button id='reloadBtn' type='button' class='btn btn-primary w-100 my-1'><i class='bi bi-arrow-clockwise btn-icon-xxl'></i><br>Browser neu starten</button>
 							</div>
 							<div class='col-4'>
-								<button id='restartBtn' type='button' class='btn btn-warning w-100 my-1'><i class='bi bi-bootstrap-reboot btn-icon-xxxl'></i><br>Neustarten</button>
+								<button id='restartBtn' type='button' class='btn btn-warning w-100 my-1'><i class='bi bi-bootstrap-reboot btn-icon-xxl'></i><br>Neustarten</button>
 							</div>
 							<div class='col-4'>
-								<button id='shutdownBtn' type='button' class='btn btn-danger w-100 my-1'><i class='bi bi-power btn-icon-xxxl'></i><br>Herunterfahren</button>
+								<button id='shutdownBtn' type='button' class='btn btn-danger w-100 my-1'><i class='bi bi-power btn-icon-xxl'></i><br>Runterfahren</button>
 							</div>
 						</div>
 						<div class='row'>
 							<div class='col-4'>
-								<button id='displayOnBtn' type='button' class='btn btn-success w-100 my-1'><span id='spinnerDisplayOn' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display btn-icon-xxxl'></i><br>Display an</button>
+								<button id='displayOnBtn' type='button' class='btn btn-success w-100 my-1'><span id='spinnerDisplayOn' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display btn-icon-xxl'></i><br>Display an</button>
 							</div>
 							<div class='col-4'>
-								<button id='displayStandbyBtn' type='button' class='btn btn-danger w-100 my-1'><span id='spinnerDisplayStandby' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display btn-icon-xxxl'></i><br>Display Standby</button>
+								<button id='displayStandbyBtn' type='button' class='btn btn-danger w-100 my-1'><span id='spinnerDisplayStandby' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display btn-icon-xxl'></i><br>Display Standby</button>
 							</div>
 						</div>
 					</div>
@@ -92,9 +92,8 @@
 							<div style='width:auto' class='form-check form-switch'>
 							<input id='scheduleExclusionActiv' class='form-check-input' type='checkbox' checked></input>
 						</div>
-						Unten stehenden Zeitplan ignorieren.
+						Unten stehenden Zeitplan ignorieren.<br>
 						<div style='display:flex;flex-flow:row wrap;align-items:center;'>
-							
 							Von <input id='scheduleExclusionFrom' style='display:inline;width:auto' type='date' class='form-control mx-2'></input> bis <input id='scheduleExclusionTo' style='display:inline;width:auto' type='date' class='form-control mx-2'></input></div>
 						</div>
 						<hr>
