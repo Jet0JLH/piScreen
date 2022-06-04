@@ -17,6 +17,7 @@ spinnerDisplayStandby = document.getElementById("spinnerDisplayStandby");
 //info
 screenshot = document.getElementById("screenshot");
 screenshotTime = document.getElementById("screenshotTime");
+versionInfoBtn = document.getElementById("versionInfoBtn");
 //schedule
 schedule = document.getElementById("schedule");
 newScheduleLine = document.getElementById("newScheduleLine");
@@ -212,6 +213,21 @@ displayStandbyBtn.onclick = function() {
 	spinnerDisplayStandby.hidden = false;
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.open('GET', 'cmd.php?id=8&cmd=0', true);
+	xmlhttp.send();
+}
+versionInfoBtn.onclick = function() {
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.onload = function() {
+		let jsonData = JSON.parse(xmlhttp.responseText);
+		showModal("piScreen Info",`
+		<h4>
+			<i class='bi bi-file-earmark-code'></i> piScreen Versionsinfo
+		</h4>
+		piScreen befindet sich auf Version ${jsonData.version.major}.${jsonData.version.minor}.${jsonData.version.patch}<br><br>
+		piScreen ist ein kleines Bastelprojekt von zwei befreundeten Hobbyentwicklern und ist <a href='https://github.com/Jet0JLH/piScreen' target='popup'>hier</a> zu finden.
+		`,false,true,"Danke für die Info 😊");
+	}
+	xmlhttp.open('GET', 'cmd.php?id=11', true);
 	xmlhttp.send();
 }
 newScheduleLine.onclick = function() {
