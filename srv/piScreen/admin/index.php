@@ -24,7 +24,8 @@
 							<i class='bi bi-clock-history'></i> Uptime: <span id='uptime'>???</span><br>
 							<i class='bi bi-cpu'></i> CPU Last: <span id='cpuLoad'>???</span> %<br>
 							<i class='bi bi-thermometer'></i> CPU Temperatur: <span id='cpuTemp'>???</span><br>
-							<i class='bi bi-memory'></i> RAM: <span id='ramUsed'>???</span> von <span id='ramTotal'>???</span> belegt (<span id='ramUsage'>???</span> %)
+							<i class='bi bi-memory'></i> RAM: <span id='ramUsed'>???</span> von <span id='ramTotal'>???</span> belegt (<span id='ramUsage'>???</span> %)<br>
+							<i class='bi bi-ethernet'></i> IP: <?php echo $_SERVER['SERVER_ADDR']; ?>
 						</p>
 					</div>
 				</div>
@@ -39,7 +40,7 @@
 								<button id='restartBtn' type='button' class='btn btn-warning w-100 my-1'><i class='bi bi-bootstrap-reboot btn-icon-xxl'></i><br>Neustarten</button>
 							</div>
 							<div class='col-4'>
-								<button id='shutdownBtn' type='button' class='btn btn-danger w-100 my-1'><i class='bi bi-power btn-icon-xxl'></i><br>Runterfahren</button>
+								<button id='shutdownBtn' type='button' class='btn btn-danger w-100 my-1'><i class='bi bi-power btn-icon-xxl'></i><br>Ausschalten</button>
 							</div>
 						</div>
 						<div class='row'>
