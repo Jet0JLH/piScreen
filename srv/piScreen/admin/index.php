@@ -11,6 +11,10 @@
 	<body>
 		<main class='container'>
 			<div class='px-4 py-5 my-2 text-center'>
+				<select id='language-select' class='form-select' aria-label='language'>
+					<option id='de.json' selected>🇩🇪 Deutsch</option>
+					<option id='en.json'>🇬🇧 English</option>
+				</select>
 				<h1 class='display-5 fw-bold'><img src='/piScreen.svg' alt='Logo' width='128' height='128'> piScreen Adminpage</h1>
 				<p class='lead mb-4'>Hier lassen sich die wichtigsten piScreen Funktionen bequem administrieren</p>
 			</div>

@@ -16,7 +16,11 @@
 .btn-icon-xxl {
 	font-size: xx-large;
 }
-
+#language-select {
+	width: auto;
+	position: absolute;
+	right: 70px;
+}
 
 
 @keyframes fadeout {
