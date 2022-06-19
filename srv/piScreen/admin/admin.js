@@ -71,13 +71,13 @@ function generateScheduleLine() {
 		<input class='form-check-input' type='checkbox' checked></input>
 	</div>
 	<select class='form-select mx-1' style='width:auto'>
-		<option selected value=0 lang-data='day1-short'>Mo</option>
-		<option value=1 lang-data='day2-short'>Di</option>
-		<option value=2 lang-data='day3-short'>Mi</option>
-		<option value=3 lang-data='day4-short'>Do</option>
-		<option value=4 lang-data='day5-short'>Fr</option>
-		<option value=5 lang-data='day6-short'>Sa</option>
-		<option value=6 lang-data='day7-short'>So</option>
+		<option selected value=0>${getLanguageAsText('day0-short')}</option>
+		<option value=1>${getLanguageAsText('day1-short')}</option>
+		<option value=2>${getLanguageAsText('day2-short')}</option>
+		<option value=3>${getLanguageAsText('day3-short')}</option>
+		<option value=4>${getLanguageAsText('day4-short')}</option>
+		<option value=5>${getLanguageAsText('day5-short')}</option>
+		<option value=6>${getLanguageAsText('day6-short')}</option>
 	</select>
 	<input class='form-control mx-1' style='width:auto' type='time'></input>
 	<select class='form-select mx-1' style='width:auto'>
@@ -129,7 +129,6 @@ function sortSchedule() {
 		}
 	}
 }
-		//showModal(getLanguageAsText('about-info'), getLanguageAsText('info-text') + ' ' + jsonData.version.major + '.' + jsonData.version.minor + '.' + jsonData.version.patch, false, true, 'WAS DA LOIS');
 function showModal(title="Titel", body="---", showClose=true, showCancel=true, cancelText=getLanguageAsText('cancel'), actionType=0, actionText=getLanguageAsText('ok'), actionFunction=function(){alert("Kein Befehl gesetzt")}) {
 	modalTitle.innerText = title;
 	modalBody.innerHTML = body;
@@ -229,7 +228,7 @@ versionInfoBtn.onclick = function() {
 }
 newScheduleLine.onclick = function() {
 	schedule.appendChild(generateScheduleLine());
-	setLanguageOnSite();
+	//setLanguageOnSite();
 }
 saveSchedule.onclick = function() {
 	let scheduleJSON = {
@@ -385,6 +384,10 @@ function setLanguageOnSite() {
 			element.textContent = languageStrings[currentLanguage][key];
 		}
 	});
+}
+
+function name(params) {
+	
 }
 
 function getDefaultLanguage() { //gets language from server settings.json

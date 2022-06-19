@@ -12,7 +12,7 @@
 		<main class='container'>
 			<div class='px-4 py-5 my-2 text-center'>
 				<select id='language-select' onchange='fetchLanguage(value)' class='form-select' aria-label='language'>
-					<option id='de' value='de' selected>🇩🇪 Deutsch</option>
+					<option id='de' value='de'>🇩🇪 Deutsch</option>
 					<option id='en' value='en'>🇬🇧 English</option>
 				</select>
 				<h1 class='display-5 fw-bold'><img src='/piScreen.svg' alt='Logo' width='128' height='128'> <span lang-data='big-header'>piScreen Adminpage</span></h1>
