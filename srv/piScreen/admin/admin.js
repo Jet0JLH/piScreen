@@ -71,21 +71,21 @@ function generateScheduleLine() {
 		<input class='form-check-input' type='checkbox' checked></input>
 	</div>
 	<select class='form-select mx-1' style='width:auto'>
-		<option selected value=0>${getLanguageAsText('day0-short')}</option>
-		<option value=1>${getLanguageAsText('day1-short')}</option>
-		<option value=2>${getLanguageAsText('day2-short')}</option>
-		<option value=3>${getLanguageAsText('day3-short')}</option>
-		<option value=4>${getLanguageAsText('day4-short')}</option>
-		<option value=5>${getLanguageAsText('day5-short')}</option>
-		<option value=6>${getLanguageAsText('day6-short')}</option>
+		<option selected value=0 lang-data='day0-short'>${getLanguageAsText('day0-short')}</option>
+		<option value=1 lang-data='day1-short'>${getLanguageAsText('day1-short')}</option>
+		<option value=2 lang-data='day2-short'>${getLanguageAsText('day2-short')}</option>
+		<option value=3 lang-data='day3-short'>${getLanguageAsText('day3-short')}</option>
+		<option value=4 lang-data='day4-short'>${getLanguageAsText('day4-short')}</option>
+		<option value=5 lang-data='day5-short'>${getLanguageAsText('day5-short')}</option>
+		<option value=6 lang-data='day6-short'>${getLanguageAsText('day6-short')}</option>
 	</select>
 	<input class='form-control mx-1' style='width:auto' type='time'></input>
 	<select class='form-select mx-1' style='width:auto'>
-		<option selected value=0 lang-data='display-off'>Bildschirm ausschalten</option>
-		<option value=1 lang-data='display-on'>Bildschirm einschalten</option>
-		<option value=2 lang-data='restart-browser'>Browser neustarten</option>
-		<option value=3 lang-data='restart-device'>Gerät neustarten</option>
-		<option value=4 lang-data='shutdown-device'>Gerät ausschalten</option>
+		<option selected value=0 lang-data='display-off'>${getLanguageAsText('display-off')}</option>
+		<option value=1 lang-data='display-on'>${getLanguageAsText('display-on')}</option>
+		<option value=2 lang-data='restart-browser'>${getLanguageAsText('restart-browser')}</option>
+		<option value=3 lang-data='restart-device'>${getLanguageAsText('restart-device')}</option>
+		<option value=4 lang-data='shutdown-device'>${getLanguageAsText('shutdown-device')}</option>
 	</select>
 	<button class='btn btn-danger mx-1' onclick="this.parentElement.remove();">
 		<i class='bi bi-trash'></i>
@@ -228,7 +228,6 @@ versionInfoBtn.onclick = function() {
 }
 newScheduleLine.onclick = function() {
 	schedule.appendChild(generateScheduleLine());
-	//setLanguageOnSite();
 }
 saveSchedule.onclick = function() {
 	let scheduleJSON = {
@@ -358,7 +357,7 @@ window.onload = function(){
 		xmlhttp.send();
 	},5000);
 
-	getDefaultLanguage()
+	getDefaultLanguage();
 
 	loadSchedule();
 }
@@ -384,10 +383,6 @@ function setLanguageOnSite() {
 			element.textContent = languageStrings[currentLanguage][key];
 		}
 	});
-}
-
-function name(params) {
-	
 }
 
 function getDefaultLanguage() { //gets language from server settings.json

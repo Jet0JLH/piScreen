@@ -271,6 +271,8 @@ def updateJson():
             defaultSettingsJson["settings"]["website"] = settingsJson["settings"]["website"]
         if "appearence" in settingsJson["settings"] and settingsJson["settings"]["appearence"] != "":
             defaultSettingsJson["settings"]["appearence"] = settingsJson["settings"]["appearence"]
+        if "language" in settingsJson["settings"] and settingsJson["settings"]["language"] != "":
+            defaultSettingsJson["settings"]["language"] = settingsJson["settings"]["language"]
         settingsFile = open(settingsJsonPath, "w")
         settingsFile.write(json.dumps(defaultSettingsJson,indent=4))
         settingsFile.close()
