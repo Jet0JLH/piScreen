@@ -29,23 +29,26 @@ modalTitle = modal._element.getElementsByClassName('modal-title')[0]
 modalBody = modal._element.getElementsByClassName('modal-body')[0]
 modalCancelBtn = document.getElementById("modal-cancelBtn");
 modalActionBtn = document.getElementById("modal-actionBtn");
+//language stuff
+var currentLanguage = null;
+var availableLanguages = [];
+var languageStrings = "";
 
 //general functions
 function addLeadingZero (input) {
 	intInput = parseInt(input);
 	if (intInput < 10) {
-		return "0"+intInput;
-	}
-	else {
+		return "0" + intInput;
+	} else {
 		return input;
 	}
 }
 function setToUnknownValues() {
 	active.classList = "badge rounded-pill bg-danger";
-	active.innerHTML = "Offline";
+	active.innerHTML = getLanguageAsText('offline');
 
 	displayState.classList = "badge rounded-pill bg-secondary";
-	displayState.innerHTML = "Unbekannt";
+	displayState.innerHTML = getLanguageAsText('unknown');
 	displayOnBtn.hidden = false;
 	displayStandbyBtn.hidden = false;
 	spinnerDisplayOn.hidden = true;
@@ -68,21 +71,21 @@ function generateScheduleLine() {
 		<input class='form-check-input' type='checkbox' checked></input>
 	</div>
 	<select class='form-select mx-1' style='width:auto'>
-		<option selected value=0 label='Mo'>Montag</option>
-		<option value=1 label='Di'>Dienstag</option>
-		<option value=2 label='Mi'>Mittwoch</option>
-		<option value=3 label='Do'>Donnerstag</option>
-		<option value=4 label='Fr'>Freitag</option>
-		<option value=5 label='Sa'>Samstag</option>
-		<option value=6 label='So'>Sonntag</option>
+		<option selected value=0 lang-data='day1-short'>Mo</option>
+		<option value=1 lang-data='day2-short'>Di</option>
+		<option value=2 lang-data='day3-short'>Mi</option>
+		<option value=3 lang-data='day4-short'>Do</option>
+		<option value=4 lang-data='day5-short'>Fr</option>
+		<option value=5 lang-data='day6-short'>Sa</option>
+		<option value=6 lang-data='day7-short'>So</option>
 	</select>
 	<input class='form-control mx-1' style='width:auto' type='time'></input>
 	<select class='form-select mx-1' style='width:auto'>
-		<option selected value=0>Bildschirm ausschalten</option>
-		<option value=1>Bildschirm einschalten</option>
-		<option value=2>Browser neustarten</option>
-		<option value=3>Gerät neustarten</option>
-		<option value=4>Gerät ausschalten</option>
+		<option selected value=0 lang-data='display-off'>Bildschirm ausschalten</option>
+		<option value=1 lang-data='display-on'>Bildschirm einschalten</option>
+		<option value=2 lang-data='restart-browser'>Browser neustarten</option>
+		<option value=3 lang-data='restart-device'>Gerät neustarten</option>
+		<option value=4 lang-data='shutdown-device'>Gerät ausschalten</option>
 	</select>
 	<button class='btn btn-danger mx-1' onclick="this.parentElement.remove();">
 		<i class='bi bi-trash'></i>
@@ -101,7 +104,7 @@ function loadSchedule() {
 		scheduleExclusionFrom.value = addLeadingZero(jsonScheduleData.scheduleExclude.from.year) + "-" + addLeadingZero(jsonScheduleData.scheduleExclude.from.month) + "-" + addLeadingZero(jsonScheduleData.scheduleExclude.from.day);
 		scheduleExclusionTo.value = addLeadingZero(jsonScheduleData.scheduleExclude.to.year) + "-" + addLeadingZero(jsonScheduleData.scheduleExclude.to.month) + "-" + addLeadingZero(jsonScheduleData.scheduleExclude.to.day);
 
-		for (let i=0;i<jsonScheduleData.schedule.length;i++) {
+		for (let i = 0; i < jsonScheduleData.schedule.length; i++) {
 			let scheduleEntry = generateScheduleLine();
 			scheduleEntry.children[0].children[0].checked = jsonScheduleData.schedule[i].enabled;
 			scheduleEntry.children[1].selectedIndex = jsonScheduleData.schedule[i].day;
@@ -118,7 +121,7 @@ function sortSchedule() {
 	let found = true;
 	while (found) {
 		found = false;
-		for (let i=1;i < schedule.childElementCount;i++) {
+		for (let i = 1; i < schedule.childElementCount; i++) {
 			if (schedule.children[i-1].children[1].selectedIndex > schedule.children[i].children[1].selectedIndex || (schedule.children[i-1].children[1].selectedIndex == schedule.children[i].children[1].selectedIndex && parseInt(schedule.children[i-1].children[2].value.replace(":","")) > parseInt(schedule.children[i].children[2].value.replace(":","")))) {
 				schedule.insertBefore(schedule.children[i], schedule.children[i-1]);
 				found = true;
@@ -126,7 +129,8 @@ function sortSchedule() {
 		}
 	}
 }
-function showModal(title="Titel",body="---",showClose=true,showCancel=true,cancelText="Abbruch",actionType=0,actionText="OK",actionFunction=function(){alert("Kein Befehl gesetzt")}) {
+		//showModal(getLanguageAsText('about-info'), getLanguageAsText('info-text') + ' ' + jsonData.version.major + '.' + jsonData.version.minor + '.' + jsonData.version.patch, false, true, 'WAS DA LOIS');
+function showModal(title="Titel", body="---", showClose=true, showCancel=true, cancelText=getLanguageAsText('cancel'), actionType=0, actionText=getLanguageAsText('ok'), actionFunction=function(){alert("Kein Befehl gesetzt")}) {
 	modalTitle.innerText = title;
 	modalBody.innerHTML = body;
 	modalCloseBtn.hidden = !showClose;
@@ -162,8 +166,7 @@ function showModal(title="Titel",body="---",showClose=true,showCancel=true,cance
 				break;
 		}
 		modalActionBtn.onclick = actionFunction;
-	}
-	else {
+	} else {
 		modalActionBtn.hidden = true;
 	}
 	modal.show();
@@ -188,7 +191,7 @@ document.getElementById("reloadBtn").onclick = function() {
 	xmlhttp.send();
 }
 document.getElementById("restartBtn").onclick = function() {
-	showModal("Achtung","Gerät wirklich neustarten?",undefined,undefined,undefined,4,"Neustart",actionFunction=function(){
+	showModal(getLanguageAsText('attention'), getLanguageAsText('reboot-really'), undefined, undefined, undefined, 4, getLanguageAsText('reboot-device'), actionFunction=function(){
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.open('GET', 'cmd.php?id=2', true);
 		xmlhttp.send();
@@ -196,7 +199,7 @@ document.getElementById("restartBtn").onclick = function() {
 	});
 }
 document.getElementById("shutdownBtn").onclick = function() {
-	showModal("Achtung","Gerät wirklich herunterfahren?<br>Das Gerät ist danach nicht mehr erreichbar und muss vom Strom getrennt werden, um wieder starten zu können!",undefined,undefined,undefined,4,"Herunterfahren",actionFunction=function(){
+	showModal(getLanguageAsText('attention'), getLanguageAsText('shutdown-really'), undefined, undefined, undefined, 4, getLanguageAsText('shutdown-device'), actionFunction=function(){
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.open('GET', 'cmd.php?id=3', true);
 		xmlhttp.send();
@@ -219,19 +222,14 @@ versionInfoBtn.onclick = function() {
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.onload = function() {
 		let jsonData = JSON.parse(xmlhttp.responseText);
-		showModal("piScreen Info",`
-		<h4>
-			<i class='bi bi-file-earmark-code'></i> piScreen Versionsinfo
-		</h4>
-		piScreen befindet sich auf Version ${jsonData.version.major}.${jsonData.version.minor}.${jsonData.version.patch}<br><br>
-		piScreen ist ein kleines Bastelprojekt von zwei befreundeten Hobbyentwicklern und ist <a href='https://github.com/Jet0JLH/piScreen' target='popup'>hier</a> zu finden.
-		`,false,true,"Danke für die Info 😊");
+		showModal(getLanguageAsText('about-info'), getLanguageAsText('info-text') + ' ' + jsonData.version.major + '.' + jsonData.version.minor + '.' + jsonData.version.patch, false, true, getLanguageAsText('alright'));
 	}
 	xmlhttp.open('GET', 'cmd.php?id=11', true);
 	xmlhttp.send();
 }
 newScheduleLine.onclick = function() {
 	schedule.appendChild(generateScheduleLine());
+	setLanguageOnSite();
 }
 saveSchedule.onclick = function() {
 	let scheduleJSON = {
@@ -275,18 +273,18 @@ saveSchedule.onclick = function() {
 			scheduleJSON.schedule.push(jsonEntry);
 		}
 		else {
-			showModal("Fehler","<b>Wurde nicht gespeichert!</b><br>Bei mindestens einem Eintrag fehlt die Uhrzeit!",false,true,"OK");
+			showModal(getLanguageAsText('error'),`<b>${getLanguageAsText('time-schedule-not-saved')}</b><br><span lang-data='err-time-missing'>Bei mindestens einem Eintrag fehlt die Uhrzeit!</span>`,false,true,getLanguageAsText('ok'));
 			return 1;
 		}
 	}
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.onload = function() {
 		if (xmlhttp.responseText=="true") {
-			showModal("Gespeichert","Einstellungen gespeichert",false,true,"OK");
+			showModal(getLanguageAsText('saved'),"<span lang-data='saved-settings'>Einstellungen gespeichert</span>",false,true,getLanguageAsText('ok'));
 			loadSchedule();
 		}
 		else {
-			showModal("Fehler","<b>Fehler beim Speichern</b>",false,true,"OK");
+			showModal(getLanguageAsText('error'),"<b lang-data='err-while-saving'>Fehler beim Speichern</b>",false,true,getLanguageAsText('ok'));
 		}
 	}
 	xmlhttp.open('POST', 'cmd.php?id=9', true);
@@ -306,34 +304,34 @@ window.onload = function(){
 		setTimeout(function(){idleBadge.id = "idle"},100);
 		jsonData = JSON.parse(xmlhttp.responseText);
 		active.classList = "badge rounded-pill bg-success";
-		active.innerHTML = "Online";
+		active.innerHTML = getLanguageAsText('online');
 		switch (jsonData.displayState) {
 			case "on":
 				displayState.classList = "badge rounded-pill bg-success";
-				displayState.innerHTML = "An";
+				displayState.innerHTML = getLanguageAsText('on');
 				displayOnBtn.parentElement.hidden = true;
 				displayStandbyBtn.parentElement.hidden = false; 
 				break;
 			case "off":
 				displayState.classList = "badge rounded-pill bg-danger";
-				displayState.innerHTML = "Aus";
+				displayState.innerHTML = getLanguageAsText('off');
 				displayOnBtn.parentElement.hidden = false;
 				displayStandbyBtn.parentElement.hidden = true; 
 				break;
 			case "standby":
 				displayState.classList = "badge rounded-pill bg-danger";
-				displayState.innerHTML = "Standby";
+				displayState.innerHTML = getLanguageAsText('standby');
 				displayOnBtn.parentElement.hidden = false;
 				displayStandbyBtn.parentElement.hidden = true; 
 				break;
 			default:
 				displayState.classList = "badge rounded-pill bg-secondary";
-				displayState.innerHTML = "Unbekannt";
+				displayState.innerHTML = getLanguageAsText('unknown');
 				displayOnBtn.parentElement.hidden = false;
 				displayStandbyBtn.parentElement.hidden = false; 
 				break;
 		}
-		uptime.innerHTML = jsonData.uptime.days + " Tage, " + jsonData.uptime.hours + " Stunden, " + jsonData.uptime.mins + " Minuten";
+		uptime.innerHTML = jsonData.uptime.days + " " + getLanguageAsText('days') + ", " + jsonData.uptime.hours + " " + getLanguageAsText('hours') + ", " + jsonData.uptime.mins + " " + getLanguageAsText('minutes');
 		cpuLoad.innerHTML = jsonData.cpuLoad;
 		cpuTemp.innerHTML = Math.round(jsonData.cpuTemp / 1000) + " °C";
 		ramUsed.innerHTML = Number(jsonData.ramUsed / 1000 / 1000).toFixed(2) + " GiB";
@@ -361,5 +359,60 @@ window.onload = function(){
 		xmlhttp.send();
 	},5000);
 
+	getDefaultLanguage()
+
 	loadSchedule();
+}
+
+function fetchLanguage(lang) {
+	currentLanguage = lang;
+	sendHTTPRequest('GET', 'cmd.php?id=13&lang=' + lang, true);
+	document.getElementById(lang).selected = true;
+    var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onload = function() {
+		languageStrings = JSON.parse(xmlhttp.responseText);
+		setLanguageOnSite();
+	}
+    xmlhttp.open('GET', '../languages/' + currentLanguage + '.json', true);
+    xmlhttp.send();
+}
+
+function setLanguageOnSite() {
+	var tags = document.querySelectorAll("[lang-data]"); //Replaces with strings in the right language
+	tags.forEach(element => {
+		let key = element.getAttribute('lang-data');
+		if (key) {
+			element.textContent = languageStrings[currentLanguage][key];
+		}
+	});
+}
+
+function getDefaultLanguage() { //gets language from server settings.json
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onload = function() {
+		let settingsJSON = JSON.parse(xmlhttp.responseText);
+		currentLanguage = settingsJSON.settings.language;
+	}
+	xmlhttp.onloadend = function () {
+		fetchLanguage(currentLanguage);
+	}
+    xmlhttp.open('GET', 'cmd.php?id=12', true);
+    xmlhttp.send();
+}
+
+function sendHTTPRequest(method, url, async) {
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onload = function() {
+		return xmlhttp.responseText;
+	}
+    xmlhttp.open(method, url, async);
+    xmlhttp.send();
+}
+
+function getLanguageAsText(langdata) { //Replaces strings in dynamic sections
+	try {
+		return languageStrings[currentLanguage][langdata];	
+	} catch (error) {
+		console.log(error);
+	}
 }

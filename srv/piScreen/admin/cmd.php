@@ -62,12 +62,17 @@
 		header("Content-Type: application/json; charset=UTF-8");
 		echo file_get_contents('/home/pi/piScreen/cron.json');
 	}
-	elseif ($_GET['id'] == 11) { //Get Mainifest
+	elseif ($_GET['id'] == 11) { //Get Manifest
 		header("Content-Type: application/json; charset=UTF-8");
 		echo file_get_contents('/home/pi/piScreen/manifest.json');
 	}
 	elseif ($_GET['id'] == 12) { //Get settings
 		header("Content-Type: application/json; charset=UTF-8");
 		echo file_get_contents('/home/pi/piScreen/settings.json');
+	}
+	elseif ($_GET['id'] == 13) { //Set language
+		$data = json_decode(file_get_contents('/home/pi/piScreen/settings.json'), true);
+		$data['settings']['language'] = $_GET['lang'];
+		file_put_contents('/home/pi/piScreen/settings.json', json_encode($data, JSON_PRETTY_PRINT));
 	}
 ?>
