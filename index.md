@@ -1,8 +1,8 @@
 ## Was ist piScreen?
 Das Projekt um aus einem einfachen TV und einem Raspberry Pi eine große Anzeigetafel zu machen.
 Verwende piScreen um Werbeanzeigen in Schaufenstern zu zeigen, Informationen für Mitarbeiter "auszuhängen" oder einen digitalen Stundenplan an Schulen zu verwirklichen.
-Zu steuern ist das Ganze per Passwort geschützter Weboberfläche. Kleiner Einblick gefällig? v1.2.0 sieht aktuell wie folgt aus:
-![piScreen](https://raw.githubusercontent.com/Jet0JLH/piScreen/gh-pages/img/piScreen_pageAdmin_v1.2.0.JPG)
+Zu steuern ist das Ganze per Passwort geschützter Weboberfläche. Kleiner Einblick gefällig? v1.3.0 sieht aktuell wie folgt aus:
+![piScreen](https://raw.githubusercontent.com/Jet0JLH/piScreen/gh-pages/img/piScreen_pageAdmin_v1.3.0.JPG)
 
 ## Was wird für das Projekt benötigt?
 - Aktuell ist das Projekt sehr für Raspberrys mit einem Raspberry OS optimiert. Dies sollte daher momentan als Voraussetzung für das System selber gelten.
