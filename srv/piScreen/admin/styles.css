@@ -16,10 +16,15 @@
 .btn-icon-xxl {
 	font-size: xx-large;
 }
-#language-select {
+#languageSelect {
 	width: auto;
 	position: absolute;
 	right: 70px;
+}
+#darkmodeBtn {
+	width: auto;
+	position: absolute;
+	right: 20px;
 }
 
 

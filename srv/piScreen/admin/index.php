@@ -2,7 +2,7 @@
 <!doctype html>
 <html>
 	<head>
-		<link href='/bootstrap/css/bootstrap.min.css' rel='stylesheet'>
+		<link id='theme' href='/bootstrap/css/bootstrap.min.css' rel='stylesheet'>
 		<link rel='stylesheet' href='/bootstrap/icons/bootstrap-icons.css'>
 		<link rel='stylesheet' href='styles.css'>
 		<link rel='icon' type='image/x-icon' href='/favicon.ico'>
@@ -11,7 +11,8 @@
 	<body>
 		<main class='container'>
 			<div class='px-4 py-5 my-2 text-center'>
-				<select id='language-select' onchange='fetchLanguage(value)' class='form-select' aria-label='language'>
+				<button class='btn btn-outline-secondary' id='darkmodeBtn'><i class='bi bi-moon'></i></button>
+				<select id='languageSelect' onchange='fetchLanguage(value)' class='form-select border-secondary' aria-label='language'>
 					<option id='de' value='de'>🇩🇪 Deutsch</option>
 					<option id='en' value='en'>🇬🇧 English</option>
 				</select>

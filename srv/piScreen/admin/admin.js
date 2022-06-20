@@ -1,4 +1,7 @@
 //necessary html elements
+darkmodeBtn = document.getElementById("darkmodeBtn");
+theme = document.getElementById("theme");
+languageSelect = document.getElementById("languageSelect");
 idleBadge = document.getElementById("idle");
 //status
 active = document.getElementById("active");
@@ -182,6 +185,26 @@ function createScheduleEntryJSON(htmlElement) {
 		"mode":parseInt(htmlElement.children[3].value)
 	}
 }
+function isInDarkmode() {
+	if (theme.href.includes("/bootstrap/css/bootstrap.min.css")) {
+		return false;
+	}
+	else {
+		return true;
+	}
+}
+function toggleDarkmode() {
+	if (isInDarkmode()) {
+		theme.href = "/bootstrap/css/bootstrap.min.css";
+		darkmodeBtn.classList.replace("btn-outline-light", "btn-outline-secondary");
+		languageSelect.classList.replace("border-light", "border-secondary");
+	}
+	else {
+		theme.href = "/bootstrap/darkpan-1.0.0/css/bootstrap.min.css";
+		darkmodeBtn.classList.replace("btn-outline-secondary", "btn-outline-light");
+		languageSelect.classList.replace("border-secondary", "border-light");
+	}
+}
 
 //click events
 document.getElementById("reloadBtn").onclick = function() {
@@ -288,6 +311,9 @@ saveSchedule.onclick = function() {
 	xmlhttp.open('POST', 'cmd.php?id=9', true);
 	xmlhttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
 	xmlhttp.send(JSON.stringify(scheduleJSON));
+}
+darkmodeBtn.onclick = function() {
+	toggleDarkmode();
 }
 
 
