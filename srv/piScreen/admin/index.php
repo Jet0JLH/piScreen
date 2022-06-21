@@ -66,14 +66,8 @@
 							<figcaption id='screenshotTime' class='figure-caption'></figcaption>
 						</figure>
 						<hr>
-						<div>
+						<div id='info-footer'>
 							<button id='versionInfoBtn' class='btn btn-primary' lang-data='about-info'>piScreen Info</button>
-							<?php 
-								$updateAvailable = shell_exec("$syscall --check-update");
-								if ($updateAvailable) {
-									echo "<button href='#' id='updateAvaiableBtn' class='btn btn-danger blink' style='float:right' onclick='showModal(`Update Info`,`Verbinde dich mit deinem Pi und setze folgenden Befehl ab, um das Update durchzuführen:<br><code>sudo /home/pi/piScreen/piScreenCmd.py --do-upgrade -v</code>`,true,true,cancelText=`Okay, ich habe verstanden`);'>Update auf Version $updateAvailable vorhanden</button>";
-								}
-							?>
 						</div>
 					</div>
 				</div>

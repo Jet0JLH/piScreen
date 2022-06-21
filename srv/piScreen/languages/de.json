@@ -65,6 +65,10 @@
         "cancel": "Abbrechen",
         "alright": "Danke für die Info 😊",
 
+        "update-button": "Update vorhanden auf Version ",
+        "update-info-header": "Information für das Update",
+        "update-info-text": "Verbinde dich mit deinem Pi und setze folgenden Befehl ab, um das Update durchzuführen:<br><code>sudo /home/pi/piScreen/piScreenCmd.py --do-upgrade -v</code>",
+
         "in-use": "belegt",
         "from": "von",
         "to": "bis"

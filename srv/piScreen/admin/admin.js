@@ -206,6 +206,35 @@ function toggleDarkmode() {
 	}
 }
 
+function checkForUpdate() {
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onload = function() {
+		if (xmlhttp.responseText != 'no-update') {
+			let nextVersion = xmlhttp.responseText;
+			let updateButton = document.createElement('button');
+			updateButton.id = 'updateAvaiableBtn';
+			updateButton.href = '#';
+			updateButton.className = 'btn btn-danger blink';
+			updateButton.style = 'float:right;';
+
+			let textSpan = document.createElement('span');
+			textSpan.setAttribute('lang-data', 'update-button');
+			textSpan.innerText = getLanguageAsText('update-button');
+			let versionSpan = document.createElement('span');
+			versionSpan.innerText = nextVersion;
+
+			updateButton.appendChild(textSpan);
+			updateButton.appendChild(versionSpan);
+			updateButton.onclick = function() {
+				showModal(getLanguageAsText('update-info-header'), getLanguageAsText('update-info-text'), false, true, getLanguageAsText('ok'));
+			}
+			document.getElementById('info-footer').appendChild(updateButton);
+		}
+	}
+	xmlhttp.open('GET', 'cmd.php?id=6', true);
+    xmlhttp.send();
+}
+
 //click events
 document.getElementById("reloadBtn").onclick = function() {
 	var xmlhttp = new XMLHttpRequest();
@@ -292,20 +321,19 @@ saveSchedule.onclick = function() {
 		let jsonEntry = createScheduleEntryJSON(schedule.children[i]);
 		if (jsonEntry != null) {
 			scheduleJSON.schedule.push(jsonEntry);
-		}
-		else {
-			showModal(getLanguageAsText('error'),`<b>${getLanguageAsText('time-schedule-not-saved')}</b><br><span lang-data='err-time-missing'>Bei mindestens einem Eintrag fehlt die Uhrzeit!</span>`,false,true,getLanguageAsText('ok'));
+		} else {
+			showModal(getLanguageAsText('error'),`<b>${getLanguageAsText('time-schedule-not-saved')}</b><br>${getLanguageAsText('err-time-missing')}`,false,true,getLanguageAsText('ok'));
 			return 1;
 		}
 	}
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.onload = function() {
 		if (xmlhttp.responseText=="true") {
-			showModal(getLanguageAsText('saved'),"<span lang-data='saved-settings'>Einstellungen gespeichert</span>",false,true,getLanguageAsText('ok'));
+			showModal(getLanguageAsText('saved'),getLanguageAsText('saved-settings'),false,true,getLanguageAsText('ok'));
 			loadSchedule();
 		}
 		else {
-			showModal(getLanguageAsText('error'),"<b lang-data='err-while-saving'>Fehler beim Speichern</b>",false,true,getLanguageAsText('ok'));
+			showModal(getLanguageAsText('error'),getLanguageAsText('err-while-saving'),false,true,getLanguageAsText('ok'));
 		}
 	}
 	xmlhttp.open('POST', 'cmd.php?id=9', true);
@@ -319,6 +347,7 @@ darkmodeBtn.onclick = function() {
 
 //main
 window.onload = function(){
+	getDefaultLanguage();
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.timeout = 1000;
 	xmlhttp.open('GET', 'cmd.php?id=5', true);
@@ -382,12 +411,10 @@ window.onload = function(){
 		xmlhttp.open('GET', 'cmd.php?id=5', true);
 		xmlhttp.send();
 	},5000);
-
-	getDefaultLanguage();
-
-	loadSchedule();
+	checkForUpdate();
 }
 
+// language functions
 function fetchLanguage(lang) {
 	currentLanguage = lang;
 	sendHTTPRequest('GET', 'cmd.php?id=13&lang=' + lang, true);
@@ -419,6 +446,7 @@ function getDefaultLanguage() { //gets language from server settings.json
 	}
 	xmlhttp.onloadend = function () {
 		fetchLanguage(currentLanguage);
+		loadSchedule();
 	}
     xmlhttp.open('GET', 'cmd.php?id=12', true);
     xmlhttp.send();

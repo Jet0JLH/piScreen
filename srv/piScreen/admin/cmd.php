@@ -34,9 +34,14 @@
 		header("Content-Type: application/json; charset=UTF-8");
 		echo shell_exec("$syscall --get-Status");
 	}
-	/*elseif ($_GET['id'] == 6) { //Old get Crons, ID can used for other command
-		
-	}*/
+	elseif ($_GET['id'] == 6) { //Check for update
+		$updateAvailable = shell_exec("$syscall --check-update");
+		if ($updateAvailable) {
+			echo $updateAvailable;
+		} else {
+			echo "no-update";
+		}
+	}
 	/*elseif ($_GET['id'] == 7) { //Old test, can Used for other command
 
 	}*/
