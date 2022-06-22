@@ -194,15 +194,18 @@ function isInDarkmode() {
 	}
 }
 function toggleDarkmode() {
-	if (isInDarkmode()) {
-		theme.href = "/bootstrap/css/bootstrap.min.css";
-		darkmodeBtn.classList.replace("btn-outline-light", "btn-outline-secondary");
-		languageSelect.classList.replace("border-light", "border-secondary");
-	}
-	else {
+	setDarkMode(!isInDarkmode());
+}
+function setDarkMode(dark) {
+	if (dark) {
 		theme.href = "/bootstrap/darkpan-1.0.0/css/bootstrap.min.css";
 		darkmodeBtn.classList.replace("btn-outline-secondary", "btn-outline-light");
 		languageSelect.classList.replace("border-secondary", "border-light");
+	}
+	else {
+		theme.href = "/bootstrap/css/bootstrap.min.css";
+		darkmodeBtn.classList.replace("btn-outline-light", "btn-outline-secondary");
+		languageSelect.classList.replace("border-light", "border-secondary");
 	}
 }
 
@@ -347,6 +350,12 @@ darkmodeBtn.onclick = function() {
 
 //main
 window.onload = function(){
+	if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+		setDarkMode(true);
+	}
+	else {
+		setDarkMode(false);
+	}
 	getDefaultLanguage();
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.timeout = 1000;
@@ -468,3 +477,11 @@ function getLanguageAsText(langdata) { //Replaces strings in dynamic sections
 		console.log(error);
 	}
 }
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+if (event.matches) {
+	setDarkMode(true);
+} else {
+	setDarkMode(false);
+}
+});
