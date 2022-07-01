@@ -15,6 +15,7 @@
 				<select id='languageSelect' onchange='fetchLanguage(value)' class='form-select border-secondary' aria-label='language'>
 					<option id='de' value='de'>🇩🇪 Deutsch</option>
 					<option id='en' value='en'>🇬🇧 English</option>
+					<option id='pl' value='pl'>🇵🇱 Polski</option>
 				</select>
 				<h1 class='display-5 fw-bold'><img src='/piScreen.svg' alt='Logo' width='128' height='128'> <span lang-data='big-header'>piScreen Adminpage</span></h1>
 				<p class='lead mb-4' lang-data='small-header'>Hier lassen sich die wichtigsten piScreen Funktionen bequem administrieren</p>
@@ -22,7 +23,7 @@
 			<div id='masonry' class='row' data-masonry='{&quot;percentPosition&quot;: true }'>
 				<div class='col-sm-12 col-lg-6 mb-4'>
 					<div class='card p-3 shadow'>
-						<div class='pb-3' style='float:left'><h1 style='display:inline'>Status</h1> <span id='idle' class='badge bg-success'>&nbsp;</span></div>
+						<div class='pb-3' style='float:left'><h1 style='display:inline' lang-data='status-tile-header'>Status</h1> <span id='idle' class='badge bg-success'>&nbsp;</span></div>
 						<p>
 							<i class='bi bi-activity'> </i><span lang-data='activity'>Aktivität</span>: <span id='active' class='badge rounded-pill bg-secondary'>???</span><br>
 							<i class='bi bi-display'> </i><span lang-data='display-status'>Display Status</span>: <span id='displayState' class='badge rounded-pill bg-secondary'>???</span><br>

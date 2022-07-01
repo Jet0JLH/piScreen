@@ -245,7 +245,7 @@ document.getElementById("reloadBtn").onclick = function() {
 	xmlhttp.send();
 }
 document.getElementById("restartBtn").onclick = function() {
-	showModal(getLanguageAsText('attention'), getLanguageAsText('reboot-really'), undefined, undefined, undefined, 4, getLanguageAsText('reboot-device'), actionFunction=function(){
+	showModal(getLanguageAsText('attention'), getLanguageAsText('reboot-really'), undefined, undefined, undefined, 4, getLanguageAsText('restart-device'), actionFunction=function(){
 		var xmlhttp = new XMLHttpRequest();
 		xmlhttp.open('GET', 'cmd.php?id=2', true);
 		xmlhttp.send();
