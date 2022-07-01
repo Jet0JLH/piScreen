@@ -111,9 +111,13 @@
 						<div id='schedule'>
 
 						</div>
-						<div class='btn-group pt-2' role='group' aria-label='Basic mixed styles example'>
+						<div class='btn-group pt-2' role='group'>
 							<button id='newScheduleLine' class='btn btn-secondary' lang-data='new-line'>Neue Zeile</button>
 							<button id='saveSchedule' class='btn btn-primary' lang-data='save'>Speichern</button>
+						</div>
+						<div class='btn-group pt-2' role='group'>
+							<button id='importSchedule' class='btn btn-outline-primary' onclick='importSchedule()' lang-data='import-schedule'>Import</button>
+							<button id='exportSchedule' class='btn btn-outline-primary' onclick='download("cmd.php?id=10","cron.json")' lang-data='export-schedule'>Export</button>
 						</div>
 					</div>
 				</div>

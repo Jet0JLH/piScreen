@@ -71,6 +71,9 @@
 
         "in-use": "zajęte",
         "from": "od",
-        "to": "do"
+        "to": "do",
+
+        "import-schedule": "Import",
+        "export-schedule": "Eksport"
     }
 }

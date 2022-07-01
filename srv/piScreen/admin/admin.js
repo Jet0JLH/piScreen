@@ -99,26 +99,29 @@ function generateScheduleLine() {
 function loadSchedule() {
 	let xmlhttp1 = new XMLHttpRequest();
 	xmlhttp1.onload = function() {
-		for (let i=schedule.childElementCount;i>0;i--) {
-			schedule.children[i-1].remove();
-		}
-		let jsonScheduleData = JSON.parse(xmlhttp1.responseText);
-		scheduleExclusionActiv.checked = jsonScheduleData.scheduleExclude.enabled;
-		scheduleExclusionFrom.value = addLeadingZero(jsonScheduleData.scheduleExclude.from.year) + "-" + addLeadingZero(jsonScheduleData.scheduleExclude.from.month) + "-" + addLeadingZero(jsonScheduleData.scheduleExclude.from.day);
-		scheduleExclusionTo.value = addLeadingZero(jsonScheduleData.scheduleExclude.to.year) + "-" + addLeadingZero(jsonScheduleData.scheduleExclude.to.month) + "-" + addLeadingZero(jsonScheduleData.scheduleExclude.to.day);
-
-		for (let i = 0; i < jsonScheduleData.schedule.length; i++) {
-			let scheduleEntry = generateScheduleLine();
-			scheduleEntry.children[0].children[0].checked = jsonScheduleData.schedule[i].enabled;
-			scheduleEntry.children[1].selectedIndex = jsonScheduleData.schedule[i].day;
-			scheduleEntry.children[2].value = addLeadingZero(jsonScheduleData.schedule[i].hour) + ":" + addLeadingZero(jsonScheduleData.schedule[i].minute);
-			scheduleEntry.children[3].selectedIndex = jsonScheduleData.schedule[i].mode;
-			schedule.appendChild(scheduleEntry);
-		}
-		sortSchedule();
+		loadScheduleJson(xmlhttp1.responseText);
 	}
 	xmlhttp1.open('GET', 'cmd.php?id=10', true);
 	xmlhttp1.send();
+}
+function loadScheduleJson(jsonString) {
+	for (let i=schedule.childElementCount;i>0;i--) {
+		schedule.children[i-1].remove();
+	}
+	let jsonScheduleData = JSON.parse(jsonString);
+	scheduleExclusionActiv.checked = jsonScheduleData.scheduleExclude.enabled;
+	scheduleExclusionFrom.value = addLeadingZero(jsonScheduleData.scheduleExclude.from.year) + "-" + addLeadingZero(jsonScheduleData.scheduleExclude.from.month) + "-" + addLeadingZero(jsonScheduleData.scheduleExclude.from.day);
+	scheduleExclusionTo.value = addLeadingZero(jsonScheduleData.scheduleExclude.to.year) + "-" + addLeadingZero(jsonScheduleData.scheduleExclude.to.month) + "-" + addLeadingZero(jsonScheduleData.scheduleExclude.to.day);
+
+	for (let i = 0; i < jsonScheduleData.schedule.length; i++) {
+		let scheduleEntry = generateScheduleLine();
+		scheduleEntry.children[0].children[0].checked = jsonScheduleData.schedule[i].enabled;
+		scheduleEntry.children[1].selectedIndex = jsonScheduleData.schedule[i].day;
+		scheduleEntry.children[2].value = addLeadingZero(jsonScheduleData.schedule[i].hour) + ":" + addLeadingZero(jsonScheduleData.schedule[i].minute);
+		scheduleEntry.children[3].selectedIndex = jsonScheduleData.schedule[i].mode;
+		schedule.appendChild(scheduleEntry);
+	}
+	sortSchedule();
 }
 function sortSchedule() {
 	let found = true;
@@ -236,6 +239,26 @@ function checkForUpdate() {
 	}
 	xmlhttp.open('GET', 'cmd.php?id=6', true);
     xmlhttp.send();
+}
+function download(path, filename) {
+	let anchor = document.createElement('a');
+	anchor.href = path;
+	anchor.download = filename;
+	anchor.click();
+};
+function importSchedule() {
+	let input = document.createElement('input');
+	input.type = 'file';
+	input.accept = 'application/JSON';
+	input.onchange = e => {
+		let file = e.target.files[0];
+		let reader = new FileReader();
+		reader.readAsText(file,'UTF-8');
+		reader.onload = readerEvent => {
+			loadScheduleJson(readerEvent.target.result);
+		}
+	}
+	input.click();
 }
 
 //click events

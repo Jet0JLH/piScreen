@@ -71,6 +71,9 @@
 
         "in-use": "in use",
         "from": "from",
-        "to": "until"
+        "to": "until",
+
+        "import-schedule": "Import",
+        "export-schedule": "Export"
     }
 }
