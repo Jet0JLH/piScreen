@@ -116,6 +116,7 @@ def copyFiles():
     executeWait(f"rm -f -R {certPath}")
     createFolder(certPath)
     executeWait(f"cp -R {os.path.dirname(__file__)}/srv/piScreen/ /srv/piScreen/")
+    executeWait(f"ln -s /media/ramdisk/piScreenScreenshot.png /srv/piScreen/admin/")
 
 def setPermissions():
     print("Setting permissions")
