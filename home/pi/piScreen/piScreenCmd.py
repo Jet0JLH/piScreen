@@ -318,7 +318,7 @@ for i,origItem in enumerate(sys.argv):
 	elif item == "--create-screenshot":
 		screenshotPath = "/media/ramdisk/piScreenScreenshot.png"
 		verbose and print("Create new screenshot")
-		os.system(f"export DISPLAY=:0 && scrot {screenshotPath}.png")
+		os.system(f"export DISPLAY=:0 && scrot -z {screenshotPath}.png")
 		verbose and print("Remove old screenshot")
 		os.system(f"mv {screenshotPath}.png {screenshotPath}")
 		
