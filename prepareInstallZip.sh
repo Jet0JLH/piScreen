@@ -15,4 +15,5 @@ cp -r piScreen/LICENSE install/
 rm -r install/home/pi/piScreen/certs
 rm -r install/home/pi/piScreen/settings.json
 rm -r install/home/pi/piScreen/cron.json
+rm -r install/srv/piScreen/admin/piScreenScreenshot.png
 zip -q -r ./install.zip ./install/
