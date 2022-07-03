@@ -51,6 +51,8 @@
         "day5-short": "Sat",
         "day6-short": "Sun",
         "new-line": "Add new line",
+        "import-schedule": "Import",
+        "export-schedule": "Export",
 
         "saved": "Saved",
         "saved-settings": "Settings saved",
@@ -71,9 +73,6 @@
 
         "in-use": "in use",
         "from": "from",
-        "to": "until",
-
-        "import-schedule": "Import",
-        "export-schedule": "Export"
+        "to": "until"
     }
 }

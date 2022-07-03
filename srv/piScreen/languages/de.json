@@ -51,6 +51,8 @@
         "day5-short": "Sa",
         "day6-short": "So",
         "new-line": "Neue Zeile",
+        "import-schedule": "Import",
+        "export-schedule": "Export",
 
         "saved": "Gespeichert",
         "saved-settings": "Einstellungen wurden gespeichert",
@@ -71,9 +73,6 @@
 
         "in-use": "belegt",
         "from": "von",
-        "to": "bis",
-
-        "import-schedule": "Import",
-        "export-schedule": "Export"
+        "to": "bis"
     }
 }

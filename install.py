@@ -246,46 +246,45 @@ def prepareUpdate():
     print("Prepare for update")
     global htpasswd, certcsr, certkey, certcrt
     htpasswd = readFile(htpasswdPath)
-    certcsr = readFile(f"{certPath}/server.crt")
-    certkey = readFile(f"{certPath}/server.csr")
-    certcrt = readFile(f"{certPath}/server.key")
+    certcrt = readFile(f"{certPath}/server.crt")
+    certcsr = readFile(f"{certPath}/server.csr")
+    certkey = readFile(f"{certPath}/server.key")
+
+    if os.path.isfile(settingsJsonPath):
+        settingsJson = json.load(open(settingsJsonPath))
+        global defaultSettingsJson = json.load(open(defaultSettingsPath))
+        if "website" in settingsJson["settings"] and settingsJson["settings"]["website"] != "":
+            defaultSettingsJson["settings"]["website"] = settingsJson["settings"]["website"]
+        if "language" in settingsJson["settings"] and settingsJson["settings"]["language"] != "":
+            defaultSettingsJson["settings"]["language"] = settingsJson["settings"]["language"]
+    else:
+        shutil.copyfile(defaultSettingsPath, settingsJsonPath)
+    if os.path.isfile(cronJsonPath):
+        #Do nothing. User has this file already
+        pass
+        cronJson = json.load(open(cronJsonPath))
+        defaultCronJson = json.load(open(defaultCronPath))
+    else:
+        shutil.copyfile(defaultCronPath,cronJsonPath)
 
 def postpareUpdate():
     print("Postpare update")
     appendToFile(htpasswdPath, htpasswd + "\n")
-    appendToFile(f"{certPath}/server.crt", certcsr)
-    appendToFile(f"{certPath}/server.csr", certkey)
-    appendToFile(f"{certPath}/server.key", certcrt)
+    appendToFile(f"{certPath}/server.crt", certcrt)
+    appendToFile(f"{certPath}/server.csr", certcsr)
+    appendToFile(f"{certPath}/server.key", certkey)
+
+    if os.path.isfile(settingsJsonPath):
+        settingsFile = open(settingsJsonPath, "w")
+        settingsFile.write(json.dumps(defaultSettingsJson, indent = 4))
+        settingsFile.close()
 
 def checkForPiUser():
     print("Checking for pi user")
     try:
         pwd.getpwnam('pi')
     except KeyError:
-        print('User pi does not exist. Script is working only with username pi.')
-
-def updateJson():
-    if os.path.isfile(settingsJsonPath):
-        settingsJson = json.load(open(settingsJsonPath))
-        defaultSettingsJson = json.load(open(defaultSettingsPath))
-        if "website" in settingsJson["settings"] and settingsJson["settings"]["website"] != "":
-            defaultSettingsJson["settings"]["website"] = settingsJson["settings"]["website"]
-        if "appearence" in settingsJson["settings"] and settingsJson["settings"]["appearence"] != "":
-            defaultSettingsJson["settings"]["appearence"] = settingsJson["settings"]["appearence"]
-        if "language" in settingsJson["settings"] and settingsJson["settings"]["language"] != "":
-            defaultSettingsJson["settings"]["language"] = settingsJson["settings"]["language"]
-        settingsFile = open(settingsJsonPath, "w")
-        settingsFile.write(json.dumps(defaultSettingsJson,indent=4))
-        settingsFile.close()
-    else:
-        shutil.copyfile(defaultSettingsPath,settingsJsonPath)
-    if os.path.isfile(cronJsonPath):
-        #Do nothing. User has this file allready
-        pass
-        cronJson = json.load(open(cronJsonPath))
-        defaultCronJson = json.load(open(defaultCronPath))
-    else:
-        shutil.copyfile(defaultCronPath,cronJsonPath)
+        exit('User pi does not exist. Script is working only with username pi.')
         
 def configureWebbrowser():
     shutil.copyfile(f"{os.path.dirname(__file__)}/defaults/firefoxPiScreen.js", firefoxConfigPath)
