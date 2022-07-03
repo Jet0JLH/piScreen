@@ -313,6 +313,9 @@ def install():
 
     if isUpdate:
         postpareUpdate()
+    else:
+        shutil.copyfile(defaultSettingsPath,settingsJsonPath)
+        shutil.copyfile(defaultCronPath,cronJsonPath)
 
     configureRamDisk()
 
