@@ -250,22 +250,22 @@ def prepareUpdate():
     certcsr = readFile(f"{certPath}/server.csr")
     certkey = readFile(f"{certPath}/server.key")
 
+    global defaultSettingsJson
     if os.path.isfile(settingsJsonPath):
         settingsJson = json.load(open(settingsJsonPath))
-        global defaultSettingsJson = json.load(open(defaultSettingsPath))
+        defaultSettingsJson = json.load(open(defaultSettingsPath))
         if "website" in settingsJson["settings"] and settingsJson["settings"]["website"] != "":
             defaultSettingsJson["settings"]["website"] = settingsJson["settings"]["website"]
         if "language" in settingsJson["settings"] and settingsJson["settings"]["language"] != "":
             defaultSettingsJson["settings"]["language"] = settingsJson["settings"]["language"]
     else:
-        shutil.copyfile(defaultSettingsPath, settingsJsonPath)
+        defaultSettingsJson = json.load(open(defaultSettingsPath))
+
+    global defaultCronJson
     if os.path.isfile(cronJsonPath):
-        #Do nothing. User has this file already
-        pass
-        cronJson = json.load(open(cronJsonPath))
-        defaultCronJson = json.load(open(defaultCronPath))
+        defaultCronJson = json.load(open(cronJsonPath))
     else:
-        shutil.copyfile(defaultCronPath,cronJsonPath)
+        defaultCronJson = json.load(open(defaultCronPath))
 
 def postpareUpdate():
     print("Postpare update")
@@ -274,11 +274,14 @@ def postpareUpdate():
     appendToFile(f"{certPath}/server.csr", certcsr)
     appendToFile(f"{certPath}/server.key", certkey)
 
-    if os.path.isfile(settingsJsonPath):
-        settingsFile = open(settingsJsonPath, "w")
-        settingsFile.write(json.dumps(defaultSettingsJson, indent = 4))
-        settingsFile.close()
-
+    settingsFile = open(settingsJsonPath, "w")
+    settingsFile.write(json.dumps(defaultSettingsJson, indent = 4))
+    settingsFile.close()
+    
+    cronFile = open(cronJsonPath, "w")
+    cronFile.write(json.dumps(defaultCronJson, indent = 4))
+    cronFile.close()
+    
 def checkForPiUser():
     print("Checking for pi user")
     try:
@@ -321,8 +324,6 @@ def install():
 
     configureCrontab()
     
-    updateJson()
-
     disableScreensaver()
 
     executeWait("systemctl restart apache2")
