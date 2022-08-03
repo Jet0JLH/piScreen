@@ -1,0 +1,83 @@
+body {
+    background-color: rgb(30, 30, 30);
+    color: rgb(200, 200, 200);
+    size: 100%;
+    font-family: "Roboto", sans-serif;
+    font-size: 1.1vw;
+    background-image: "/bootstrap/icons/calendar2-day.svg";
+}
+
+.grayed {
+    color: rgb(116, 116, 116);
+}
+
+.smallerText {
+    font-size: .8vw;
+    margin: 3px;
+}
+
+.footer {
+    position: absolute;
+    bottom: 0;
+    display: block;
+    margin-left: 10%;
+    margin-top: 0px;
+    margin-bottom: 2px;
+    margin-block: 0;
+    width: 80%;
+}
+
+.imgbox {
+    width: 50%;
+    height: 50%;
+    margin-top: 2%;
+    margin-bottom: 2%;
+}
+
+.importantInfo {
+    display: table;
+    padding: 2%;
+    margin: 3%;
+    background-color: rgba(117, 169, 40, .1);
+    color: white;
+    text-align: center;
+    font-size: 1.5vw;
+    border-radius: 2vw;
+    border: 1px solid rgba(117, 169, 40, .5);
+}
+
+.bigIcon {
+    font-size: 3vw;
+}
+
+.card {
+    display: block;
+    color: white;
+    padding: 10%;
+    margin: 2%;
+    text-align: center;
+    border-radius: 1vw;
+    height: 80%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+table {
+    width: 70%;
+    height: 10%;
+}
+
+tr {
+    height: 10%;
+}
+
+td {
+    width: 20%;
+    height: auto;
+}
+
+ul {
+    text-align: left;
+    list-style-type: circle;
+    padding-left: 15%;
+}

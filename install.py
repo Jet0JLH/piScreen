@@ -1,10 +1,13 @@
 #!/usr/bin/python
 import os, sys, shutil, json, subprocess, pwd, time
+from OpenSSL.crypto import FILETYPE_PEM, load_certificate
+from base64 import b64encode
 
 isUpdate = False
 isInstall = not isUpdate
 
-certPath = "/home/pi/piScreen/certs"
+certPath = "/home/pi/piScreen/certs/"
+certName = "server.crt"
 fstabPath = "/etc/fstab"
 fstabEntry = "tmpfs    /media/ramdisk  tmpfs   defaults,size=5%        0       0"
 sudoersFilePath = "/etc/sudoers.d/050_piScreen-nopasswd"
@@ -28,6 +31,10 @@ continuousInstall = False
 standardWebPassword = "piScreen"
 standardWebUsername = "pi"
 skipDependencyUpdate = False
+SHA256OID = "OID.2.16.840.1.101.3.4.2.1"
+SHA384OID = "OID.2.16.840.1.101.3.4.2.2"
+SHA512OID = "OID.2.16.840.1.101.3.4.2.3"
+
 
 def executeWait(command):
     args = command.split(" ")
@@ -35,25 +42,54 @@ def executeWait(command):
     process.wait()
     return process.returncode
 
+def executeWithReturnValue(command):
+    args = command.split(" ")
+    result = subprocess.run(args, capture_output=True)
+    return result.stdout.decode("utf-8")
+
 def appendToFile(filepath, text):
-    file = open(filepath, "a")
-    file.write(text)
-    file.close()
+    try:
+        file = open(filepath, "a")
+        file.write(text)
+    finally:
+        file.close()
 
 def readFile(filepath):
-    file = open(filepath, "r")
-    filestr = file.read()
-    file.close()
+    try:
+        file = open(filepath, "r")
+        filestr = file.read()
+    finally:
+        file.close()
     return filestr
+
+def removeFile(filePath):
+    if os.path.exists(filePath):
+        os.remove(filePath)
 
 def createFolder(folderpath):
     if not os.path.exists(folderpath):
         os.mkdir(folderpath)
 
 def writeNewFile(filepath, text):
-    file = open(filepath, "w")
-    file.write(text)
-    file.close()
+    try:
+        file = open(filepath, "w")
+        file.write(text)
+    finally:
+        file.close()
+
+def replaceInFile(toReplace, replacement, filePath):
+    fileText = readFile(filePath)
+    fileText = fileText.replace(toReplace, replacement)
+    removeFile(filePath)
+    writeNewFile(filePath, fileText)
+
+def replaceInfileWriteProtected(toReplace, replacement, filePath):
+    tempFileName = ".temp.txt"
+    writeNewFile(tempFileName, "")
+    shutil.copy(filePath, tempFileName)
+    replaceInFile(toReplace, replacement, tempFileName)
+    shutil.copy(tempFileName, filePath)
+    removeFile(tempFileName)
 
 def checkForRootPrivileges():
     if os.geteuid() != 0:
@@ -171,10 +207,10 @@ def configureWebserver():
 
 def generateSslCertificates():
     print("Generating SSL certificates")
-    executeWait(f"openssl genrsa -out {certPath}/server.key 4096")
-    executeWait(f"openssl req -new -key {certPath}/server.key -out {certPath}/server.csr -sha256 -subj /C=DE/ST=BW/L=/O=PiScreen/OU=/CN=")
-    executeWait(f"openssl req -noout -text -in {certPath}/server.csr")
-    executeWait(f"openssl x509 -req -days 3650 -in {certPath}/server.csr -signkey {certPath}/server.key -out {certPath}/server.crt")
+    executeWait(f"openssl genrsa -out {certPath}server.key 4096")
+    executeWait(f"openssl req -new -key {certPath}server.key -out {certPath}server.csr -sha256 -subj /C=DE/ST=BW/L=/O=PiScreen/OU=/CN=")
+    executeWait(f"openssl req -noout -text -in {certPath}server.csr")
+    executeWait(f"openssl x509 -req -days 3650 -in {certPath}server.csr -signkey {certPath}server.key -out {certPath}server.crt")
 
 def configureSudoersFile():
     print("Configuring sudoers file")
@@ -288,9 +324,79 @@ def checkForPiUser():
         pwd.getpwnam('pi')
     except KeyError:
         exit('User pi does not exist. Script is working only with username pi.')
-        
+
+def getSha():
+    output = str(executeWithReturnValue("timeout 1 openssl s_client -showcerts -connect piscreen:443")).split("\n")
+    for item in output:
+        if "Peer signing digest" in item:
+            return item.split(": ")[1].upper()
+    return "SHA256"
+
+def base64Append(data):
+    missing = len(data) % 4
+    if missing:
+        data += b'=' * (4 - missing)
+    return data
+
+def getEntry(hostname, port, certPath):
+    cert = load_certificate(FILETYPE_PEM, open(certPath).read())
+    sha = getSha()
+
+    returnVal = hostname
+    returnVal += ":"
+    returnVal += str(port)
+    returnVal += ":"
+    returnVal += "\t"
+    if sha == "SHA256":
+        returnVal += SHA256OID
+    elif sha == "SHA384":
+        returnVal += SHA384OID
+    elif sha == "SHA512":
+        returnVal += SHA512OID
+    else:
+        exit("Hashing not correct! Exiting...")
+    returnVal += "\t"
+
+    fingerprint = cert.digest(sha).decode('utf-8')
+    returnVal += fingerprint
+    returnVal += "\t"
+    returnVal += "MUT"
+    returnVal += "\t"
+
+    serialNumber = cert.get_serial_number()
+    serialNumber = serialNumber.to_bytes((serialNumber.bit_length() // 8) + 1, 'big')
+    issuer = cert.get_issuer().der()
+    cryptKey = b''.join([
+        (0).to_bytes(4, 'big'),
+        (0).to_bytes(4, 'big'),
+        len(serialNumber).to_bytes(4, 'big'),
+        len(issuer).to_bytes(4, 'big'),
+        serialNumber,
+        issuer
+    ])
+
+    cryptKey = base64Append(b64encode(cryptKey)).decode('utf-8')
+    returnVal += cryptKey
+    returnVal += "\n"
+
+    return returnVal
+
 def configureWebbrowser():
     shutil.copyfile(f"{os.path.dirname(__file__)}/defaults/firefoxPiScreen.js", firefoxConfigPath)
+    firefoxProfilePath = "/home/pi/.mozilla/firefox/"
+    certOverridePath = firefoxProfilePath
+    files = str(executeWithReturnValue(f"ls {firefoxProfilePath}")).split("\n")
+    for item in files:
+        if ".default-esr" in item:
+            certOverridePath += str(item)
+            certOverridePath += "/cert_override.txt"
+            break
+
+    entry = getEntry("localhost", 443, certPath + certName)
+    if entry not in open(certOverridePath).read():
+        appendToFile(certOverridePath, entry)
+    else:
+        print("Entry is already in cert_override.")
     
 def install():
     checkForRootPrivileges()
@@ -314,8 +420,8 @@ def install():
     if isUpdate:
         postpareUpdate()
     else:
-        shutil.copyfile(defaultSettingsPath,settingsJsonPath)
-        shutil.copyfile(defaultCronPath,cronJsonPath)
+        shutil.copyfile(defaultSettingsPath, settingsJsonPath)
+        shutil.copyfile(defaultCronPath, cronJsonPath)
 
     configureRamDisk()
 
@@ -336,7 +442,6 @@ def install():
     configureWebbrowser()
 
     wannaReboot()
-
 
 def update():
     global isUpdate

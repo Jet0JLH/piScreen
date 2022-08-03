@@ -63,7 +63,7 @@ def startBrowser():
 	settingsJson = loadSettings()
 	verbose and print("Start browser")
 	os.environ['DISPLAY'] = ":0"
-	os.system(f'firefox -kiosk -private-window {settingsJson["settings"]["website"]}')
+	os.system(f'firefox -kiosk {settingsJson["settings"]["website"]}')
 	verbose and print("Browser started")
 
 def stopBrowser():
