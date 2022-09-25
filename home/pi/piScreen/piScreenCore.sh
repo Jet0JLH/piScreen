@@ -3,6 +3,7 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$parent_path"
 touch /media/ramdisk/piScreenDisplayOn
 touch /media/ramdisk/piScreenDisplaySwitch
+touch /media/ramdisk/piScreenDisplayCEC
 sleep 10
 export DISPLAY=:0
 browser=firefox-esr
