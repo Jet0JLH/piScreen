@@ -22,7 +22,7 @@ elif [ -f $displayDDC ]; then
 		elif [ -f $displayStandby ] ; then
 			sudo rm $displayStandby
 			ddcutil setvcp D6 05
-			#Code 04 is for stanby, but not every system supports it, so we decided to use 05 instead
+			#Code 04 is for standby, but not every system supports it, so we decided to use 05 instead
 		elif [ -f $displayOff ] ; then 
 			sudo rm $displayOff
 			ddcutil setvcp D6 05

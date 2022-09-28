@@ -44,7 +44,12 @@ def printHelp():
 	Check for updates, download install files if release is available and do upgrade.
 	Sudo rights are requiered!
 --create-screenshot
-	Creates a screenshot of the display content""")
+	Creates a screenshot of the display content
+--set-display-protocol <protocol>
+	Set the display protocol to cec or ddc
+--get-display-protocol
+	Retuns the current activ display protocol. cec or ddc
+	""")
 
 def checkForRootPrivileges():
 	if os.geteuid() != 0:
@@ -124,6 +129,30 @@ def setWebsite(website):
 def getWebsite():
 	settingsJson = loadSettings()
 	print(settingsJson["settings"]["website"])
+
+def setDisplayProtocol(protocol):
+	protocol = protocol.lower()
+	if protocol == "cec" or protocol == "ddc":
+		verbose and print(f"Write {protocol} as display protocol in settings.json")
+		settingsJson = loadSettings()
+		settingsJson["settings"]["display"]["protocol"] = protocol
+		settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
+		settingsFile.write(json.dumps(settingsJson,indent=4))
+		settingsFile.close()
+		if os.path.exists("/media/ramdisk/piScreenDisplayCEC"):
+			os.remove("/media/ramdisk/piScreenDisplayCEC")
+		if os.path.exists("/media/ramdisk/piScreenDisplayDDC"):
+			os.remove("/media/ramdisk/piScreenDisplayDDC")
+		if protocol == "cec":
+			open("/media/ramdisk/piScreenDisplayCEC","w").close()
+		elif protocol == "ddc":
+			open("/media/ramdisk/piScreenDisplayDDC","w").close()
+	else:
+		verbose and print(f"{protocol} is no permitted protocol")
+
+def getDisplayProtocol():
+	settingsJson = loadSettings()
+	print(settingsJson["settings"]["display"]["protocol"])
 
 def checkUpdate(draft,prerelease,silent):
 	manifest = loadMainifest()
@@ -321,4 +350,10 @@ for i,origItem in enumerate(sys.argv):
 		os.system(f"export DISPLAY=:0 && scrot -z {screenshotPath}.png")
 		verbose and print("Remove old screenshot")
 		os.system(f"mv {screenshotPath}.png {screenshotPath}")
-		
+	elif item == "--set-display-protocol":
+		if i + 1 < len(sys.argv):
+			setDisplayProtocol(sys.argv[i + 1])
+		else:
+			verbose and print("Not enough arguments")
+	elif item == "--get-display-protocol":
+		getDisplayProtocol()

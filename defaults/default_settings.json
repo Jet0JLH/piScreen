@@ -1,6 +1,9 @@
 {
-"settings": {
-	"website": "https://piscreen/defaultPage/defaultPage.php",
-	"language": "de"
+	"settings": {
+		"website": "https://piscreen/defaultPage/defaultPage.php",
+		"language": "de",
+		"display": {
+			"protocol": "cec"
+		}
 	}
 }

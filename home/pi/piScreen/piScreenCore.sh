@@ -3,7 +3,15 @@ parent_path=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
 cd "$parent_path"
 touch /media/ramdisk/piScreenDisplayOn
 touch /media/ramdisk/piScreenDisplaySwitch
-touch /media/ramdisk/piScreenDisplayCEC
+rm /media/ramdisk/piScreenDisplayCEC
+rm /media/ramdisk/piScreenDisplayDDC
+
+protocol=$(cat /home/pi/piScreen/settings.json | grep '\"protocol\"\s*:\s*\"' | cut -f2- -d:)
+if [ $protocol == "\"cec\"" ] ; then
+	touch /media/ramdisk/piScreenDisplayCEC
+elif [ $protocol == "\"ddc\"" ] ; then
+	touch /media/ramdisk/piScreenDisplayDDC
+fi
 sleep 10
 export DISPLAY=:0
 browser=firefox-esr
