@@ -116,7 +116,7 @@ def updateDependencies():
 
 def installDependencies():
     print("Installing dependencies")
-    executeWait("apt install firefox-esr unclutter apache2 php7.4 cec-utils -y -qq")
+    executeWait("apt install firefox-esr unclutter apache2 php7.4 cec-utils ddcutil -y -qq")
 
 def removeFiles():
     print("Removing files")

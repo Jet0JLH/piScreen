@@ -442,7 +442,7 @@ window.onload = function(){
 	setInterval(function() {
 		xmlhttp.open('GET', 'cmd.php?id=5', true);
 		xmlhttp.send();
-	},5000);
+	},2000);
 	checkForUpdate();
 }
 
