@@ -81,3 +81,11 @@ ul {
     list-style-type: circle;
     padding-left: 15%;
 }
+
+a:link, a:visited {
+    color: white;
+}
+
+a:hover {
+    color: white;
+}

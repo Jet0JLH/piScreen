@@ -14,7 +14,7 @@
                 <h2>🥳 You successfully installed piScreen 🎉</h2>
             </div>
             <div class='importantInfo'>
-                <p style='margin: 0;'>To administer your screen, please visit <u>https://<?php echo gethostname();?>/admin</u></p>
+                <p style='margin: 0;'>To administer your screen, please visit <a href="https://<?php echo gethostname();?>/admin">https://<?php echo gethostname();?>/admin</a></p>
             </div>
             <div>
                 <table>
