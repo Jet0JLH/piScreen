@@ -380,6 +380,7 @@ window.onload = function(){
 		setDarkMode(false);
 	}
 	getDefaultLanguage();
+	st = null;
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.timeout = 1000;
 	xmlhttp.open('GET', 'cmd.php?id=5', true);
@@ -424,11 +425,12 @@ window.onload = function(){
 		ramUsage.innerHTML = Number(jsonData.ramUsed/jsonData.ramTotal*100).toFixed(2);
 		spinnerDisplayOn.hidden = !jsonData.display.onSet;
 		spinnerDisplayStandby.hidden = !jsonData.display.standbySet;
-		screenshot.src = "piScreenScreenshot.png?t=" + new Date().getTime();
-		st = new Date(jsonData.screenshotTime*1000);
-		screenshotTime.innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth()+1)}.${1900+st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
-
-		new Masonry(document.getElementById("masonry"))
+		if (new Date(jsonData.screenshotTime*1000) != st) {
+			st = new Date(jsonData.screenshotTime*1000);
+			screenshotTime.innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth()+1)}.${1900+st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
+			screenshot.src = "piScreenScreenshot.png?t=" + new Date().getTime();
+		}		
+		new Masonry(document.getElementById("masonry"));
 	}
 	xmlhttp.onerror = function() {
 		setToUnknownValues();
@@ -438,7 +440,7 @@ window.onload = function(){
 	}
 	xmlhttp.send();
 
-	//reload infos every 5 seconds
+	//reload infos every 2 seconds
 	setInterval(function() {
 		xmlhttp.open('GET', 'cmd.php?id=5', true);
 		xmlhttp.send();
