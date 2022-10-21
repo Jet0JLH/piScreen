@@ -217,6 +217,7 @@ class config():
 			self.conf = json.load(open(configFile))
 			threadLock.release()
 		except ValueError as err:
+			threadLock.release()
 			return False
 		return True
 
@@ -227,9 +228,14 @@ if not globalConf.loadConfig():
 	exit(1)
 loadCrons()
 loadTrigger()
-try:
-	while active:
+configModify = os.path.getmtime(configFile)
+while active:
+	try:
+		if configModify != os.path.getmtime(configFile):
+			if not globalConf.loadConfig():
+				print("Json File seems to be damaged")
+		configModify = os.path.getmtime(configFile)
 		active = os.path.exists(activePath)
-		time.sleep(1)
-except KeyboardInterrupt:
-	active = False
+		time.sleep(5)
+	except KeyboardInterrupt:
+		active = False
