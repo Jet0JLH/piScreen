@@ -24,22 +24,24 @@ def isFloat(s):
 		return False
 
 def firstRun():
-	if "cron" in globalConf.conf:
-		found = False
-		entries = []
-		for item in globalConf.conf["cron"]:
-			cronItem = cronEntry(item)
-			entries.append(cronItem)
-		count = 0
-		now = datetime.datetime.today()
-		oneMinute = datetime.timedelta(minutes=1)
-		#Check last Events in a Week
-		while count < 10080 and not found:
-			for item in entries:
-				if item.run(now):
-					found = True
-			now = now - oneMinute
-			count = count + 1
+	#Check if startup trigger (1) enabled
+	if not runTrigger(1):
+		if "cron" in globalConf.conf:
+			found = False
+			entries = []
+			for item in globalConf.conf["cron"]:
+				cronItem = cronEntry(item)
+				entries.append(cronItem)
+			count = 0
+			now = datetime.datetime.today()
+			oneMinute = datetime.timedelta(minutes=1)
+			#Check last Events in a Week
+			while count < 10080 and not found:
+				for item in entries:
+					if item.run(now):
+						found = True
+				now = now - oneMinute
+				count = count + 1
 
 def loadCrons():
 	cronThread = cron()
@@ -245,7 +247,30 @@ def runEvent(eventName):
 								if "parameter" in event:
 									commandInterpreter(event["command"],event["parameter"])
 								else:
-									commandInterpreter(event["command"],NULL)
+									commandInterpreter(event["command"],None)
+
+def runTrigger(trigger):
+	found = False
+	if not trigger: return False
+	if not isInt(trigger): return False
+	trigger = int(trigger)
+	if "trigger" in globalConf.conf:
+		for item in globalConf.conf["trigger"]:
+			if "enabled" in item:
+				if item["enabled"]:
+					found = True
+					if "trigger" in item:
+						if isInt(item["trigger"]):
+							if trigger == int(item["trigger"]):
+								if "command" in item:
+									if "parameter" in item:
+										commandInterpreter(item["command"],item["parameter"])
+									else:
+										commandInterpreter(item["command"],None)
+									if "event" in item:
+										runEvent(item["event"])
+	return found
+				
 
 def commandInterpreter(cmd, parameter):
 	if not cmd: return False
