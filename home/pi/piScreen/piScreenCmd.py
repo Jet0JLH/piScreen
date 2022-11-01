@@ -31,8 +31,6 @@ def printHelp():
 --screen-switch-input
 	Tells the display to change the input to our system,
 	if it is not currently displayed
---set-website <website>
-	Changes the website
 --get-website
 	Get the current in settings configured website
 --set-pw <user> [-f <file with password>] [password]

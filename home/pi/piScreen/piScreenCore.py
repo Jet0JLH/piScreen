@@ -56,6 +56,9 @@ os.system("killall -q unclutter")
 os.system("unclutter -idle 5 &")
 os.system("killall -q piScreenDisplay")
 os.system("./piScreenDisplay.sh &")
+os.system("killall -q piScreenSchedule")
+time.sleep(5)
+os.system("./piScreenSchedule.py &")
 
 print("Start observation")
 while True:

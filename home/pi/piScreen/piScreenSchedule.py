@@ -120,6 +120,7 @@ class cronEntry():
 			if not self.checkPattern(self.pattern[0], timestamp.minute):
 				return False		
 		commandInterpreter(self.command, self.parameter)
+		runEvent(self.event)
 		return True
 
 	def checkPattern(self, pattern, check):
@@ -232,10 +233,23 @@ class config():
 			return False
 		return True
 
+def runEvent(eventName):
+	if "events" in globalConf.conf:
+		for item in globalConf.conf["events"]:
+			if "name" in item:
+				#eventName is case sensitive
+				if item["name"] == eventName:
+					if "commands" in item:
+						for event in item["commands"]:
+							if "command" in event:
+								if "parameter" in event:
+									commandInterpreter(event["command"],event["parameter"])
+								else:
+									commandInterpreter(event["command"],NULL)
 
 def commandInterpreter(cmd, parameter):
-	if not isInt(cmd):
-		return False
+	if not cmd: return False
+	if not isInt(cmd): return False
 	cmd = int(cmd)
 	if cmd == 1:
 		#Sleep
@@ -275,7 +289,8 @@ def commandInterpreter(cmd, parameter):
 				os.system(syscall + " --set-display-protocol ddc")
 	elif cmd == 40:
 		#StartBrowser
-		pass
+		if parameter:
+			os.system(f"{syscall} --start-browser {parameter}")
 	elif cmd == 41:
 		#RestartBrowser
 		pass
@@ -284,7 +299,7 @@ def commandInterpreter(cmd, parameter):
 		pass
 	elif cmd == 43:
 		#CloseBrowser
-		pass
+		os.system(f"{syscall} --stop-browser")
 	
 
 #Main
