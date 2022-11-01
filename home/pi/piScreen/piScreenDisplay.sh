@@ -1,3 +1,4 @@
+#!/bin/bash
 ramdisk=/media/ramdisk/
 displayStatus=$ramdisk"piScreenDisplay.txt"
 displayOff=$ramdisk"piScreenDisplayOff"

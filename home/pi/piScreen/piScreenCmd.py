@@ -1,6 +1,10 @@
 #!/usr/bin/python -u
 import json, sys, os, time
 
+ramdisk = "/media/ramdisk/"
+piScreenModeFirefox = ramdisk + "piScreenModeFirefox"
+piScreenModeVLC = ramdisk + "piScreenModeVLC"
+
 def printHelp():
 	print("This tool is desigend for syscalls.\nSo you have one script, which controlls everything and get every info about.")
 	print("""
@@ -43,8 +47,6 @@ def printHelp():
 --do-upgrade [--draft] [--pre-release]
 	Check for updates, download install files if release is available and do upgrade.
 	Sudo rights are requiered!
---create-screenshot
-	Creates a screenshot of the display content
 --set-display-protocol <protocol>
 	Set the display protocol to cec or ddc
 --get-display-protocol
@@ -63,18 +65,22 @@ def loadSettings():
 def loadMainifest():
 	return json.load(open(f"{os.path.dirname(__file__)}/manifest.json"))
 
-def startBrowser():
-	verbose and print("Load settings")
-	settingsJson = loadSettings()
-	verbose and print("Start browser")
-	os.environ['DISPLAY'] = ":0"
-	os.popen(f'firefox -kiosk {settingsJson["settings"]["website"]}')
-	verbose and print("Browser started")
+def endAllModes():
+	if os.path.exists(piScreenModeFirefox):
+		os.remove(piScreenModeFirefox)
+		os.system("killall -q -SIGTERM firefox-esr")
+	if os.path.exists(piScreenModeVLC):
+		os.remove(piScreenModeVLC)
+	
+
+def startBrowser(parameter):
+	endAllModes()
+	f = open(piScreenModeFirefox,"w")
+	f.write(parameter)
+	f.close()
 
 def stopBrowser():
-	verbose and print("Stop browser")
-	os.system("kill $(pgrep -x firefox-esr)")
-	verbose and print("Browser stopped")
+	endAllModes()
 
 def reboot():
 	verbose and print("Reboot system")
@@ -83,22 +89,6 @@ def reboot():
 def shutdown():
 	verbose and print("Shutdown system")
 	os.system("poweroff")
-
-def screenOn():
-	verbose and print("Create file for turning on the screen")
-	open("/media/ramdisk/piScreenDisplayOn","w").close()
-
-def screenStandby():
-	verbose and print("Create file for turning screen to standby")
-	open("/media/ramdisk/piScreenDisplayStandby","w").close()
-
-def screenOff():
-	verbose and print("Create file for turning of the screen")
-	open("/media/ramdisk/piScreenDisplayOff","w").close()
-
-def screenSwitchInput():
-	verbose and print("Create file for switching display input")
-	open("/media/ramdisk/piScreenDisplaySwitch","w").close()
 
 def getStatus():
 	import psutil
@@ -118,41 +108,24 @@ def getStatus():
 		screenshotTime = os.path.getctime("/media/ramdisk/piScreenScreenshot.png")
 	return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s},"screenshotTime":%d}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,str(os.path.isfile("/media/ramdisk/piScreenDisplayStandby")).lower(),str(os.path.isfile("/media/ramdisk/piScreenDisplayOn")).lower(),screenshotTime)
 
-def setWebsite(website):
-	verbose and print(f"Write {website} as website in settings.json")
-	settingsJson = loadSettings()
-	settingsJson["settings"]["website"] = website
-	settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
-	settingsFile.write(json.dumps(settingsJson,indent=4))
-	settingsFile.close()
-	
 def getWebsite():
-	settingsJson = loadSettings()
-	print(settingsJson["settings"]["website"])
+	if os.path.exists(piScreenModeFirefox): print(open(piScreenModeFirefox,"r").read())
 
-def setDisplayProtocol(protocol):
-	protocol = protocol.lower()
-	if protocol == "cec" or protocol == "ddc":
-		verbose and print(f"Write {protocol} as display protocol in settings.json")
-		settingsJson = loadSettings()
-		settingsJson["settings"]["display"]["protocol"] = protocol
-		settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
-		settingsFile.write(json.dumps(settingsJson,indent=4))
-		settingsFile.close()
-		if os.path.exists("/media/ramdisk/piScreenDisplayCEC"):
-			os.remove("/media/ramdisk/piScreenDisplayCEC")
-		if os.path.exists("/media/ramdisk/piScreenDisplayDDC"):
-			os.remove("/media/ramdisk/piScreenDisplayDDC")
-		if protocol == "cec":
-			open("/media/ramdisk/piScreenDisplayCEC","w").close()
-		elif protocol == "ddc":
-			open("/media/ramdisk/piScreenDisplayDDC","w").close()
-	else:
-		verbose and print(f"{protocol} is no permitted protocol")
+def screenOn():
+	verbose and print("Create file for turning on the screen")
+	open("/media/ramdisk/piScreenDisplayOn","w").close()
 
-def getDisplayProtocol():
-	settingsJson = loadSettings()
-	print(settingsJson["settings"]["display"]["protocol"])
+def screenStandby():
+	verbose and print("Create file for turning screen to standby")
+	open("/media/ramdisk/piScreenDisplayStandby","w").close()
+
+def screenOff():
+	verbose and print("Create file for turning of the screen")
+	open("/media/ramdisk/piScreenDisplayOff","w").close()
+
+def screenSwitchInput():
+	verbose and print("Create file for switching display input")
+	open("/media/ramdisk/piScreenDisplaySwitch","w").close()
 
 def checkUpdate(draft,prerelease,silent):
 	manifest = loadMainifest()
@@ -256,6 +229,31 @@ def rmDir(path):
 			os.rmdir(os.path.join(root, name))
 	os.rmdir(path)
 
+def setDisplayProtocol(protocol):
+	protocol = protocol.lower()
+	if protocol == "cec" or protocol == "ddc":
+		verbose and print(f"Write {protocol} as display protocol in settings.json")
+		settingsJson = loadSettings()
+		settingsJson["settings"]["display"]["protocol"] = protocol
+		settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
+		settingsFile.write(json.dumps(settingsJson,indent=4))
+		settingsFile.close()
+		if os.path.exists("/media/ramdisk/piScreenDisplayCEC"):
+			os.remove("/media/ramdisk/piScreenDisplayCEC")
+		if os.path.exists("/media/ramdisk/piScreenDisplayDDC"):
+			os.remove("/media/ramdisk/piScreenDisplayDDC")
+		if protocol == "cec":
+			open("/media/ramdisk/piScreenDisplayCEC","w").close()
+		elif protocol == "ddc":
+			open("/media/ramdisk/piScreenDisplayDDC","w").close()
+	else:
+		verbose and print(f"{protocol} is no permitted protocol")
+
+def getDisplayProtocol():
+	settingsJson = loadSettings()
+	print(settingsJson["settings"]["display"]["protocol"])
+
+#Main
 verbose = False
 sys.argv.pop(0) #Remove Path
 if len(sys.argv) < 1:
@@ -265,7 +263,7 @@ if "-v" in sys.argv:
     verbose = True
     sys.argv.remove("-v")
 
-for i,origItem in enumerate(sys.argv):
+for i, origItem in enumerate(sys.argv):
 	item = origItem.lower()
 	if (
 		item == "-h" or
@@ -273,7 +271,10 @@ for i,origItem in enumerate(sys.argv):
 	):
 		printHelp()
 	elif item == "--start-browser":
-		startBrowser()
+		if i + 1 < len(sys.argv):
+			startBrowser(sys.argv[i + 1])
+		else:
+			print("Not enough arguments")
 	elif item == "--stop-browser":
 		stopBrowser()
 	elif item == "--reboot":
@@ -290,11 +291,6 @@ for i,origItem in enumerate(sys.argv):
 		screenOff()
 	elif item == "--screen-switch-input":
 		screenSwitchInput()
-	elif item == "--set-website":
-		if i + 1 < len(sys.argv):
-			setWebsite(sys.argv[i + 1])
-		else:
-			verbose and print("Not enough arguments")
 	elif item == "--get-website":
 		getWebsite()
 	elif item == "--set-pw":
@@ -344,12 +340,6 @@ for i,origItem in enumerate(sys.argv):
 			elif sys.argv[i + 1].lower() == "--pre-release":
 				prerelease = True
 		downloadUpdate(draft,prerelease)
-	elif item == "--create-screenshot":
-		screenshotPath = "/media/ramdisk/piScreenScreenshot.png"
-		verbose and print("Create new screenshot")
-		os.system(f"export DISPLAY=:0 && scrot -z {screenshotPath}.png")
-		verbose and print("Remove old screenshot")
-		os.system(f"mv {screenshotPath}.png {screenshotPath}")
 	elif item == "--set-display-protocol":
 		if i + 1 < len(sys.argv):
 			setDisplayProtocol(sys.argv[i + 1])
