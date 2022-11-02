@@ -1,6 +1,6 @@
 {
 	"settings": {
-		"website": "https://piscreen/defaultPage/defaultPage.php",
+		"website": "https://localhost/",
 		"language": "de",
 		"display": {
 			"protocol": "cec"

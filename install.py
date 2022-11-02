@@ -13,8 +13,6 @@ fstabEntry = "tmpfs    /media/ramdisk  tmpfs   defaults,size=5%        0       0
 sudoersFilePath = "/etc/sudoers.d/050_piScreen-nopasswd"
 cronJsonPath = "/home/pi/piScreen/cron.json"
 settingsJsonPath = "/home/pi/piScreen/settings.json"
-crontabPath = "/var/spool/cron/crontabs/pi"
-crontabConfig = "*\t*\t*\t*\t*\t/home/pi/piScreen/piScreenCron.py --check-now"
 htpasswdPath = "/etc/apache2/.piScreen_htpasswd"
 lxdePath = "/etc/xdg/lxsession/LXDE-pi/autostart"
 lxdeConfig1 = "@lxpanel --profile LXDE-pi"
@@ -224,15 +222,6 @@ def configureSudoersFile():
 
     #executeWait(f"visudo -cf {sudoersFilePath}")
 
-def configureCrontab():
-    print("Configuring crontab")
-    if os.path.isfile(crontabPath):
-        if crontabConfig not in readFile(crontabPath):
-            os.system(f"(crontab -l -u pi; echo '{crontabConfig}') | crontab -u pi -")
-    else:
-        os.system(f"echo '' | crontab -u pi -")
-        os.system(f"(crontab -l -u pi; echo '{crontabConfig}') | crontab -u pi -")
-
 def disableScreensaver():
     print("Disabling screensaver")
     lxdeConfig = readFile(lxdePath)
@@ -393,6 +382,8 @@ def configureWebbrowser():
             break
 
     entry = getEntry("localhost", 443, certPath + certName)
+    if not os.path.exists(certOverridePath):
+        writeNewFile(certOverridePath, "")
     if entry not in open(certOverridePath).read():
         appendToFile(certOverridePath, entry)
     else:
@@ -430,8 +421,6 @@ def install():
     setPermissions()
 
     configureSudoersFile()
-
-    configureCrontab()
     
     disableScreensaver()
 
