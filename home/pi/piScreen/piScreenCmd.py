@@ -16,6 +16,8 @@ def printHelp():
 	Starts the Browser
 --stop-browser
 	Stops the Browser
+--restart-browser
+	Restart the Browser when active
 --reboot
 	Restarts the Device
 --shutdown
@@ -79,6 +81,9 @@ def startBrowser(parameter):
 
 def stopBrowser():
 	endAllModes()
+
+def restartBrowser():
+	os.system("killall -q -SIGTERM firefox-esr")
 
 def reboot():
 	verbose and print("Reboot system")
@@ -273,6 +278,8 @@ for i, origItem in enumerate(sys.argv):
 			startBrowser(sys.argv[i + 1])
 		else:
 			print("Not enough arguments")
+	elif item == "--restart-browser":
+		restartBrowser()
 	elif item == "--stop-browser":
 		stopBrowser()
 	elif item == "--reboot":

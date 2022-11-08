@@ -1,7 +1,7 @@
 <?php
 	$syscall = '/home/pi/piScreen/piScreenCmd.py';
 	if($_GET['id'] == 1) { //Restart Browser
-		shell_exec("sudo $syscall --stop-browser");
+		shell_exec("sudo $syscall --restart-browser");
 		header('Location: .');
 	}
 	elseif ($_GET['id'] == 2) { //reboot
