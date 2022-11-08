@@ -1,5 +1,5 @@
 #!/usr/bin/python -u
-import json, sys, os, time
+import json, sys, os, time, subprocess
 
 ramdisk = "/media/ramdisk/"
 piScreenModeFirefox = ramdisk + "piScreenModeFirefox"
@@ -51,6 +51,15 @@ def printHelp():
 	Set the display protocol to cec or ddc
 --get-display-protocol
 	Retuns the current activ display protocol. cec or ddc
+--set-display-orientation [orientation ID]
+	0 = 0 degrees
+	1 = 90 degrees
+	2 = 180 degrees
+	3 = 270 degrees
+--get-display-orientation-settings
+	Returns the display orientation in settingsfile
+--get-display-orientation
+	Returns the display orientation from os
 	""")
 
 def checkForRootPrivileges():
@@ -352,3 +361,42 @@ for i, origItem in enumerate(sys.argv):
 			verbose and print("Not enough arguments")
 	elif item == "--get-display-protocol":
 		getDisplayProtocol()
+	elif item == "--set-display-orientation":
+		if i + 1 < len(sys.argv):
+			found = False
+			if sys.argv[i + 1] == "0":
+				found = True
+				os.system("DISPLAY=:0 xrandr --output HDMI-1 --rotate normal")
+			elif sys.argv[i + 1] == "1":
+				found = True
+				os.system("DISPLAY=:0 xrandr --output HDMI-1 --rotate right")
+			elif sys.argv[i + 1] == "2":
+				found = True
+				os.system("DISPLAY=:0 xrandr --output HDMI-1 --rotate inverted")
+			elif sys.argv[i + 1] == "3":
+				found = True
+				os.system("DISPLAY=:0 xrandr --output HDMI-1 --rotate left")
+			if found:
+				settingsJson = loadSettings()
+				settingsJson["settings"]["display"]["orientation"] = int(sys.argv[i + 1])
+				settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
+				settingsFile.write(json.dumps(settingsJson,indent=4))
+				settingsFile.close()
+		else:
+			verbose and print("Not enough arguments")
+	elif item == "--get-display-orientation-settings":
+		settingsJson = loadSettings()
+		try:
+			print(settingsJson["settings"]["display"]["orientation"])
+		except:
+			print(0)
+	elif item == "--get-display-orientation":
+		orientation = subprocess.check_output("DISPLAY=:0 xrandr --query --verbose | grep HDMI-1 | cut -d ' ' -f 6",shell=True).decode("utf-8").replace("\n","")
+		if orientation == "normal":
+			print(0)
+		elif orientation == "right":
+			print(1)
+		elif orientation == "inverted":
+			print(2)
+		elif orientation == "left":
+			print(3)

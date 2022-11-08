@@ -8,6 +8,13 @@ def checkIfProcessRunning(processName):
 			pass
 	return False
 
+def isInt(s):
+	try: 
+		int(s)
+		return True
+	except ValueError:
+		return False
+
 print("Start piScreen")
 print("Load modules")
 import os, json, sys, time, psutil
@@ -42,6 +49,11 @@ try:
 				os.system(f"touch {piScreenDisplayCEC}")
 			elif piScreenDisplayProtocol == "ddc":
 				os.system(f"touch {piScreenDisplayDDC}")
+		if "orientation" in conf["display"]:
+			if isInt(conf["display"]["orientation"]):
+				#Wait is not a good solution. But we need to wait for X-Server
+				time.sleep(10)
+				os.system(f"{piScreenSyscall} --set-display-orientation {conf['display']['orientation']}")
 
 except ValueError as err:
 	print(err)

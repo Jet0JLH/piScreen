@@ -1,9 +1,9 @@
 {
 	"settings": {
-		"website": "https://localhost/",
 		"language": "de",
 		"display": {
-			"protocol": "cec"
+			"protocol": "cec",
+			"orientation": 0
 		}
 	}
 }
