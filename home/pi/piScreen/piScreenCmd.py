@@ -1,5 +1,5 @@
 #!/usr/bin/python -u
-import json, sys, os, time, subprocess
+import json, sys, os, time
 
 ramdisk = "/media/ramdisk/"
 piScreenModeFirefox = ramdisk + "piScreenModeFirefox"
@@ -51,11 +51,12 @@ def printHelp():
 	Set the display protocol to cec or ddc
 --get-display-protocol
 	Retuns the current activ display protocol. cec or ddc
---set-display-orientation [orientation ID]
+--set-display-orientation [--save-settings] <orientation ID>
 	0 = 0 degrees
 	1 = 90 degrees
 	2 = 180 degrees
 	3 = 270 degrees
+	If --save-settings is set, the orientation will be permanent
 --get-display-orientation-settings
 	Returns the display orientation in settingsfile
 --get-display-orientation
@@ -265,6 +266,19 @@ def getDisplayProtocol():
 	settingsJson = loadSettings()
 	print(settingsJson["settings"]["display"]["protocol"])
 
+def getDisplayOrientation():
+	import subprocess
+	orientation = subprocess.check_output("DISPLAY=:0 xrandr --query --verbose | grep HDMI-1 | cut -d ' ' -f 6",shell=True).decode("utf-8").replace("\n","")
+	if orientation == "normal":
+		return 0
+	elif orientation == "right":
+		return 1
+	elif orientation == "inverted":
+		return 2
+	elif orientation == "left":
+		return 3
+	return None
+
 #Main
 verbose = False
 sys.argv.pop(0) #Remove Path
@@ -362,26 +376,35 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--get-display-protocol":
 		getDisplayProtocol()
 	elif item == "--set-display-orientation":
+		saveSettings = False
+		if "--save-settings" in sys.argv:
+			saveSettings = True
+			sys.argv.remove("--save-settings")
 		if i + 1 < len(sys.argv):
 			found = False
 			if sys.argv[i + 1] == "0":
 				found = True
 				os.system("DISPLAY=:0 xrandr --output HDMI-1 --rotate normal")
+				verbose and print("Change displayorientation to normal")
 			elif sys.argv[i + 1] == "1":
 				found = True
 				os.system("DISPLAY=:0 xrandr --output HDMI-1 --rotate right")
+				verbose and print("Change displayorientation to right")
 			elif sys.argv[i + 1] == "2":
 				found = True
 				os.system("DISPLAY=:0 xrandr --output HDMI-1 --rotate inverted")
+				verbose and print("Change displayorientation to inverted")
 			elif sys.argv[i + 1] == "3":
 				found = True
 				os.system("DISPLAY=:0 xrandr --output HDMI-1 --rotate left")
-			if found:
+				verbose and print("Change displayorientation to left")
+			if found and saveSettings:
 				settingsJson = loadSettings()
 				settingsJson["settings"]["display"]["orientation"] = int(sys.argv[i + 1])
 				settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
 				settingsFile.write(json.dumps(settingsJson,indent=4))
 				settingsFile.close()
+				verbose and print("Write orientation in settings")
 		else:
 			verbose and print("Not enough arguments")
 	elif item == "--get-display-orientation-settings":
@@ -391,12 +414,4 @@ for i, origItem in enumerate(sys.argv):
 		except:
 			print(0)
 	elif item == "--get-display-orientation":
-		orientation = subprocess.check_output("DISPLAY=:0 xrandr --query --verbose | grep HDMI-1 | cut -d ' ' -f 6",shell=True).decode("utf-8").replace("\n","")
-		if orientation == "normal":
-			print(0)
-		elif orientation == "right":
-			print(1)
-		elif orientation == "inverted":
-			print(2)
-		elif orientation == "left":
-			print(3)
+		print(getDisplayOrientation())

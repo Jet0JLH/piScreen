@@ -17,7 +17,7 @@ def isInt(s):
 
 print("Start piScreen")
 print("Load modules")
-import os, json, sys, time, psutil
+import os, json, sys, time, psutil, subprocess
 
 print("Set environment setting")
 skriptPath = os.path.dirname(os.path.abspath(__file__))
@@ -51,9 +51,13 @@ try:
 				os.system(f"touch {piScreenDisplayDDC}")
 		if "orientation" in conf["display"]:
 			if isInt(conf["display"]["orientation"]):
-				#Wait is not a good solution. But we need to wait for X-Server
-				time.sleep(10)
-				os.system(f"{piScreenSyscall} --set-display-orientation {conf['display']['orientation']}")
+				for i in range(0,60):
+					#Try to set displayorientation for 2 minutes after startup
+					if subprocess.check_output(f"{piScreenSyscall} --get-display-orientation",shell=True).decode("utf-8").replace("\n","") == str(conf['display']['orientation']):
+						i = 100
+					else:
+						os.system(f"{piScreenSyscall} --set-display-orientation {conf['display']['orientation']}")
+						time.sleep(2)
 
 except ValueError as err:
 	print(err)
