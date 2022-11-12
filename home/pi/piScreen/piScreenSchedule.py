@@ -238,9 +238,9 @@ class config():
 def runEvent(eventName):
 	if "events" in globalConf.conf:
 		for item in globalConf.conf["events"]:
-			if "name" in item:
+			if "id" in item:
 				#eventName is case sensitive
-				if item["name"] == eventName:
+				if item["id"] == eventName:
 					if "commands" in item:
 						for event in item["commands"]:
 							if "command" in event:
