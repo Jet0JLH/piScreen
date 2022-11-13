@@ -38,6 +38,7 @@ piScreenScreenshotPath = ramdisk + "piScreenScreenshot.png"
 print("Load settings")
 try:
 	conf = json.load(open(piScreenSettings))
+	configModify = os.path.getmtime(piScreenSettings)
 	#Next line is tmp
 	conf = conf["settings"]
 	if "display" in conf:
@@ -49,15 +50,6 @@ try:
 				os.system(f"touch {piScreenDisplayCEC}")
 			elif piScreenDisplayProtocol == "ddc":
 				os.system(f"touch {piScreenDisplayDDC}")
-		if "orientation" in conf["display"]:
-			if isInt(conf["display"]["orientation"]):
-				for i in range(0,60):
-					#Try to set displayorientation for 2 minutes after startup
-					if subprocess.check_output(f"{piScreenSyscall} --get-display-orientation",shell=True).decode("utf-8").replace("\n","") == str(conf['display']['orientation']):
-						i = 100
-					else:
-						os.system(f"{piScreenSyscall} --set-display-orientation {conf['display']['orientation']}")
-						time.sleep(2)
 
 except ValueError as err:
 	print(err)
@@ -85,6 +77,23 @@ while True:
 			os.system(f"firefox-esr -kiosk {parameter} &")
 	if os.path.exists(piScreenModeVLC):
 		pass
+	#check if settings has changed
+	if configModify != os.path.getmtime(piScreenSettings):
+		try:
+			print("settings.json seems to be changed")
+			conf = json.load(open(piScreenSettings))
+			#Next line is tmp
+			conf = conf["settings"]
+			configModify = os.path.getmtime(piScreenSettings)
+		except:
+			print("settings.json seems to be damaged")
+	#check screen orientation
+	if "orientation" in conf["display"]:
+		if isInt(conf["display"]["orientation"]):
+			if subprocess.check_output(f"{piScreenSyscall} --get-display-orientation",shell=True).decode("utf-8").replace("\n","") == str(conf['display']['orientation']):
+				pass
+			else:
+				os.system(f"{piScreenSyscall} --set-display-orientation --no-save {conf['display']['orientation']}")
 	#createScreenshot
 	os.system(f"scrot -z {piScreenScreenshotPath}.png")
 	os.system(f"mv {piScreenScreenshotPath}.png {piScreenScreenshotPath}")

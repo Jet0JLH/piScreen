@@ -56,7 +56,7 @@ def printHelp():
 	1 = 90 degrees
 	2 = 180 degrees
 	3 = 270 degrees
-	If --no-save is set, the orientation will be permanent.
+	If --no-save is set, the orientation will be not permanent.
 --get-display-orientation-settings
 	Returns the display orientation in settingsfile.
 --get-display-orientation
@@ -526,19 +526,19 @@ for i, origItem in enumerate(sys.argv):
 			found = False
 			if sys.argv[i + 1] == "0":
 				found = True
-				os.system("DISPLAY=:0 xrandr --output HDMI-1 --rotate normal")
+				os.system("DISPLAY=:0 xrandr -o normal")
 				verbose and print("Change displayorientation to normal")
 			elif sys.argv[i + 1] == "1":
 				found = True
-				os.system("DISPLAY=:0 xrandr --output HDMI-1 --rotate right")
+				os.system("DISPLAY=:0 xrandr -o right")
 				verbose and print("Change displayorientation to right")
 			elif sys.argv[i + 1] == "2":
 				found = True
-				os.system("DISPLAY=:0 xrandr --output HDMI-1 --rotate inverted")
+				os.system("DISPLAY=:0 xrandr -o inverted")
 				verbose and print("Change displayorientation to inverted")
 			elif sys.argv[i + 1] == "3":
 				found = True
-				os.system("DISPLAY=:0 xrandr --output HDMI-1 --rotate left")
+				os.system("DISPLAY=:0 xrandr -o left")
 				verbose and print("Change displayorientation to left")
 			if found and saveSettings:
 				settingsJson = loadSettings()
