@@ -1,5 +1,5 @@
 #!/usr/bin/python -u
-import json, sys, os, time
+import json, sys, os, time, datetime
 
 ramdisk = "/media/ramdisk/"
 piScreenModeFirefox = ramdisk + "piScreenModeFirefox"
@@ -48,20 +48,33 @@ def printHelp():
 	Check for updates, download install files if release is available and do upgrade.
 	Sudo rights are requiered!
 --set-display-protocol <protocol>
-	Set the display protocol to cec or ddc
+	Set the display protocol to CEC or DDC.
 --get-display-protocol
-	Retuns the current activ display protocol. cec or ddc
---set-display-orientation [--save-settings] <orientation ID>
+	Retuns the current activ display protocol. CEC or DDC
+--set-display-orientation [--no-save] <orientation ID>
 	0 = 0 degrees
 	1 = 90 degrees
 	2 = 180 degrees
 	3 = 270 degrees
-	If --save-settings is set, the orientation will be permanent
+	If --no-save is set, the orientation will be permanent.
 --get-display-orientation-settings
-	Returns the display orientation in settingsfile
+	Returns the display orientation in settingsfile.
 --get-display-orientation
-	Returns the display orientation from os
+	Returns the display orientation from os.
+--add-cron [--enabled <false/true>] [--commandset <commandsetID>] [--start <"JJJJ-MM-DD hh:mm:ss">] [--end <"JJJJ-MM-DD hh:mm:ss">] [--command <commandID>] [--parameter <parameter>] <--pattern <pattern>>
+	Add a cronentry to schedule.json.
+--update-cron [--enabled [false/true]] [--commandset [commandsetID]] [--start ["JJJJ-MM-DD hh:mm:ss"]] [--end ["JJJJ-MM-DD hh:mm:ss"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>] <--index <cronIndex>>
+	Update a cronentry by index in schedule.json.
+--delete-cron <--index <cronIndex>>
+	Delete a cronentry by index from schedule.json.
 	""")
+
+def isInt(s):
+	try: 
+		int(s)
+		return True
+	except ValueError:
+		return False
 
 def checkForRootPrivileges():
 	if os.geteuid() != 0:
@@ -72,7 +85,10 @@ def checkForRootPrivileges():
 def loadSettings():
 	return json.load(open(f"{os.path.dirname(__file__)}/settings.json"))
 
-def loadMainifest():
+def loadSchedule():
+	return json.load(open(f"{os.path.dirname(__file__)}/schedule.json"))
+
+def loadManifest():
 	return json.load(open(f"{os.path.dirname(__file__)}/manifest.json"))
 
 def endAllModes():
@@ -141,7 +157,7 @@ def screenSwitchInput():
 	open("/media/ramdisk/piScreenDisplaySwitch","w").close()
 
 def checkUpdate(draft,prerelease,silent):
-	manifest = loadMainifest()
+	manifest = loadManifest()
 	verbose and print(f"Current version {manifest['version']['major']}.{manifest['version']['minor']}.{manifest['version']['patch']}")
 	latestRelease = getLatestVersion(draft,prerelease)
 	if latestRelease:
@@ -279,6 +295,132 @@ def getDisplayOrientation():
 		return 3
 	return None
 
+def modifySchedule(element,typ,scheduleJson):
+	changed = False
+	if f"--{element}" in sys.argv:
+		indexOfElement = sys.argv.index(f"--{element}") + 1
+		if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+			try:
+				del scheduleJson[element]
+				changed = True
+			except:
+				pass
+		else:
+			if typ == bool:
+				if sys.argv[indexOfElement].lower() == "true":
+					scheduleJson[element] = True
+					changed = True
+				elif sys.argv[indexOfElement].lower() == "false":
+					scheduleJson[element] = False
+					changed = True
+				else:
+					verbose and print(f"{element} is not true or false")
+			elif typ == int:
+				if isInt(sys.argv[indexOfElement]):
+					scheduleJson[element] = int(sys.argv[indexOfElement])
+					changed = True
+				else:
+					verbose and print(f"{element} is no number")
+			elif typ == datetime.datetime:
+				try:
+					datetime.datetime.strptime(sys.argv[indexOfElement], "%Y-%m-%d %H:%M:%S")
+					scheduleJson[element] = sys.argv[indexOfElement]
+					changed = True
+				except:
+					verbose and print(f"{element} is no valid date")
+			elif typ == "pattern":
+				if all(ch in "0123456789/-*, " for ch in sys.argv[indexOfElement]) and len(sys.argv[indexOfElement].split(" ")) == 5:
+					scheduleJson[element] = sys.argv[indexOfElement]
+					changed = True
+				else:
+					verbose and print(f"{element} is no valid pattern")
+			else:
+				#Normal String without validation
+				scheduleJson[element] = sys.argv[indexOfElement]
+				changed = True
+				pass
+	return changed
+
+def addCron():
+	if i + 2 < len(sys.argv):
+		if "--pattern" in sys.argv:
+			pattern = sys.argv.index("--pattern") + 1
+			if pattern < len(sys.argv):
+				changed = False
+				item = {}
+				changed = modifySchedule("enabled",bool,item) or changed
+				changed = modifySchedule("commandset",int,item) or changed
+				changed = modifySchedule("start",datetime.datetime,item) or changed
+				changed = modifySchedule("end",datetime.datetime,item) or changed
+				changed = modifySchedule("pattern","pattern",item) or changed
+				changed = modifySchedule("command",int,item) or changed
+				changed = modifySchedule("parameter",None,item) or changed
+				if changed:
+					try:
+						scheduleJson = loadSchedule()
+						scheduleJson["cron"].append(item)
+						scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+						scheduleFile.write(json.dumps(scheduleJson,indent=4))
+						scheduleFile.close()
+						verbose and print("Changed schedule.json")
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Empty cron element")
+					exit(1)
+			else:
+				verbose and print("No pattern value")
+				exit(1)
+		else:
+			verbose and print("Argument --pattern expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
+def updateCron():
+	if i + 2 < len(sys.argv):
+		if "--index" in sys.argv:
+			index = sys.argv.index("--index") + 1
+			if index < len(sys.argv):
+				if isInt(sys.argv[index]):
+					index = int(sys.argv[index])
+					try:
+						scheduleJson = loadSchedule()
+						if index < len(scheduleJson["cron"]) and index >= 0:
+							changed = False
+							changed = modifySchedule("enabled",bool,scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("commandset",int,scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("start",datetime.datetime,scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("end",datetime.datetime,scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("pattern","pattern",scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("command",int,scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("parameter",None,scheduleJson["cron"][index]) or changed
+							if changed:
+								scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+								scheduleFile.write(json.dumps(scheduleJson,indent=4))
+								scheduleFile.close()
+								verbose and print("Changed schedule.json")
+						else:
+							verbose and print("Index is bigger than count of cornentries")
+							exit(1)
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("No index value")
+				exit(1)
+		else:
+			verbose and print("Argument --index expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
 #Main
 verbose = False
 sys.argv.pop(0) #Remove Path
@@ -376,10 +518,10 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--get-display-protocol":
 		getDisplayProtocol()
 	elif item == "--set-display-orientation":
-		saveSettings = False
-		if "--save-settings" in sys.argv:
-			saveSettings = True
-			sys.argv.remove("--save-settings")
+		saveSettings = True
+		if "--no-save" in sys.argv:
+			saveSettings = False
+			sys.argv.remove("--no-save")
 		if i + 1 < len(sys.argv):
 			found = False
 			if sys.argv[i + 1] == "0":
@@ -415,3 +557,36 @@ for i, origItem in enumerate(sys.argv):
 			print(0)
 	elif item == "--get-display-orientation":
 		print(getDisplayOrientation())
+	elif item == "--add-cron":
+		addCron()
+	elif item == "--update-cron":
+		updateCron()
+	elif item == "--delete-cron":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 1] == "--index":
+				if isInt(sys.argv[i + 2]):
+					try:
+						scheduleJson = loadSchedule()
+						index = int(sys.argv[i + 2])
+						if index < len(scheduleJson["cron"]) and index >= 0:
+							del scheduleJson["cron"][index]
+							scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+							scheduleFile.write(json.dumps(scheduleJson,indent=4))
+							scheduleFile.close()
+							verbose and print("Changed schedule.json")
+						else:
+							verbose and print("Index is bigger than count of cornentries")
+							exit(1)
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("Argument --index expected")
+				exit(1)
+		else:
+			verbose and print("Not enough arguments")
+			exit(1)
+

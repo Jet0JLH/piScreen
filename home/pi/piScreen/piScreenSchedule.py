@@ -35,7 +35,7 @@ def firstRun():
 			count = 0
 			now = datetime.datetime.today()
 			oneMinute = datetime.timedelta(minutes=1)
-			#Check last Events in a Week
+			#Check last commandsets in a Week
 			while count < 10080 and not found:
 				for item in entries:
 					if item.run(now):
@@ -52,7 +52,7 @@ def loadTrigger():
 
 class cronEntry():
 	enabled = False
-	event = None
+	commandset = None
 	command = None
 	parameter = None
 	start = None
@@ -65,7 +65,7 @@ class cronEntry():
 	
 	def parse(self, jsonObj):
 		self.enabled = False
-		self.event = None
+		self.commandset = None
 		self.command = None
 		self.parameter = None
 		self.start = None
@@ -76,8 +76,8 @@ class cronEntry():
 				self.enabled = True
 			else:
 				self.enabled = False
-		if "event" in jsonObj:
-			self.event = jsonObj["event"]
+		if "commandset" in jsonObj:
+			self.commandset = jsonObj["commandset"]
 		if "command" in jsonObj:
 			if isinstance(jsonObj["command"], int):
 				self.command = jsonObj["command"]
@@ -122,7 +122,7 @@ class cronEntry():
 			if not self.checkPattern(self.pattern[0], timestamp.minute):
 				return False		
 		commandInterpreter(self.command, self.parameter)
-		runEvent(self.event)
+		runCommandset(self.commandset)
 		return True
 
 	def checkPattern(self, pattern, check):
@@ -235,19 +235,18 @@ class config():
 			return False
 		return True
 
-def runEvent(eventName):
-	if "events" in globalConf.conf:
-		for item in globalConf.conf["events"]:
+def runCommandset(commandsetID):
+	if "commandsets" in globalConf.conf:
+		for item in globalConf.conf["commandsets"]:
 			if "id" in item:
-				#eventName is case sensitive
-				if item["id"] == eventName:
+				if item["id"] == commandsetID:
 					if "commands" in item:
-						for event in item["commands"]:
-							if "command" in event:
-								if "parameter" in event:
-									commandInterpreter(event["command"],event["parameter"])
+						for commandset in item["commands"]:
+							if "command" in commandset:
+								if "parameter" in commandset:
+									commandInterpreter(commandset["command"], commandset["parameter"])
 								else:
-									commandInterpreter(event["command"],None)
+									commandInterpreter(commandset["command"], None)
 
 def runTrigger(trigger):
 	found = False
@@ -267,8 +266,8 @@ def runTrigger(trigger):
 										commandInterpreter(item["command"],item["parameter"])
 									else:
 										commandInterpreter(item["command"],None)
-									if "event" in item:
-										runEvent(item["event"])
+									if "commandset" in item:
+										runCommandset(item["commandset"])
 	return found
 				
 

@@ -78,7 +78,7 @@ os.system("./piScreenSchedule.py &")
 
 print("Start observation")
 while True:
-	#Check in witch mode we are
+	#Check in which mode we are
 	if os.path.exists(piScreenModeFirefox):
 		if not checkIfProcessRunning("firefox-esr"):
 			parameter = open(piScreenModeFirefox,"r").read()
