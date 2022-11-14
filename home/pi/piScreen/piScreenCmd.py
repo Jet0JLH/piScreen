@@ -61,12 +61,18 @@ def printHelp():
 	Returns the display orientation in settingsfile.
 --get-display-orientation
 	Returns the display orientation from os.
---add-cron [--enabled <false/true>] [--commandset <commandsetID>] [--start <"JJJJ-MM-DD hh:mm:ss">] [--end <"JJJJ-MM-DD hh:mm:ss">] [--command <commandID>] [--parameter <parameter>] <--pattern <pattern>>
+--add-cron [--enabled <false/true>] [--commandset <commandsetID>] [--start <"JJJJ-MM-DD hh:mm">] [--end <"JJJJ-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>] <--pattern <pattern>>
 	Add a cronentry to schedule.json.
---update-cron [--enabled [false/true]] [--commandset [commandsetID]] [--start ["JJJJ-MM-DD hh:mm:ss"]] [--end ["JJJJ-MM-DD hh:mm:ss"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>] <--index <cronIndex>>
+--update-cron [--enabled [false/true]] [--commandset [commandsetID]] [--start ["JJJJ-MM-DD hh:mm"]] [--end ["JJJJ-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>] <--index <cronIndex>>
 	Update a cronentry by index in schedule.json.
 --delete-cron <--index <cronIndex>>
 	Delete a cronentry by index from schedule.json.
+--add-commandset [--name <name>] [--command <commandID> [parameter]]
+	Add a commandset to schedule.json.
+--update-commandset <--id <id>> [--name <name>] [--command <commandID> [parameter]]
+	Update a commandset by id in schedule.json.
+--delete-commandset <--id <id>>
+	Delete a commandset by id from schedule.json.
 	""")
 
 def isInt(s):
@@ -323,7 +329,7 @@ def modifySchedule(element,typ,scheduleJson):
 					verbose and print(f"{element} is no number")
 			elif typ == datetime.datetime:
 				try:
-					datetime.datetime.strptime(sys.argv[indexOfElement], "%Y-%m-%d %H:%M:%S")
+					datetime.datetime.strptime(sys.argv[indexOfElement], "%Y-%m-%d %H:%M")
 					scheduleJson[element] = sys.argv[indexOfElement]
 					changed = True
 				except:
@@ -585,6 +591,37 @@ for i, origItem in enumerate(sys.argv):
 					exit(1)
 			else:
 				verbose and print("Argument --index expected")
+				exit(1)
+		else:
+			verbose and print("Not enough arguments")
+			exit(1)
+	elif item == "--delete-commandset":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 1] == "--id":
+				if isInt(sys.argv[i + 2]):
+					try:
+						found = False
+						scheduleJson = loadSchedule()
+						max = len(scheduleJson["commandsets"])
+						for x in range(0,max):
+							if "id" in scheduleJson["commandsets"][x]:
+								if scheduleJson["commandsets"][x]["id"] == int(sys.argv[i + 2]):
+									del scheduleJson["commandsets"][x]
+									found = True
+									max = max - 1
+						if found:
+							scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+							scheduleFile.write(json.dumps(scheduleJson,indent=4))
+							scheduleFile.close()
+							verbose and print("Changed schedule.json")
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("Argument --id expected")
 				exit(1)
 		else:
 			verbose and print("Not enough arguments")

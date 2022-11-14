@@ -85,12 +85,12 @@ class cronEntry():
 			self.parameter = jsonObj["parameter"]
 		if "start" in jsonObj:
 			try:
-				self.start = datetime.datetime.strptime(jsonObj["start"], "%Y-%m-%d %H:%M:%S")
+				self.start = datetime.datetime.strptime(jsonObj["start"], "%Y-%m-%d %H:%M")
 			except ValueError:
 				pass
 		if "end" in jsonObj:
 			try:
-				self.end = datetime.datetime.strptime(jsonObj["end"], "%Y-%m-%d %H:%M:%S")
+				self.end = datetime.datetime.strptime(jsonObj["end"], "%Y-%m-%d %H:%M")
 			except ValueError:
 				pass
 		if "pattern" in jsonObj:
