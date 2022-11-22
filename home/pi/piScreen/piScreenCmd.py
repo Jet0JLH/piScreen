@@ -62,7 +62,7 @@ def printHelp():
 --get-display-orientation
 	Returns the display orientation from os.
 --schedule-firstrun
-	Start schedule firstrun manually
+	Start schedule firstrun manually.
 --add-cron <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"JJJJ-MM-DD hh:mm">] [--end <"JJJJ-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>]
 	Add a cronentry to schedule.json.
 --update-cron <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["JJJJ-MM-DD hh:mm"]] [--end ["JJJJ-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>]
@@ -411,7 +411,7 @@ def updateCron():
 								scheduleFile.close()
 								verbose and print("Changed schedule.json")
 						else:
-							verbose and print("Index is bigger than count of cornentries")
+							verbose and print("Index is bigger than count of cronentries")
 							exit(1)
 					except:
 						verbose and print("Error with schedule.json")
@@ -480,7 +480,7 @@ for i, origItem in enumerate(sys.argv):
 						os.system(f"head -1 {sys.argv[i + 3]} | tr -d '\n' | sudo xargs -0 htpasswd -c -b /etc/apache2/.piScreen_htpasswd '{sys.argv[i + 1]}'")
 						os.remove(sys.argv[i + 3])
 					else:
-						verbose and print("Passwordfile dosen't exist")
+						verbose and print("Passwordfile doesn't exist")
 				else:
 					verbose and print("No Passwordfile specified")
 			else: #Check direct mode
@@ -585,7 +585,7 @@ for i, origItem in enumerate(sys.argv):
 							scheduleFile.close()
 							verbose and print("Changed schedule.json")
 						else:
-							verbose and print("Index is bigger than count of cornentries")
+							verbose and print("Index is bigger than count of cronentries")
 							exit(1)
 					except:
 						verbose and print("Error with schedule.json")

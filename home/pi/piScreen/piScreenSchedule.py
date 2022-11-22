@@ -349,6 +349,7 @@ while active:
 		active = os.path.exists(activePath)
 		if os.path.exists(doFirstRunPath):
 			firstRun()
+			os.remove(doFirstRunPath)
 		time.sleep(5)
 	except KeyboardInterrupt:
 		active = False
