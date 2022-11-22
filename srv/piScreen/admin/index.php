@@ -63,8 +63,8 @@
 						<h1 class='pb-2'><i class='bi-info-circle bigIcon px-2'></i><span lang-data='info-tile-header'>Info</span></h1>
 						<figure class='figure mb-0'>
 							<img id='screenshot' src='piScreenScreenshot.png' style='max-width: 100%;' class='border figure-img img-fluid'></img>
-							<span id='screenshotTime' class='figure-caption'></span>
-							<span id='screenContent' class='figure-caption' style='float: right;'></span>
+							<figcaption id='screenshotTime' class='figure-caption'></figcaption>
+							<figcaption id='screenContent' class='figure-caption text-break'></figcaption>
 						</figure>
 						<hr>
 						<div id='info-footer'>
@@ -95,8 +95,8 @@
 												<td>
 													<div class='form-floating mb-3'>
 														<select id='displayProtocolSelect' onchange='settingNotSaved("settingsButtonSaveDisplayProtocol");' class='form-select border-secondary'>
-															<option id='cec' value='cec'>CEC</option>
-															<option id='ddc' value='ddc'>DDC/CI</option>
+															<option id='cec' value='cec' lang-data='cec'>CEC</option>
+															<option id='ddc' value='ddc' lang-data='ddc'>DDC/CI</option>
 														</select>
 														<label for="displayProtocolSelect" lang-data="display-protocol">Display Protokoll</label>
 													</div>
@@ -109,10 +109,10 @@
 												<td>
 													<div class='form-floating mb-3'>
 														<select id='displayOrientationSelect' onchange='settingNotSaved("settingsButtonSaveDisplayOrientation");' class='form-select border-secondary'>
-															<option id='horizontal' value='0'>Horizontal</option>
-															<option id='vertical' value='1'>Vertikal</option>
-															<option id='horizontalInverted' value='2'>Horizontal gedreht</option>
-															<option id='verticalInverted' value='3'>Vertikal gedreht</option>
+															<option id='horizontal' value='0' lang-data='horizontal'>Horizontal</option>
+															<option id='vertical' value='1' lang-data='vertical'>Vertikal</option>
+															<option id='horizontalInverted' value='2' lang-data='rotated-horizontally'>Horizontal gedreht</option>
+															<option id='verticalInverted' value='3' lang-data='rotated-vertically'>Vertikal gedreht</option>
 														</select>
 														<label for="displayOrientationSelect" lang-data="display-orientation">Displayausrichtung</label>
 													</div>
@@ -148,7 +148,7 @@
 				<div class='col-lg-12 col-xl-6 mb-4'>
 					<div class='card p-3 shadow'>
 					<h1 class='pb-2'><i class='bi bi-calendar2-day bigIcon px-2'></i><span lang-data='timeschedule-tile-header'>Zeitplan</span></h1>
-						<div class="accordion accordion-flush" id="scheduleAccordion">
+						<div class="accordion" id="scheduleAccordion">
 							<div class="accordion-item" style='background-color: transparent;'>
 								<div id="collapseTwo" class="accordion-collapse collapse show" data-bs-parent="#scheduleAccordion">
 									<div class="accordion-body p-0">
@@ -172,13 +172,14 @@
 											</div>
 
 										</div>-->
-										<div class="accordion accordion-flush" id="entryCollectionAccordion">
+										<div class="accordion" id="entryCollectionAccordion">
 
 										</div>
-										<button id='newScheduleEntry' class='btn btn-outline-success mt-2' onclick='generateNewScheduleEntry()'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-entry'>Neue Eintrag</span></button>
-										<div class='btn-group pt-2' role='group' style='float: right;'>
+										<button id='newScheduleEntry' class='btn btn-outline-success mt-2' onclick='generateNewScheduleEntry()'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-entry'>Neuer Eintrag</span></button>
+										<button id='firstRunButton' class='btn btn-outline-warning mt-2 px-2' onclick="sendHTTPRequest('GET', 'cmd.php?id=22', true);"><i class='bi bi-play pe-2'></i><span lang-data='first-run'>firstrun</span></button>
+										<div class='btn-group pt-2' role='group' style='float: right; display: none;'>
 											<button id='importSchedule' class='btn btn-outline-primary' onclick='importSchedule()'><i class='bi bi-upload pe-2'></i><span lang-data='import-schedule'>Import</span></button>
-											<button id='exportSchedule' class='btn btn-outline-primary' onclick='download("cmd.php?id=10", "cron.json")'><i class='bi bi-download pe-2'></i><span lang-data='export-schedule'>Export</span></button>
+											<button id='exportSchedule' class='btn btn-outline-primary' onclick='download("cmd.php?id=10", "schedule.json")'><i class='bi bi-download pe-2'></i><span lang-data='export-schedule'>Export</span></button>
 										</div>
 										<button id='showEvents' class='btn btn-outline-primary' data-bs-toggle="collapse" data-bs-target="#collapseOne" hidden>Events bearbeiten</button>
 									</div>
@@ -224,7 +225,7 @@
 				</div>
 			</div>
 		</main>
-		<div id='modal' class='modal fade' tabindex='-1'>
+		<div id='modal' class='modal-lg fade' tabindex='-1'>
 			<div class='modal-dialog modal-dialog-centered'>
 				<div class='modal-content'>
 					<div class='modal-header'>

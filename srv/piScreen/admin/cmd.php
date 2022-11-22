@@ -98,10 +98,14 @@
 			if ($_GET['parameter'] != NULL) {
 				$parameterString .= " --parameter " . $_GET['parameter'];
 			}
-			if ($_GET['start'] != NULL) {
+			if ($_GET['start'] == " ") {
+				$parameterString .= " --start";
+			} elseif ($_GET['start'] != NULL) {
 				$parameterString .= " --start \"" . $_GET['start'] . "\"";
 			}
-			if ($_GET['end'] != NULL) {
+			if ($_GET['end'] == " ") {
+				$parameterString .= " --end";
+			} elseif ($_GET['end'] != NULL) {
 				$parameterString .= " --end \"" . $_GET['end'] . "\"";
 			}
 			if ($_GET['pattern'] != NULL) {
@@ -180,6 +184,9 @@
 	}
 	elseif ($_GET['id'] == 21) { //Get current website
 		echo shell_exec("$syscall --get-website");
+	}
+	elseif ($_GET['id'] == 22) { //Run firstrun
+		echo shell_exec("$syscall --schedule-firstrun");
 	}
 
 	

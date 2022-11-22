@@ -288,17 +288,17 @@ function addParameter(entryId, commandId, parameter) {
 	if (commandCollection[commandId][1] == false) {
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
-		div.innerHTML = `<input id='scheduleEntry${eId}ParameterInput' type='text' class='form-control' onkeyup='displayEntrySaved(false, ${eId});' maxlength='50' value='${parameter}'>`;
+		div.innerHTML = `<input id='scheduleEntry${eId}ParameterInput' type='text' class='form-control' onkeyup='displayEntrySaved(false, ${eId});' maxlength='50' value='${parameter}' lang-data='parameter'>`;
 		if (parameter == undefined) parameter = "";
 	} else if (Array.isArray(commandCollection[commandId][1])) {
 		let htmlSelect = `<select id='scheduleEntry${eId}ParameterInput' onchange='displayEntrySaved(false, ${eId});' class='form-select border-secondary'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
-			htmlSelect += `<option value='${commandCollection[commandId][1][i][0]}'>${getLanguageAsText(commandCollection[commandId][1][i][1])}</option>\n`;
+			htmlSelect += `<option value='${commandCollection[commandId][1][i][0]}' lang-data='${commandCollection[commandId][1][i][1]}'>${getLanguageAsText(commandCollection[commandId][1][i][1])}</option>\n`;
 		}
 		htmlSelect += "</select>";
 		div.innerHTML = htmlSelect;
 		if (parameter == undefined) parameter = 0;
-}
+	}
 
 	cell.appendChild(div);
 	document.getElementById("scheduleEntry" + eId + "ParameterInput").value = parameter;
@@ -484,6 +484,14 @@ versionInfoBtn.onclick = function() {
 	xmlhttp.send();
 }
 
+getElement("collapseMainSettings").addEventListener("shown.bs.collapse", event => {
+	new Masonry(document.getElementById("masonry"));
+});
+
+getElement("collapseLoginSettings").addEventListener("shown.bs.collapse", event => {
+	new Masonry(document.getElementById("masonry"));
+});
+
 function setDisplayProtocol() {
 	let protocol = document.getElementById('displayProtocolSelect').value;
 	sendHTTPRequest('GET', 'cmd.php?id=14&protocol=' + protocol, true);
@@ -544,9 +552,10 @@ function settingNotSaved(elementId) {
 }
 
 function showEntryHeader(entryId) {
-	let sel = document.getElementById("commandSelect" + entryId);
-	document.getElementById("scheduleEntry" + entryId + "HeaderCommand").innerText = sel.options[sel.selectedIndex].text;
-	document.getElementById("scheduleEntry" + entryId + "HeaderCron").innerText = document.getElementById("cronentry" + entryId).value;
+	let sel = getElement("commandSelect" + entryId);
+	getElement("scheduleEntry" + entryId + "HeaderCommand").innerText = sel.options[sel.selectedIndex].text;
+	getElement("scheduleEntry" + entryId + "HeaderCommand").setAttribute("lang-data", commandCollection[sel.value][0]);
+	getElement("scheduleEntry" + entryId + "HeaderCron").innerText = document.getElementById("cronentry" + entryId).value;
 }
 
 function toggleValidityFrom(entryId, checked){
@@ -623,7 +632,9 @@ function prepareCronString(entryId) {
 	let msg = "enabled=" + enabled + "&";
 	msg += "pattern=" + cronentry + "&";
 	if (startDateTime) msg += "start=" + startDate + " " + startTime + "&";
+	else msg += "start= &";
 	if (endDateTime) msg += "end=" + endDate + " " + endTime + "&";
+	else msg += "end= &";
 	if (command != 0) msg += "command=" + command + "&";
 	if (parameter != null) msg += "parameter=" + parameter + "&";
 	msg = msg.substring(0, msg.length - 1);
