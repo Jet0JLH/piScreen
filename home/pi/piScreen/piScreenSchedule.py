@@ -6,6 +6,7 @@ os.chdir(skriptPath)
 syscall = "./piScreenCmd.py"
 configFile = "./schedule.json"
 activePath = "/media/ramdisk/piScreenScheduleActive"
+doFirstRunPath = "/media/ramdisk/piScreenScheduleFirstRun"
 active = os.path.exists(activePath)
 threadLock = threading.Lock()
 
@@ -24,6 +25,8 @@ def isFloat(s):
 		return False
 
 def firstRun():
+	global saveMode
+	saveMode = True
 	#Check if startup trigger (1) enabled
 	if not runTrigger(1):
 		if "cron" in globalConf.conf:
@@ -42,6 +45,7 @@ def firstRun():
 						found = True
 				now = now - oneMinute
 				count = count + 1
+	saveMode = False
 
 def loadCrons():
 	cronThread = cron()
@@ -289,9 +293,11 @@ def commandInterpreter(cmd, parameter):
 				pass
 	elif cmd == 11:
 		#Reboot
+		if saveMode: time.sleep(300)
 		os.system("reboot")
 	elif cmd == 12:
 		#Shutdown
+		if saveMode: time.sleep(300)
 		os.system("poweroff")
 	elif cmd == 30:
 		#Control display [0 = Standby, 1 = On]
@@ -341,6 +347,8 @@ while active:
 				print("Json File seems to be damaged")
 		configModify = os.path.getmtime(configFile)
 		active = os.path.exists(activePath)
+		if os.path.exists(doFirstRunPath):
+			firstRun()
 		time.sleep(5)
 	except KeyboardInterrupt:
 		active = False

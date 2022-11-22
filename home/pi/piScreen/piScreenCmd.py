@@ -61,9 +61,11 @@ def printHelp():
 	Returns the display orientation in settingsfile.
 --get-display-orientation
 	Returns the display orientation from os.
---add-cron [--enabled <false/true>] [--commandset <commandsetID>] [--start <"JJJJ-MM-DD hh:mm">] [--end <"JJJJ-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>] <--pattern <pattern>>
+--schedule-firstrun
+	Start schedule firstrun manually
+--add-cron <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"JJJJ-MM-DD hh:mm">] [--end <"JJJJ-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>]
 	Add a cronentry to schedule.json.
---update-cron [--enabled [false/true]] [--commandset [commandsetID]] [--start ["JJJJ-MM-DD hh:mm"]] [--end ["JJJJ-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>] <--index <cronIndex>>
+--update-cron <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["JJJJ-MM-DD hh:mm"]] [--end ["JJJJ-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>]
 	Update a cronentry by index in schedule.json.
 --delete-cron <--index <cronIndex>>
 	Delete a cronentry by index from schedule.json.
@@ -563,6 +565,8 @@ for i, origItem in enumerate(sys.argv):
 			print(0)
 	elif item == "--get-display-orientation":
 		print(getDisplayOrientation())
+	elif item == "--schedule-firstrun":
+		open("/media/ramdisk/piScreenScheduleFirstRun","w").close()
 	elif item == "--add-cron":
 		addCron()
 	elif item == "--update-cron":
