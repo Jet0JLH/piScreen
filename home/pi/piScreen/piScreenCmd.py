@@ -69,6 +69,12 @@ def printHelp():
 	Update a cronentry by index in schedule.json.
 --delete-cron <--index <cronIndex>>
 	Delete a cronentry by index from schedule.json.
+--add-trigger <--trigger <triggerID>> [--enabled <false/true>] [--command [commandID]] [--parameter [parameter]] [--commandset [commandsetID]]
+	Add a trigger to schedule.json.
+--update-trigger <--index <triggerIndex> [--enabled <false/true>] [--trigger <triggerID>] [--command [commandID]] [--parameter [parameter]] [--commandset [commandsetID]]
+	Update a trigger by index in schedule.json.
+--delete-trigger <--index <triggerIndex>
+	Delete a trigger by index from schedule.json.
 --add-commandset [--name <name>] [--command <commandID> [parameter]]
 	Add a commandset to schedule.json.
 --update-commandset <--id <id>> [--name <name>] [--command <commandID> [parameter]]
@@ -411,7 +417,82 @@ def updateCron():
 								scheduleFile.close()
 								verbose and print("Changed schedule.json")
 						else:
-							verbose and print("Index is bigger than count of cronentries")
+							verbose and print("Index is bigger than count of cron entries")
+							exit(1)
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("No index value")
+				exit(1)
+		else:
+			verbose and print("Argument --index expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
+def addTrigger():
+	if i + 2 < len(sys.argv):
+		if "--trigger" in sys.argv:
+			if isInt(sys.argv.index("--trigger") + 1):
+				changed = False
+				item = {}
+				changed = modifySchedule("enabled",bool,item) or changed
+				changed = modifySchedule("trigger",int,item) or changed
+				changed = modifySchedule("command",int,item) or changed
+				changed = modifySchedule("parameter",None,item) or changed
+				changed = modifySchedule("commandset",int,item) or changed
+				if changed:
+					try:
+						scheduleJson = loadSchedule()
+						scheduleJson["trigger"].append(item)
+						scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+						scheduleFile.write(json.dumps(scheduleJson,indent=4))
+						scheduleFile.close()
+						verbose and print("Changed schedule.json")
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Empty trigger element")
+					exit(1)
+			else:
+				verbose and print("No pattern value")
+				exit(1)
+		else:
+			verbose and print("Argument --trigger expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
+def updateTrigger():
+	if i + 2 < len(sys.argv):
+		if "--index" in sys.argv:
+			index = sys.argv.index("--index") + 1
+			if index < len(sys.argv):
+				if isInt(sys.argv[index]):
+					index = int(sys.argv[index])
+					try:
+						scheduleJson = loadSchedule()
+						if index < len(scheduleJson["trigger"]) and index >= 0:
+							changed = False
+							changed = modifySchedule("enabled",bool,scheduleJson["trigger"][index]) or changed
+							changed = modifySchedule("trigger",int,scheduleJson["trigger"][index]) or changed
+							changed = modifySchedule("command",int,scheduleJson["trigger"][index]) or changed
+							changed = modifySchedule("parameter",None,scheduleJson["trigger"][index]) or changed
+							changed = modifySchedule("commandset",int,scheduleJson["trigger"][index]) or changed
+							if changed:
+								scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+								scheduleFile.write(json.dumps(scheduleJson,indent=4))
+								scheduleFile.close()
+								verbose and print("Changed schedule.json")
+						else:
+							verbose and print("Index is bigger than count of trigger entries")
 							exit(1)
 					except:
 						verbose and print("Error with schedule.json")
@@ -585,7 +666,7 @@ for i, origItem in enumerate(sys.argv):
 							scheduleFile.close()
 							verbose and print("Changed schedule.json")
 						else:
-							verbose and print("Index is bigger than count of cronentries")
+							verbose and print("Index is bigger than count of cron entries")
 							exit(1)
 					except:
 						verbose and print("Error with schedule.json")
@@ -630,4 +711,35 @@ for i, origItem in enumerate(sys.argv):
 		else:
 			verbose and print("Not enough arguments")
 			exit(1)
-
+	elif item == "--add-trigger":
+		addTrigger()
+	elif item == "--update-trigger":
+		updateTrigger()
+	elif item == "--delete-trigger":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 1] == "--index":
+				if isInt(sys.argv[i + 2]):
+					try:
+						scheduleJson = loadSchedule()
+						index = int(sys.argv[i + 2])
+						if index < len(scheduleJson["trigger"]) and index >= 0:
+							del scheduleJson["trigger"][index]
+							scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+							scheduleFile.write(json.dumps(scheduleJson,indent=4))
+							scheduleFile.close()
+							verbose and print("Changed schedule.json")
+						else:
+							verbose and print("Index is bigger than count of trigger entries")
+							exit(1)
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("Argument --index expected")
+				exit(1)
+		else:
+			verbose and print("Not enough arguments")
+			exit(1)
