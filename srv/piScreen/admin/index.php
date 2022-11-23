@@ -225,8 +225,8 @@
 				</div>
 			</div>
 		</main>
-		<div id='modal' class='modal-lg fade' tabindex='-1'>
-			<div class='modal-dialog modal-dialog-centered'>
+		<div id='modal' class='modal fade' tabindex='-1'>
+			<div class='modal-lg modal-dialog modal-dialog-centered'>
 				<div class='modal-content'>
 					<div class='modal-header'>
 						<h5 class='modal-title'></h5>
