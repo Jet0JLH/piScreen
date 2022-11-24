@@ -79,6 +79,11 @@
         "cancel": "Cancel",
         "alright": "Alright 😊",
 
+        "trigger-tile-header": "Startup trigger",
+        "trigger": "Trigger",
+        "choose-trigger": "Select trigger",
+        "triggerHelpText": "This command will be executed directly after startup.",
+
         "update-button": "Update available for version ",
         "update-info-header": "Update information",
         "update-info-text": "Connect to your Pi and send the following command to execute the update.<br><code>sudo /home/pi/piScreen/piScreenCmd.py --do-upgrade -v</code>",
@@ -92,7 +97,7 @@
         "switch-display-input": "Switch display input",
         "change-display-protocol": "Change display protocol",
 
-        "first-run": "Firstrun",
+        "first-run": "Execute last entry",
         "connection-lost": "Connection to server lost!",
         "fill-required-fields": "Please fill in all required fields!",
         "in-use": "in use",

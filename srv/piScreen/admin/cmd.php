@@ -56,7 +56,6 @@
 		}
 	}
 	elseif ($_GET['id'] == 9) { //Set Schedule
-		echo "$_SERVER[HTTP_HOST]$_SERVER[REQUEST_URI]";
 		if ($_GET['cmd'] == "add"){
 			$parameterString = "";
 			if ($_GET['enabled'] != NULL) {
@@ -165,7 +164,7 @@
 		echo shell_exec("$syscall --get-display-orientation-settings");
 	}
 	elseif ($_GET['id'] == 18) { //cron functions
-		if ($_GET['cmd'] == "add") {
+		/*if ($_GET['cmd'] == "add") {
 			$parameter = $_GET['parameter'];
 			echo shell_exec("$syscall --add-cron ");
 		}
@@ -174,13 +173,65 @@
 		}
 		elseif ($_GET['cmd'] == "delete") {
 			echo shell_exec("$syscall --delete-cron " . $_GET['entryId']);
-		}
+		}*/
 	}
 	elseif ($_GET['id'] == 19) { //commandset functions
 		//echo shell_exec("$syscall --get-display-orientation-settings");
 	}
 	elseif ($_GET['id'] == 20) { //Trigger functions
-		//echo shell_exec("$syscall --get-display-orientation-settings");
+		if ($_GET['cmd'] == "add"){
+			$parameterString = "";
+			if ($_GET['enabled'] != NULL) {
+				$parameterString .= " --enabled " . $_GET['enabled'];
+			}
+			if ($_GET['trigger'] != NULL) {
+				$parameterString .= " --trigger " . $_GET['trigger'];
+			}
+			if ($_GET['command'] != NULL) {
+				$parameterString .= " --command " . $_GET['command'];
+			}
+			if ($_GET['parameter'] != NULL) {
+				$parameterString .= " --parameter " . $_GET['parameter'];
+			}
+			if ($_GET['commandset'] != NULL) {
+				$parameterString .= " --commandset " . $_GET['commandset'];
+			}
+			//echo "$syscall --add-trigger$parameterString";
+			echo shell_exec("$syscall --add-trigger$parameterString");
+
+		} elseif ($_GET['cmd'] == "update") {
+			if ($_GET['index'] == NULL) {
+				echo $error;
+				return;
+			}
+			$parameterString = " --index " . $_GET['index'];
+			if ($_GET['enabled'] != NULL) {
+				$parameterString .= " --enabled " . $_GET['enabled'];
+			}
+			if ($_GET['triggerID'] != NULL) {
+				$parameterString .= " --triggerID " . $_GET['triggerID'];
+			}
+			if ($_GET['command'] != NULL) {
+				$parameterString .= " --command " . $_GET['command'];
+			}
+			if ($_GET['parameter'] != NULL) {
+				$parameterString .= " --parameter " . $_GET['parameter'];
+			}
+			if ($_GET['commandset'] != NULL) {
+				$parameterString .= " --commandset " . $_GET['commandset'];
+			}
+			//echo "$syscall --update-trigger$parameterString";
+			echo shell_exec("$syscall --update-trigger$parameterString");
+
+		} elseif ($_GET['cmd'] == "delete") {
+			if ($_GET['index'] == NULL) {
+				echo $error;
+				return;
+			}
+			$parameterString = " --index " . $_GET['index'];
+			//echo "$syscall --delete-trigger$parameterString";
+			echo shell_exec("$syscall --delete-trigger$parameterString");
+		}
 	}
 	elseif ($_GET['id'] == 21) { //Get current website
 		echo shell_exec("$syscall --get-website");

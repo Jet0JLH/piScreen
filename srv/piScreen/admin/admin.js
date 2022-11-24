@@ -40,6 +40,8 @@ const commandCollection = [//text, parameter
 	];
 var entryShown = false;
 
+//trigger
+var startupTriggerIndex = -1;
 //modal
 modal = new bootstrap.Modal(document.getElementById("modal"));
 modalCloseBtn = modal._element.getElementsByClassName('btn-close')[0];
@@ -86,52 +88,11 @@ function setToUnknownValues() {
 
 function enableElements(enable) {
 	let disable = !enable;
-	getElement("reloadBtn").disabled = disable;
-	getElement("restartBtn").disabled = disable;
-	getElement("shutdownBtn").disabled = disable;
-	getElement("displayOnBtn").disabled = disable;
-	getElement("displayStandbyBtn").disabled = disable;
+	let elementsToDisable = document.getElementsByClassName("disableOnDisconnect");
 
-	getElement("versionInfoBtn").disabled = disable;
-
-	getElement("settingsHostnameInput").disabled = disable;
-	getElement("settingsButtonSaveHostname").disabled = disable;
-	getElement("displayProtocolSelect").disabled = disable;
-	getElement("settingsButtonSaveDisplayProtocol").disabled = disable;
-	getElement("displayOrientationSelect").disabled = disable;
-	getElement("settingsButtonSaveDisplayOrientation").disabled = disable;
-	getElement("showLoginSettings").disabled = disable;
-	getElement("webUserInput").disabled = disable;
-	getElement("webPasswordInput").disabled = disable;
-	getElement("saveAndShowMainSettings").disabled = disable;
-	getElement("cancelAndShowMainSettings").disabled = disable;
-
-	for (let eId = 0; eId < scheduleEntryCount; eId++) {
-		getElement("entry" + eId + "EnabledSwitchCheck").disabled = disable;
-		getElement("entry" + eId + "ButtonDelete").disabled = disable;
-		getElement("cronentry" + eId).disabled = disable;
-		getElement("commandSelect" + eId).disabled = disable;
-		if (getElement("scheduleEntry" + eId + "ParameterInput") != null) getElement("scheduleEntry" + eId + "ParameterInput").disabled = disable;
-		getElement("entry" + eId + "ValiditySwitchCheckFrom").disabled = disable;
-		getElement("entry" + eId + "ValiditySwitchCheckTo").disabled = disable;
-		if (getElement("entry" + eId + "ValiditySwitchCheckFrom").checked) {
-			getElement("scheduleEntry" + eId + "StartTime").disabled = disable;
-			getElement("scheduleEntry" + eId + "StartDate").disabled = disable;	
-		}
-		if (getElement("entry" + eId + "ValiditySwitchCheckTo").checked) {
-			getElement("scheduleEntry" + eId + "EndTime").disabled = disable;
-			getElement("scheduleEntry" + eId + "EndDate").disabled = disable;	
-		}
-		getElement("entry" + eId + "SaveButton").disabled = disable;
-
+	for (let i = 0; i < elementsToDisable.length; i++) {
+		elementsToDisable[i].disabled = disable;
 	}
-
-	getElement("newScheduleEntry").disabled = disable;
-	getElement("importSchedule").disabled = disable;
-	getElement("exportSchedule").disabled = disable;
-	getElement("showEvents").disabled = disable;
-	getElement("displayStandbyBtn").disabled = disable;
-
 }
 
 function getElement(id) {
@@ -168,18 +129,18 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 						<tr>
 							<td style='width: 50%;'>
 								<div class="form-check form-switch">
-									<input class="form-check-input" type="checkbox" role="switch" id="entry${eId}EnabledSwitchCheck" onchange="enabledChanged(this, ${eId}); displayEntrySaved(false, ${eId});" ${enabled ? "checked" : ""}>
+									<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="entry${eId}EnabledSwitchCheck" onchange="enabledChanged(this, ${eId}); displayEntrySaved(false, ${eId});" ${enabled ? "checked" : ""}>
 									<label class="form-check-label" for="entry${eId}EnabledSwitchCheck" lang-data="active">Aktiviert</label>
 								</div>
 							</td>
 							<td style='width: 50%;'>
-								<button id="entry${eId}ButtonDelete" type="button" class="btn btn-danger" onclick='deleteEntry(${eId})' style='float: right;'><i class='bi bi-trash'></i></button>
+								<button id="entry${eId}ButtonDelete" type="button" class="disableOnDisconnect btn btn-danger" onclick='deleteEntry(${eId})' style='float: right;'><i class='bi bi-trash'></i></button>
 							</td>
 						</tr>
 						<tr>
 							<td>
 								<div class='form-floating mb-3'>
-									<input type='text' class='form-control' name='cronentry' id='cronentry${eId}' value='${pattern}' onkeyup='showEntryHeader(${eId}); displayEntrySaved(false, ${eId});' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Erklärung für Schreibweise. Denk dir was aus">
+									<input type='text' class='disableOnDisconnect form-control' name='cronentry' id='cronentry${eId}' value='${pattern}' onkeyup='showEntryHeader(${eId}); displayEntrySaved(false, ${eId});'>
 									<label for='cronentry${eId}'lang-data="cron-entry">Croneintrag</label>
 								</div>
 							</td>
@@ -190,7 +151,7 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 						<tr>
 							<td>
 								<div class='form-floating mb-3'>
-									<select id='commandSelect${eId}' class='form-select border-secondary' onchange='showEntryHeader(${eId}); displayEntrySaved(false, ${eId}); addParameter(${eId}, value);'>
+									<select id='commandSelect${eId}' class='disableOnDisconnect form-select border-secondary' onchange='showEntryHeader(${eId}); displayEntrySaved(false, ${eId}); addParameter(${eId}, value);'>
 									</select>
 									<label for="commandSelect${eId}" lang-data="choose-command">Befehl auswählen</label>
 								</div>
@@ -204,13 +165,13 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 									<tr>
 										<td colspan='2' class='p-2'>
 											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="entry${eId}ValiditySwitchCheckFrom" onchange='toggleValidityFrom(${eId}, checked); displayEntrySaved(false, ${eId});' ${start != "" ? "checked" : ""}>
+												<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="entry${eId}ValiditySwitchCheckFrom" onchange='toggleValidityFrom(${eId}, checked); displayEntrySaved(false, ${eId});' ${start != "" ? "checked" : ""}>
 												<label class="form-check-label" for="entry${eId}ValiditySwitchCheckFrom" lang-data="valid-from">Gültig von</label>
 											</div>
 										</td>
 										<td colspan='2' class='p-2'>
 											<div class="form-check form-switch">
-												<input class="form-check-input" type="checkbox" role="switch" id="entry${eId}ValiditySwitchCheckTo" onchange='toggleValidityTo(${eId}, checked); displayEntrySaved(false, ${eId});' ${end != "" ? "checked" : ""}>
+												<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="entry${eId}ValiditySwitchCheckTo" onchange='toggleValidityTo(${eId}, checked); displayEntrySaved(false, ${eId});' ${end != "" ? "checked" : ""}>
 												<label class="form-check-label" for="entry${eId}ValiditySwitchCheckTo" lang-data="valid-to">Gültig bis</label>
 											</div>
 										</td>
@@ -221,8 +182,8 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 										</td>
 										<td id='entry${eId}ValidityTimeSpanFrom2'>
 											<div class='input-group'>
-												<input id='scheduleEntry${eId}StartTime' name='scheduleEntry${eId}StartDateTime' type="time" class="form-control p-1" onchange="displayEntrySaved(false, ${eId});" style="text-align: center; width: 40%;" value="${startTime}">
-												<input id='scheduleEntry${eId}StartDate' type="date" class="form-control p-1" style="text-align: center; width: 60%;" value="${startDate}">
+												<input id='scheduleEntry${eId}StartTime' name='scheduleEntry${eId}StartDateTime' type="time" class="disableOnDisconnect form-control p-1" onchange="displayEntrySaved(false, ${eId});" style="text-align: center; width: 40%;" value="${startTime}">
+												<input id='scheduleEntry${eId}StartDate' type="date" class="disableOnDisconnect form-control p-1" style="text-align: center; width: 60%;" value="${startDate}">
 											</div>
 										</td>
 										<td id='entry${eId}ValidityTimeSpanTo1' class='px-2' lang-data='to'>
@@ -230,8 +191,8 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 										</td>
 										<td id='entry${eId}ValidityTimeSpanTo2'>
 											<div class='input-group'>
-												<input id='scheduleEntry${eId}EndTime' name='scheduleEntry${eId}EndDateTime' type="time" class="form-control p-1" onchange="displayEntrySaved(false, ${eId});" style="text-align: center; width: 40%;" value="${endTime}">
-												<input id='scheduleEntry${eId}EndDate' type="date" class="form-control p-1" style="text-align: center; width: 60%;" value="${endDate}">
+												<input id='scheduleEntry${eId}EndTime' name='scheduleEntry${eId}EndDateTime' type="disableOnDisconnect time" class="form-control p-1" onchange="displayEntrySaved(false, ${eId});" style="text-align: center; width: 40%;" value="${endTime}">
+												<input id='scheduleEntry${eId}EndDate' type="date" class="disableOnDisconnect form-control p-1" style="text-align: center; width: 60%;" value="${endDate}">
 											</div>
 										</td>
 									</tr>
@@ -240,7 +201,7 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 						</tr>
 					</div>
 				</table>
-				<button id="entry${eId}SaveButton" type="button" class="btn btn-outline-success mt-2" onclick='saveEntry(${eId})' data-bs-toggle="collapse" data-bs-target="#collapseEntry${eId}Collection"><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
+				<button id="entry${eId}SaveButton" type="button" class="disableOnDisconnect btn btn-outline-success mt-2" onclick='saveEntry(${eId})' data-bs-toggle="collapse" data-bs-target="#collapseEntry${eId}Collection"><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
 				<i id='entryInfo${eId}' data='${newEntry}' class='bi bi-info-circle mt-3' style="float: right;" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="CronID: ${eId}"></i>
 			</div>
 		</div>
@@ -278,20 +239,20 @@ function addCommandsToDropdown(dropdownId) {
 }
 
 function addParameter(entryId, commandId, parameter) {
-	let cell = document.getElementById("entry" + entryId + "ParameterCell");
+	let cell = getElement("entry" + entryId + "ParameterCell");
 	cell.innerHTML = "";
 	//add element
 	let div = document.createElement("div");
-	div.id = "scheduleEntry" + eId + "ParameterInputDiv";
+	div.id = "scheduleEntry" + entryId + "ParameterInputDiv";
 	div.className = "form-floating mb-3";
 
 	if (commandCollection[commandId][1] == false) {
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
-		div.innerHTML = `<input id='scheduleEntry${eId}ParameterInput' type='text' class='form-control' onkeyup='displayEntrySaved(false, ${eId});' maxlength='50' value='${parameter}' lang-data='parameter'>`;
+		div.innerHTML = `<input id='scheduleEntry${entryId}ParameterInput' type='text' class='disableOnDisconnect form-control' onkeyup='displayEntrySaved(false, ${entryId});' maxlength='50' value='${parameter}' lang-data='parameter'>`;
 		if (parameter == undefined) parameter = "";
 	} else if (Array.isArray(commandCollection[commandId][1])) {
-		let htmlSelect = `<select id='scheduleEntry${eId}ParameterInput' onchange='displayEntrySaved(false, ${eId});' class='form-select border-secondary'>\n`;
+		let htmlSelect = `<select id='scheduleEntry${entryId}ParameterInput' onchange='displayEntrySaved(false, ${entryId});' class='disableOnDisconnect form-select border-secondary'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
 			htmlSelect += `<option value='${commandCollection[commandId][1][i][0]}' lang-data='${commandCollection[commandId][1][i][1]}'>${getLanguageAsText(commandCollection[commandId][1][i][1])}</option>\n`;
 		}
@@ -301,11 +262,45 @@ function addParameter(entryId, commandId, parameter) {
 	}
 
 	cell.appendChild(div);
-	document.getElementById("scheduleEntry" + eId + "ParameterInput").value = parameter;
+	document.getElementById("scheduleEntry" + entryId + "ParameterInput").value = parameter;
 
 	//add label
 	let label = document.createElement("label");
-	label.htmlFor = `scheduleEntry${eId}ParameterInput`;
+	label.htmlFor = `scheduleEntry${entryId}ParameterInput`;
+	label.setAttribute('lang-data', 'parameter');
+	label.innerHTML = getLanguageAsText('parameter');
+	div.appendChild(label);
+}
+
+function addParameterToTrigger(triggerId, commandId, parameter) {
+	let cell = getElement("trigger" + triggerId + "ParameterCell");
+	cell.innerHTML = "";
+	//add element
+	let div = document.createElement("div");
+	div.id = "trigger" + triggerId + "ParameterInputDiv";
+	div.className = "form-floating mb-3";
+
+	if (commandCollection[commandId][1] == false) {
+		return;
+	} else if (commandCollection[commandId][1] == "text") {
+		div.innerHTML = `<input id='trigger${triggerId}ParameterInput' type='text' class='disableOnDisconnect form-control' maxlength='50' onkeyup='triggerSaved(false, 0);' lang-data='parameter'>`;
+		if (parameter == undefined) parameter = "";
+	} else if (Array.isArray(commandCollection[commandId][1])) {
+		let htmlSelect = `<select id='trigger${triggerId}ParameterInput' class='disableOnDisconnect form-select border-secondary' style='width: 100%;' onchange='triggerSaved(false, 0);'>\n`;
+		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
+			htmlSelect += `<option value='${commandCollection[commandId][1][i][0]}' lang-data='${commandCollection[commandId][1][i][1]}'>${getLanguageAsText(commandCollection[commandId][1][i][1])}</option>\n`;
+		}
+		htmlSelect += "</select>";
+		div.innerHTML = htmlSelect;
+		if (parameter == undefined) parameter = 0;
+	}
+
+	cell.appendChild(div);
+	getElement("trigger" + triggerId + "ParameterInput").value = parameter;
+
+	//add label
+	let label = document.createElement("label");
+	label.htmlFor = "trigger" + triggerId + "ParameterInput";
 	label.setAttribute('lang-data', 'parameter');
 	label.innerHTML = getLanguageAsText('parameter');
 	div.appendChild(label);
@@ -316,9 +311,21 @@ function getScheduleFromServer() {
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.onloadend = function() {
 		let scheduleObj = JSON.parse(xmlhttp.responseText);
-		for (let i = 0; i < scheduleObj.cron.length; i++) {
+		for (let i = 0; i < scheduleObj.cron.length; i++) {//crons
 			let cronObj = scheduleObj.cron[i];
 			generateNewScheduleEntry(cronObj.enabled, cronObj.pattern, cronObj.start, cronObj.end, cronObj.command, cronObj.parameter, true, false);
+		}
+		addCommandsToDropdown("trigger0CommandSelect");//trigger
+		for (let i = 0; i < scheduleObj.trigger.length; i++) {//trigger parameter
+			let triggerObj = scheduleObj.trigger[i];
+			if (triggerObj.trigger == 1) {
+				startupTriggerIndex = i;
+				console.log("startupTriggerIndex " + startupTriggerIndex);
+					getElement("trigger0EnabledSwitch").checked = triggerObj.enabled;
+				getElement("trigger0CommandSelect").value = triggerObj.command;
+				addParameterToTrigger(0, triggerObj.command, triggerObj.parameter);
+				return;
+			}
 		}
 	}
 	xmlhttp.open('GET', 'cmd.php?id=10', true);
@@ -551,6 +558,18 @@ function settingNotSaved(elementId) {
 	element.innerHTML = "<i class='bi bi-save'></i>";
 }
 
+function triggerSaved(saved, triggerId) {
+	let element = getElement("trigger" + triggerId + "SaveButton");
+	if (saved) {
+		element.className = "btn btn-success mt-2";
+		element.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='saved'>" + getLanguageAsText("saved") + "</span>";
+	} else {
+		element.className = "btn btn-outline-success mt-2";
+		element.innerHTML = "<i class='bi bi-save pe-2'></i><span lang-data='save'>" + getLanguageAsText("save") + "</span>";
+	}
+}
+
+
 function showEntryHeader(entryId) {
 	let sel = getElement("commandSelect" + entryId);
 	getElement("scheduleEntry" + entryId + "HeaderCommand").innerText = sel.options[sel.selectedIndex].text;
@@ -580,6 +599,36 @@ function toggleValidityTo(entryId, checked){
 		entry1.style.visibility = "hidden";
 		entry2.style.visibility = "hidden";
 	}
+}
+
+function saveTrigger(triggerId) {
+	if (triggerId != 0) return;//only startup trigger
+	if (startupTriggerIndex > -1) {
+		if (getElement("trigger" + triggerId + "CommandSelect").value == 0) {//if no command selected, delete
+			sendHTTPRequest('GET', 'cmd.php?id=20&cmd=delete&index=' + startupTriggerIndex, true);
+			return;
+		}
+		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + startupTriggerIndex + '&' + prepareTriggerString(triggerId), true);
+		return;
+	}
+	sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareTriggerString(triggerId), true);
+	startupTriggerIndex++;
+}
+
+function prepareTriggerString(triggerId) {
+	//get elements
+	let enabled = document.getElementById("trigger" + triggerId + "EnabledSwitch").checked;
+	let command = document.getElementById("trigger" + triggerId + "CommandSelect").value;
+	let parameterElement = document.getElementById("trigger" + triggerId + "ParameterInput");
+	let parameter = parameterElement != null ? parameterElement.value : null;
+
+	let msg = "enabled=" + enabled.toString().trim() + "&";
+	if (command != 0) msg += "command=" + command + "&";
+	if (parameter != null) msg += "parameter=" + parameter + "&";
+	if (triggerId == 0) msg += "trigger=1&";
+	msg = msg.substring(0, msg.length - 1);
+
+	return msg;
 }
 
 function saveEntry(entryId) {
@@ -629,7 +678,7 @@ function prepareCronString(entryId) {
 	let startDateTime = document.getElementById("entry" + entryId + "ValiditySwitchCheckFrom").checked;
 	let endDateTime = document.getElementById("entry" + entryId + "ValiditySwitchCheckTo").checked;
 
-	let msg = "enabled=" + enabled + "&";
+	let msg = "enabled=" + enabled.toString().trim() + "&";
 	msg += "pattern=" + cronentry + "&";
 	if (startDateTime) msg += "start=" + startDate + " " + startTime + "&";
 	else msg += "start= &";
@@ -743,7 +792,6 @@ window.onload = function() {
 		xmlhttp.send();
 	}, 2000);
 	checkForUpdate();
-	//addCommandsToDropdown("startupTriggerSelect");
 }
 
 // language functions
