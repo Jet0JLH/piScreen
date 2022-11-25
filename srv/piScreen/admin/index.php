@@ -157,7 +157,7 @@
 						<select id='trigger0CommandSelect' class='disableOnDisconnect form-select border-secondary' onchange='triggerSaved(false, 0); addParameterToTrigger(0, value);'>
 
 						</select>
-						<label for="trigger0CommandSelect" lang-data='choose-trigger'>Trigger auswählen</label>
+						<label for="trigger0CommandSelect" lang-data='choose-command'>Command auswählen</label>
 					</div>
 
 					<div id="trigger0ParameterCell" style='width: 100%;'>

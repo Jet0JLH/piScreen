@@ -320,8 +320,7 @@ function getScheduleFromServer() {
 			let triggerObj = scheduleObj.trigger[i];
 			if (triggerObj.trigger == 1) {
 				startupTriggerIndex = i;
-				console.log("startupTriggerIndex " + startupTriggerIndex);
-					getElement("trigger0EnabledSwitch").checked = triggerObj.enabled;
+				getElement("trigger0EnabledSwitch").checked = triggerObj.enabled;
 				getElement("trigger0CommandSelect").value = triggerObj.command;
 				addParameterToTrigger(0, triggerObj.command, triggerObj.parameter);
 				return;
