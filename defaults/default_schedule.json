@@ -7,6 +7,11 @@
 
 	],
 	"trigger":[
-		
+		{
+			"enabled": true,
+            "trigger": 1,
+            "command": 40,
+			"parameter": "https://github.com/Jet0JLH/piScreen"
+		}
 	]
 }

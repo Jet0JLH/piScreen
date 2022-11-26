@@ -71,11 +71,11 @@ def printHelp():
 	Delete a cronentry by index from schedule.json.
 --add-trigger <--trigger <triggerID>> [--enabled <false/true>] [--command [commandID]] [--parameter [parameter]] [--commandset [commandsetID]]
 	Add a trigger to schedule.json.
---update-trigger <--index <triggerIndex> [--enabled <false/true>] [--trigger <triggerID>] [--command [commandID]] [--parameter [parameter]] [--commandset [commandsetID]]
+--update-trigger <--index <triggerIndex>> [--enabled <false/true>] [--trigger <triggerID>] [--command [commandID]] [--parameter [parameter]] [--commandset [commandsetID]]
 	Update a trigger by index in schedule.json.
---delete-trigger <--index <triggerIndex>
+--delete-trigger <--index <triggerIndex>>
 	Delete a trigger by index from schedule.json.
---add-commandset [--name <name>] [--command <commandID> [parameter]]
+--add-commandset <--name <name>> [--command <commandID> [parameter]]
 	Add a commandset to schedule.json.
 --update-commandset <--id <id>> [--name <name>] [--command <commandID> [parameter]]
 	Update a commandset by id in schedule.json.
@@ -510,6 +510,93 @@ def updateTrigger():
 		verbose and print("Not enough arguments")
 		exit(1)
 
+def addCommandset(update):
+	if i + 2 < len(sys.argv):
+		if "--name" in sys.argv or update:
+			import random
+			item = {}
+			if update and modifySchedule("id",int,item):
+				deleteCommandset()
+			else:
+				item["id"] = random.randint(100000,999999)
+			modifySchedule("name",str,item)
+			item["commands"] = []
+			for x in range(len(sys.argv)):
+				if sys.argv[x] == "--command":
+					if len(sys.argv) > x + 2:
+						if not sys.argv[x + 1].startswith("--"):
+							if isInt(sys.argv[x + 1]):
+								subitem = {}
+								subitem["command"] = int(sys.argv[x + 1])
+								if not sys.argv[x + 2].startswith("--"):
+									subitem["parameter"] = sys.argv[x + 2]
+								item["commands"].append(subitem)
+					elif len(sys.argv) > x + 1:
+						if not sys.argv[x + 1].startswith("--"):
+							if isInt(sys.argv[x + 1]):
+								subitem = {}
+								subitem["command"] = int(sys.argv[x + 1])
+								item["commands"].append(subitem)
+			try:
+				scheduleJson = loadSchedule()
+				scheduleJson["commandsets"].append(item)
+				scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+				scheduleFile.write(json.dumps(scheduleJson,indent=4))
+				scheduleFile.close()
+				verbose and print("Changed schedule.json")
+			except:
+				verbose and print("Error with schedule.json")
+				exit(1)
+		else:
+			verbose and print("Argument --name expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
+def updateCommandset():
+	if i + 2 < len(sys.argv):
+		if "--id" in sys.argv:
+			addCommandset(True)
+		else:
+			verbose and print("Argument --id expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
+def deleteCommandset():
+	if i + 2 < len(sys.argv):
+		if "--id" in sys.argv:
+			if isInt(sys.argv[sys.argv.index("--id") + 1]):
+				try:
+					found = False
+					scheduleJson = loadSchedule()
+					max = len(scheduleJson["commandsets"])
+					for x in range(0,max):
+						if "id" in scheduleJson["commandsets"][x]:
+							if scheduleJson["commandsets"][x]["id"] == int(sys.argv[sys.argv.index("--id") + 1]):
+								del scheduleJson["commandsets"][x]
+								found = True
+								max = max - 1
+					if found:
+						scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+						scheduleFile.write(json.dumps(scheduleJson,indent=4))
+						scheduleFile.close()
+						verbose and print("Changed schedule.json")
+				except:
+					verbose and print("Error with schedule.json")
+					exit(1)
+			else:
+				verbose and print("Index is no number")
+				exit(1)
+		else:
+			verbose and print("Argument --id expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
 #Main
 verbose = False
 sys.argv.pop(0) #Remove Path
@@ -680,37 +767,12 @@ for i, origItem in enumerate(sys.argv):
 		else:
 			verbose and print("Not enough arguments")
 			exit(1)
+	elif item == "--add-commandset":
+		addCommandset(False)
+	elif item == "--update-commandset":
+		updateCommandset()
 	elif item == "--delete-commandset":
-		if i + 2 < len(sys.argv):
-			if sys.argv[i + 1] == "--id":
-				if isInt(sys.argv[i + 2]):
-					try:
-						found = False
-						scheduleJson = loadSchedule()
-						max = len(scheduleJson["commandsets"])
-						for x in range(0,max):
-							if "id" in scheduleJson["commandsets"][x]:
-								if scheduleJson["commandsets"][x]["id"] == int(sys.argv[i + 2]):
-									del scheduleJson["commandsets"][x]
-									found = True
-									max = max - 1
-						if found:
-							scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
-							scheduleFile.write(json.dumps(scheduleJson,indent=4))
-							scheduleFile.close()
-							verbose and print("Changed schedule.json")
-					except:
-						verbose and print("Error with schedule.json")
-						exit(1)
-				else:
-					verbose and print("Index is no number")
-					exit(1)
-			else:
-				verbose and print("Argument --id expected")
-				exit(1)
-		else:
-			verbose and print("Not enough arguments")
-			exit(1)
+		deleteCommandset()
 	elif item == "--add-trigger":
 		addTrigger()
 	elif item == "--update-trigger":
