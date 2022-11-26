@@ -76,7 +76,7 @@
 				<div class='card p-3 shadow'>
 					<h1 class='pb-2'><i class='bi-gear bigIcon px-2'></i><span lang-data='settings-tile-header'>Einstellungen</span></h1>
 					<div class="accordion accordion-flush" id="settingsAccordion">
-						<div class="accordion-item" style='background-color: transparent;'>
+						<div class="accordion-item" style='background-color: transparent; border: none !important;'>
 							<div id="collapseMainSettings" class="accordion-collapse collapse show" data-bs-parent="#settingsAccordion">
 								<div class="accordion-body p-0">
 									<table style='width: 100%;'>
@@ -171,7 +171,7 @@
 				<div class='card p-3 shadow'>
 				<h1 class='pb-2'><i class='bi bi-calendar2-day bigIcon px-2'></i><span lang-data='timeschedule-tile-header'>Zeitplan</span></h1>
 					<div class="accordion" id="scheduleAccordion">
-						<div class="accordion-item" style='background-color: transparent;'>
+						<div class="accordion-item" style='background-color: transparent; border: none !important;'>
 							<div id="collapseTwo" class="accordion-collapse collapse show" data-bs-parent="#scheduleAccordion">
 								<div class="accordion-body p-0">
 									<!--<div style='display:flex;flex-flow:row wrap;align-items:center;'>
@@ -197,7 +197,7 @@
 							</div>
 						</div>
 
-						<div class="accordion-item" style='background-color: transparent;'>
+						<div class="accordion-item" style='background-color: transparent; border: none !important;'>
 							<div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#scheduleAccordion">
 							<h3 class='pb-2 accordion-header' id="headingOne">Events bearbeiten</h3>
 								<div class="accordion-body p-0">

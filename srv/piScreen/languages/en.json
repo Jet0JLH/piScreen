@@ -82,7 +82,7 @@
         "trigger-tile-header": "Startup trigger",
         "trigger": "Trigger",
         "choose-trigger": "Select trigger",
-        "triggerHelpText": "This command will be executed directly after startup.",
+        "triggerHelpText": "This command will be executed directly after startup.<br><br>The displayinput will be set automatically to piScreen.<br>The display will also power on itself automatically.",
 
         "update-button": "Update available for version ",
         "update-info-header": "Update information",
