@@ -261,10 +261,10 @@ def runTrigger(trigger):
 		for item in globalConf.conf["trigger"]:
 			if "enabled" in item:
 				if item["enabled"]:
-					found = True
 					if "trigger" in item:
 						if isInt(item["trigger"]):
 							if trigger == int(item["trigger"]):
+								found = True
 								if "command" in item:
 									if "parameter" in item:
 										commandInterpreter(item["command"],item["parameter"])
@@ -349,7 +349,10 @@ while active:
 		active = os.path.exists(activePath)
 		if os.path.exists(doFirstRunPath):
 			firstRun()
-			os.remove(doFirstRunPath)
+			try:
+				os.remove(doFirstRunPath)
+			except:
+				print("Unable to remove firstrun file in ramdisk")
 		time.sleep(5)
 	except KeyboardInterrupt:
 		active = False

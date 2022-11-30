@@ -12,8 +12,12 @@ displayDDC=$ramdisk"piScreenDisplayDDC"
 echo "" > $displayStatus
 
 if [ -f $displayCEC ]; then
-	(while true ; do sleep 2 ; if [ ! -f $displayCEC ] ; then killall cec-client ; elif [ -f $displayOn ] ; then sudo rm $displayOn ; echo "on 0" ; elif [ -f $displayStandby ] ; then sudo rm $displayStandby ; echo "standby 0" ; elif [ -f $displayOff ] ; then sudo rm $displayOff ; echo "off 0" ; elif [ -f $displaySwitchChannel ] ; then sudo rm $displaySwitchChannel ; echo "as 0" ; fi ; echo "pow 0" ; done) | cec-client -d 8 -p 1 -b 5 -t p | grep power  --line-buffered | while read x ; do
-		echo $x | awk '{split($0,a,":");print a[2]}' | sed 's/ //' | tee $displayStatus > /dev/null
+	(while true ; do sleep 2 ; if [ ! -f $displayCEC ] ; then killall cec-client ; elif [ -f $displayOn ] ; then echo "on 0" ; elif [ -f $displayStandby ] ; then echo "standby 0" ; elif [ -f $displayOff ] ; then echo "off 0" ; elif [ -f $displaySwitchChannel ] ; then sudo rm $displaySwitchChannel ; echo "as 0" ; fi ; echo "pow 0" ; done) | cec-client -d 8 -p 1 -b 5 -t p | grep power  --line-buffered | while read x ; do
+		status=$(echo $x | awk '{split($0,a,":");print a[2]}' | sed 's/ //')
+		echo $status > $displayStatus
+		if [ $status == "on" ] && [ -f $displayOn ] ; then sudo rm $displayOn ; fi
+		if [ $status == "standby" ] && [ -f $displayStandby ] ; then sudo rm $displayStandby ; fi
+		if [ $status == "off" ] && [ -f $displayOff ] ; then sudo rm $displayOff ; fi
 	done
 elif [ -f $displayDDC ]; then
 	while [ -f $displayDDC ] ; do
