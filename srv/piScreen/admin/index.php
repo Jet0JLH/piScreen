@@ -145,11 +145,11 @@
 					</div>
 				</div>
 			</div>
-			<div class='col-lg-12 col-xl-6 mb-4'>
+			<div class='col-sm-12 col-lg-6 mb-4'>
 				<div class='card p-3 shadow'>
 					<h1 class='pb-2'><i class='bi bi-lightning-charge bigIcon px-2'></i><span lang-data='trigger-tile-header'>Trigger</span></h1>
 					<div class='form-check form-switch m-1' style='display: flex; flex-flow: row wrap; align-items: center;'>
-						<input class="form-check-input" type="checkbox" role="switch" id="trigger0EnabledSwitch" onchange='triggerSaved(false, 0);'></input>
+						<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="trigger0EnabledSwitch" onchange='triggerSaved(false, 0);'></input>
 						<label for="trigger0EnabledSwitch" class="px-2" lang-data='active'>Startup trigger</label>
 						<i class='bi-question-octagon p-2' style='cursor: pointer;' id='triggerHelp' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="??" onclick='showModal(getLanguageAsText("help"), getLanguageAsText("triggerHelpText"), false, true, getLanguageAsText("ok"));'></i>
 					</div>
@@ -167,7 +167,7 @@
 					</div>
 				</div>
 			</div>
-			<div class='col-lg-12 col-xl-6 mb-4'>
+			<div class='col-sm-12 col-lg-6 mb-4'>
 				<div class='card p-3 shadow'>
 				<h1 class='pb-2'><i class='bi bi-calendar2-day bigIcon px-2'></i><span lang-data='timeschedule-tile-header'>Zeitplan</span></h1>
 					<div class="accordion" id="scheduleAccordion">

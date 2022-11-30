@@ -50,7 +50,8 @@
                                 <p><u>Configure:</u></p>
                                 <ul>
                                     <li>Hostname</li>
-                                    <li>Webpage</li>
+                                    <li>Display protocol</li>
+                                    <li>Display orientation</li>
                                 </ul>
                             </div>
                         </td>

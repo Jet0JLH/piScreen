@@ -191,7 +191,7 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 										</td>
 										<td id='entry${eId}ValidityTimeSpanTo2'>
 											<div class='input-group'>
-												<input id='scheduleEntry${eId}EndTime' name='scheduleEntry${eId}EndDateTime' type="disableOnDisconnect time" class="form-control p-1" onchange="displayEntrySaved(false, ${eId});" style="text-align: center; width: 40%;" value="${endTime}">
+												<input id='scheduleEntry${eId}EndTime' name='scheduleEntry${eId}EndDateTime' type="time" class="disableOnDisconnect form-control p-1" onchange="displayEntrySaved(false, ${eId});" style="text-align: center; width: 40%;" value="${endTime}">
 												<input id='scheduleEntry${eId}EndDate' type="date" class="disableOnDisconnect form-control p-1" style="text-align: center; width: 60%;" value="${endDate}">
 											</div>
 										</td>
@@ -403,7 +403,7 @@ function checkForUpdate() {
 			let updateButton = document.createElement('button');
 			updateButton.id = 'updateAvaiableBtn';
 			updateButton.href = '#';
-			updateButton.className = 'btn btn-danger blink';
+			updateButton.className = 'disableOnDisconnect btn btn-danger blink';
 			updateButton.style = 'float:right;';
 
 			let textSpan = document.createElement('span');
@@ -547,23 +547,23 @@ function setWebLoginAndPassword() {
 
 function settingSaved(elementId) {
 	let element = document.getElementById(elementId);
-	element.className = "btn btn-success ms-3 mb-3";
+	element.className = "disableOnDisconnect btn btn-success ms-3 mb-3";
 	element.innerHTML = "<i class='bi bi-check2'></i>";
 }
 
 function settingNotSaved(elementId) {
 	let element = document.getElementById(elementId);
-	element.className = "btn btn-outline-success ms-3 mb-3";
+	element.className = "disableOnDisconnect btn btn-outline-success ms-3 mb-3";
 	element.innerHTML = "<i class='bi bi-save'></i>";
 }
 
 function triggerSaved(saved, triggerId) {
 	let element = getElement("trigger" + triggerId + "SaveButton");
 	if (saved) {
-		element.className = "btn btn-success mt-2";
+		element.className = "disableOnDisconnect btn btn-success mt-2";
 		element.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='saved'>" + getLanguageAsText("saved") + "</span>";
 	} else {
-		element.className = "btn btn-outline-success mt-2";
+		element.className = "disableOnDisconnect btn btn-outline-success mt-2";
 		element.innerHTML = "<i class='bi bi-save pe-2'></i><span lang-data='save'>" + getLanguageAsText("save") + "</span>";
 	}
 }
