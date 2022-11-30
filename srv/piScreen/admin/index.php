@@ -167,7 +167,7 @@
 					</div>
 				</div>
 			</div>
-			<div class='col-sm-12 col-lg-6 mb-4'>
+			<div class='col-lg-12 col-xl-6 mb-4'>
 				<div class='card p-3 shadow'>
 				<h1 class='pb-2'><i class='bi bi-calendar2-day bigIcon px-2'></i><span lang-data='timeschedule-tile-header'>Zeitplan</span></h1>
 					<div class="accordion" id="scheduleAccordion">

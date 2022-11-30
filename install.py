@@ -4,31 +4,33 @@ from OpenSSL.crypto import FILETYPE_PEM, load_certificate
 from base64 import b64encode
 
 isUpdate = False
-isInstall = not isUpdate
+isInstall = True
+isReinstall = False
 
-certPath = "/home/pi/piScreen/certs/"
+userHomePath = "/home/pi/"
+certPath = userHomePath + "piScreen/certs/"
 certName = "server.crt"
 fstabPath = "/etc/fstab"
-fstabEntry = "tmpfs    /media/ramdisk  tmpfs   defaults,size=5%        0       0"
+fstabEntry = "\ntmpfs    /media/ramdisk  tmpfs   defaults,size=5%        0       0"
 sudoersFilePath = "/etc/sudoers.d/050_piScreen-nopasswd"
-cronJsonPath = "/home/pi/piScreen/cron.json"
-settingsJsonPath = "/home/pi/piScreen/settings.json"
+scheduleJsonPath = userHomePath + "piScreen/schedule.json"
+settingsJsonPath = userHomePath + "piScreen/settings.json"
 htpasswdPath = "/etc/apache2/.piScreen_htpasswd"
 lxdePath = "/etc/xdg/lxsession/LXDE-pi/autostart"
 lxdeConfig1 = "@lxpanel --profile LXDE-pi"
 lxdeConfig2 = "@xset s 0"
 lxdeConfig3 = "@xset -dpms"
-desktopConfigPath = "/home/pi/.config/pcmanfm/LXDE-pi/desktop-items-0.conf"
+desktopConfigPath = userHomePath + ".config/pcmanfm/LXDE-pi/desktop-items-0.conf"
 desktopConfig1 = "show_trash=1"
 desktopConfig2 = "show_mounts=1"
-oldManifest = json.loads('{"application-name": "piScreen", "version": { "major": "-",	"minor": "-",	"patch": "-"}}')
 defaultSettingsPath = f"{os.path.dirname(__file__)}/defaults/default_settings.json"
-defaultCronPath = f"{os.path.dirname(__file__)}/defaults/default_cron.json"
+defaultSchedulePath = f"{os.path.dirname(__file__)}/defaults/default_schedule.json"
 firefoxConfigPath = "/etc/firefox-esr/piScreen.js"
 continuousInstall = False
-standardWebPassword = "piScreen"
 standardWebUsername = "pi"
+standardWebPassword = "piScreen"
 skipDependencyUpdate = False
+oldManifest = json.loads('{"application-name": "piScreen", "version": { "major": -1,	"minor": -1,	"patch": -1}}') #Set default values
 SHA256OID = "OID.2.16.840.1.101.3.4.2.1"
 SHA384OID = "OID.2.16.840.1.101.3.4.2.2"
 SHA512OID = "OID.2.16.840.1.101.3.4.2.3"
@@ -36,19 +38,36 @@ SHA512OID = "OID.2.16.840.1.101.3.4.2.3"
 
 def executeWait(command):
     args = command.split(" ")
-    process = subprocess.Popen(args)
-    process.wait()
-    return process.returncode
+    try:
+        process = subprocess.Popen(args)
+        process.wait()
+        return process.returncode
+    except PermissionError:
+        exit("No permissions")
+    except FileNotFoundError:
+        exit("File doesn't exist")
+    except:
+        exit("Error in executeWait")
 
 def executeWithReturnValue(command):
-    args = command.split(" ")
-    result = subprocess.run(args, capture_output=True)
-    return result.stdout.decode("utf-8")
+    try:
+        args = command.split(" ")
+        result = subprocess.run(args, capture_output=True)
+        return result.stdout.decode("utf-8")
+    except:
+        exit("Error in executeWithReturnValue")
+
 
 def appendToFile(filepath, text):
     try:
         file = open(filepath, "a")
         file.write(text)
+    except PermissionError:
+        exit("No permissions on " + filepath)
+    except FileNotFoundError:
+        exit(filepath + " doesn't exist")
+    except:
+        exit("Error in appendToFile on " + filepath)
     finally:
         file.close()
 
@@ -56,38 +75,115 @@ def readFile(filepath):
     try:
         file = open(filepath, "r")
         filestr = file.read()
+        return filestr
+    except PermissionError:
+        exit("No read permissions on " + filepath)
+    except FileNotFoundError:
+        exit(filepath + " doesn't exist")
+    except:
+        exit("Error in readFile on " + filepath)
     finally:
         file.close()
-    return filestr
 
 def removeFile(filePath):
-    if os.path.exists(filePath):
-        os.remove(filePath)
+    try:
+        if os.path.exists(filePath):
+            os.remove(filePath)
+    except PermissionError:
+        exit("No write and execute permissions on " + filePath + "to delete it.")
+    except:
+        exit("Error in removeFile")
+
+def copyFile(fromPath, toPath):
+    try:
+        shutil.copy(fromPath, toPath)
+    except PermissionError:
+        exit("No read permissions on copy " + fromPath + " to " + toPath)
+    except FileNotFoundError:
+        exit("File not found error on copy " + fromPath + " to " + toPath)
+    except:
+        exit("Error in copyFile on " + fromPath + " to " + toPath)
+        
 
 def createFolder(folderpath):
-    if not os.path.exists(folderpath):
-        os.mkdir(folderpath)
+    try:
+        if not os.path.exists(folderpath):
+            os.mkdir(folderpath)
+    except PermissionError:
+        exit("No write permissions to create " + folderpath)
+    except:
+        exit("Error in createFolder " + folderpath)
 
 def writeNewFile(filepath, text):
     try:
         file = open(filepath, "w")
         file.write(text)
+    except PermissionError:
+        exit("No write permissions on " + filepath)
+    except:
+        exit("Error in writeNewFile on " + filepath)
     finally:
         file.close()
 
 def replaceInFile(toReplace, replacement, filePath):
-    fileText = readFile(filePath)
-    fileText = fileText.replace(toReplace, replacement)
-    removeFile(filePath)
-    writeNewFile(filePath, fileText)
+    try:
+        fileText = readFile(filePath)
+        fileText = fileText.replace(toReplace, replacement)
+        removeFile(filePath)
+        writeNewFile(filePath, fileText)
+    except PermissionError:
+        exit("No permissions")
+    except FileNotFoundError:
+        exit("File doesn't exist")
+    except Exception:
+        exit("Error in replaceInFile")
 
-def replaceInfileWriteProtected(toReplace, replacement, filePath):
-    tempFileName = ".temp.txt"
-    writeNewFile(tempFileName, "")
-    shutil.copy(filePath, tempFileName)
-    replaceInFile(toReplace, replacement, tempFileName)
-    shutil.copy(tempFileName, filePath)
-    removeFile(tempFileName)
+def replaceInFileWriteProtected(toReplace, replacement, filePath):
+    try:
+        tempFileName = ".temp.txt"
+        writeNewFile(tempFileName, "")
+        copyFile(filePath, tempFileName)
+        replaceInFile(toReplace, replacement, tempFileName)
+        copyFile(tempFileName, filePath)
+        removeFile(tempFileName)
+    except PermissionError:
+        exit("No permissions")
+    except FileNotFoundError:
+        exit("File doesn't exist")
+    except:
+        exit("Error in replaceInFileWriteProtected")
+
+def isLaterVersion(oMajor, oMinor, oPatch, nMajor, nMinor, nPatch):#Returns 1 if new is newer, 0 if equal, -1 if older
+    if oMajor < nMajor:
+        return 1
+    elif oMajor == nMajor:
+        if oMinor < nMinor:
+            return 1
+        elif oMinor == nMinor:
+            if oPatch < nPatch:
+                return 1
+            elif oPatch == nPatch:
+                return 0
+            else:
+                return -1
+        else:
+            return -1
+    else:
+        return -1
+
+def isLaterScheduleStructureVersion(oMajor, oMinor, nMajor, nMinor):#Returns 1 if new is newer, 0 if equal, -1 if older
+    if oMajor < nMajor:
+        return 1
+    elif oMajor == nMajor:
+        if oMinor < nMinor:
+            return 1
+        elif oMinor == nMinor:
+            return 0
+        else:
+            return -1
+    else:
+        return -1
+
 
 def checkForRootPrivileges():
     if os.geteuid() != 0:
@@ -95,18 +191,36 @@ def checkForRootPrivileges():
 
 def loadManifests():
     global oldManifest
-    if os.path.exists("/home/pi/piScreen/manifest.json"):
-        oldManifest = json.loads(readFile("/home/pi/piScreen/manifest.json"))
-    newManifest = json.loads(readFile(f"{os.path.dirname(__file__)}/home/pi/piScreen/manifest.json"))
-
-    print(f"Starting {oldManifest['application-name']} setup.")
-    print(f"Old version: {oldManifest['version']['major']}.{oldManifest['version']['minor']}.{oldManifest['version']['patch']}")
+    newManifest = json.loads(readFile(f"{os.path.dirname(__file__)}{userHomePath}piScreen/manifest.json"))        
+    if os.path.exists(userHomePath + "piScreen/manifest.json"):
+        oldManifest = json.loads(readFile(userHomePath + "piScreen/manifest.json")) #No piScreen installation yet
+        print(f"Old version: {oldManifest['version']['major']}.{oldManifest['version']['minor']}.{oldManifest['version']['patch']}")
+    else:
+        print("piScreen isn't installed yet.")
     print(f"New version: {newManifest['version']['major']}.{newManifest['version']['minor']}.{newManifest['version']['patch']}")
-    if oldManifest['version'] == newManifest['version']:
-        if not continuousInstall:
-            print("You have already installed the current version. Do you want to reinstall? [y/N]: ", end="")
+
+    res = isLaterVersion(oldManifest['version']['major'], oldManifest['version']['minor'], oldManifest['version']['patch'], newManifest['version']['major'], newManifest['version']['minor'], newManifest['version']['patch'])
+    if res == 1:
+        if oldManifest['version']['major'] == -1:
+            return
+        if oldManifest['version']['major'] < 2 and newManifest['version']['major'] >= 2:
+            print("An update from version 1 to version 2 will not migrate your settings to the new version due to incompatibility. \nAll data will be lost. You have to set up your schedule and settings again. ")
+            print("Do you want to reinstall piScreen? [y/N]: ", end="")
             if "y" != input().lower():
-                exit("No need to reinstall.")
+                exit("No reinstall.")
+            return
+        elif not isUpdate:
+            print("Do you want to update? [y/N]: ", end="")
+            if "y" != input().lower():
+                exit("No update. Exiting.")
+    elif res == 0:
+        if not isReinstall:
+            print("You have already installed the same version. Do you want to reinstall? [y/N]: ", end="")
+            if "y" != input().lower():
+                exit("No reinstall.")
+    elif res == -1:
+        exit("You are about to install an old version of piScreen.\nPlease uninstall the current version and install the old version if you want to continue.")
+
 
 def updateDependencies():
     print("Updating dependencies")
@@ -118,35 +232,29 @@ def installDependencies():
 
 def removeFiles():
     print("Removing files")
-    try: os.remove(sudoersFilePath)
-    except: pass
+    removeFile(sudoersFilePath)
     executeWait("a2dissite -q piScreen")
-    try: os.remove("/etc/apache2/sites-available/piScreen.conf")
-    except: pass
-    try: os.remove(htpasswdPath)
-    except: pass
-    try: os.remove("/home/pi/.config/autostart/piScreenCore.desktop")
-    except: pass
-    try: executeWait("rm -f -R /home/pi/piScreen")
-    except: pass
-    try: executeWait("rm -f -R /srv/piScreen")
-    except: pass
-    try: os.remove(firefoxConfigPath)
-    except: pass
-    
+    removeFile("/etc/apache2/sites-available/piScreen.conf")
+    removeFile(htpasswdPath)
+    removeFile(userHomePath + ".config/autostart/piScreenCore.desktop")
+    executeWait(f"rm -f -R {userHomePath}piScreen")
+    executeWait("rm -f -R /srv/piScreen")
+    removeFile(firefoxConfigPath)
+    os.system("crontab -u pi -l | grep -v '/home/pi/piScreen/piScreenCron.py --check-now' | crontab -u pi -")#remove old crontab entry from version 1.x.x
+    removeFile(userHomePath + "piScreen/cron.json")
+
     fstabConf = readFile(fstabPath)
     if fstabEntry in fstabConf:
         fstabConf = fstabConf.replace(fstabEntry, "")
-        try: os.remove(fstabPath)
-        except: pass
+        removeFile(fstabPath)
         appendToFile(fstabPath, fstabConf)
 
 def copyFiles():
     print("Copying files")
-    shutil.copy(f"{os.path.dirname(__file__)}/etc/apache2/sites-available/piScreen.conf", "/etc/apache2/sites-available/")
-    createFolder("/home/pi/.config/autostart")
-    shutil.copy(f"{os.path.dirname(__file__)}/home/pi/.config/autostart/piScreenCore.desktop", "/home/pi/.config/autostart/")
-    executeWait(f"cp -R {os.path.dirname(__file__)}/home/pi/piScreen /home/pi/piScreen")
+    copyFile(f"{os.path.dirname(__file__)}/etc/apache2/sites-available/piScreen.conf", "/etc/apache2/sites-available/")
+    createFolder(userHomePath + ".config/autostart")
+    copyFile(f"{os.path.dirname(__file__)}{userHomePath}.config/autostart/piScreenCore.desktop", userHomePath + ".config/autostart/")
+    executeWait(f"cp -R {os.path.dirname(__file__)}{userHomePath}piScreen {userHomePath}piScreen")
     executeWait(f"rm -f -R {certPath}")
     createFolder(certPath)
     executeWait(f"cp -R {os.path.dirname(__file__)}/srv/piScreen/ /srv/piScreen/")
@@ -154,18 +262,18 @@ def copyFiles():
 
 def setPermissions():
     print("Setting permissions")
-    executeWait("setfacl -Rm d:u:www-data:rwx /home/pi/piScreen/")
-    executeWait("setfacl -Rm u:www-data:rwx /home/pi/piScreen/")
-    executeWait("setfacl -Rm d:u:pi:rwx /home/pi/piScreen/")
-    executeWait("setfacl -Rm u:pi:rwx /home/pi/piScreen/")
+    executeWait(f"setfacl -Rm d:u:www-data:rwx {userHomePath}piScreen/")
+    executeWait(f"setfacl -Rm u:www-data:rwx {userHomePath}piScreen/")
+    executeWait(f"setfacl -Rm d:u:pi:rwx {userHomePath}piScreen/")
+    executeWait(f"setfacl -Rm u:pi:rwx {userHomePath}piScreen/")
 
     executeWait("setfacl -Rm d:u:www-data:rwx /srv/piScreen/")
     executeWait("setfacl -Rm u:www-data:rwx /srv/piScreen/")
     executeWait("setfacl -Rm d:u:pi:rwx /srv/piScreen/")
     executeWait("setfacl -Rm u:pi:rwx /srv/piScreen/")
 
-    executeWait("setfacl -Rm d:u:pi:rwx /home/pi/.config/autostart/")
-    executeWait("setfacl -Rm u:pi:rwx /home/pi/.config/autostart/")
+    executeWait(f"setfacl -Rm d:u:pi:rwx {userHomePath}.config/autostart/")
+    executeWait(f"setfacl -Rm u:pi:rwx {userHomePath}.config/autostart/")
 
 def configureRamDisk():
     print("Configuring RAM disk")
@@ -179,7 +287,7 @@ def configureWebserver():
 
     if isInstall:
         if continuousInstall:
-            print("Webinterface login: Username: 'pi' Password: 'piScreen'")
+            print(f"Webinterface login: Username: '{standardWebUsername}' Password: '{standardWebPassword}'")
             executeWait(f"htpasswd -c -b {htpasswdPath} {standardWebUsername} {standardWebPassword}")
         else:
             print("Type your username for weblogin: ", end="")
@@ -205,22 +313,20 @@ def configureWebserver():
 
 def generateSslCertificates():
     print("Generating SSL certificates")
-    executeWait(f"openssl genrsa -out {certPath}server.key 4096")
-    executeWait(f"openssl req -new -key {certPath}server.key -out {certPath}server.csr -sha256 -subj /C=DE/ST=BW/L=/O=PiScreen/OU=/CN=")
-    executeWait(f"openssl req -noout -text -in {certPath}server.csr")
-    executeWait(f"openssl x509 -req -days 3650 -in {certPath}server.csr -signkey {certPath}server.key -out {certPath}server.crt")
+    executeWithReturnValue(f"openssl genrsa -out {certPath}server.key 4096")
+    executeWithReturnValue(f"openssl req -new -key {certPath}server.key -out {certPath}server.csr -sha256 -subj /C=DE/ST=BW/L=/O=PiScreen/OU=/CN=")
+    executeWithReturnValue(f"openssl req -noout -text -in {certPath}server.csr")
+    executeWithReturnValue(f"openssl x509 -req -days 3650 -in {certPath}server.csr -signkey {certPath}server.key -out {certPath}server.crt")
 
 def configureSudoersFile():
     print("Configuring sudoers file")
-    supiscreencmd = "www-data        ALL=(ALL:ALL)   NOPASSWD:/home/pi/piScreen/piScreenCmd.py"
-    suhostnamectl = "www-data        ALL=(ALL:ALL)   NOPASSWD:/usr/bin/hostnamectl"
+    supiscreencmd = f"www-data        ALL=(ALL:ALL)   NOPASSWD:{userHomePath}piScreen/piScreenCmd.py\n"
+    suhostnamectl = "www-data        ALL=(ALL:ALL)   NOPASSWD:/usr/bin/hostnamectl\n"
     
-    appendToFile(sudoersFilePath, supiscreencmd + "\n")
-    appendToFile(sudoersFilePath, suhostnamectl + "\n")
+    removeFile(sudoersFilePath)
+    writeNewFile(sudoersFilePath, supiscreencmd + suhostnamectl)
 
     executeWait(f"chmod 0440 {sudoersFilePath}")
-
-    #executeWait(f"visudo -cf {sudoersFilePath}")
 
 def disableScreensaver():
     print("Disabling screensaver")
@@ -237,11 +343,14 @@ def disableScreensaver():
 
 def configureDesktop():
     print("Configuring desktop")
-    os.system("export DISPLAY=:0;export XAUTHORITY=/home/pi/.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --wallpaper-mode=color")
+    try:
+        os.system(f"export DISPLAY=:0;export XAUTHORITY={userHomePath}.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --wallpaper-mode=color")
+    except:
+        exit(f"Error while configuring desktop. \nexport DISPLAY=:0;export XAUTHORITY={userHomePath}.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --wallpaper-mode=color")
     desktopConfig = readFile(desktopConfigPath)
     if desktopConfig1 in desktopConfig:
         desktopConfig = desktopConfig.replace(desktopConfig1, "show_trash=0")
-        os.remove(desktopConfigPath)
+        removeFile(desktopConfigPath)
         writeNewFile(desktopConfigPath, desktopConfig)
     else:
         appendToFile(desktopConfigPath, "show_trash=0")
@@ -249,12 +358,15 @@ def configureDesktop():
     desktopConfig = readFile(desktopConfigPath)
     if desktopConfig2 in desktopConfig:
         desktopConfig = desktopConfig.replace(desktopConfig2, "show_mounts=0")
-        os.remove(desktopConfigPath)
+        removeFile(desktopConfigPath)
         writeNewFile(desktopConfigPath, desktopConfig)
     else:
         appendToFile(desktopConfigPath, "show_mounts=0")
 
-    os.system("export DISPLAY=:0;export XAUTHORITY=/home/pi/.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --reconfigure")
+    try:
+        os.system(f"export DISPLAY=:0;export XAUTHORITY={userHomePath}.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --reconfigure")
+    except:
+        exit(f"Error while configuring desktop. \nexport DISPLAY=:0;export XAUTHORITY={userHomePath}.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --reconfigure")
 
 def wannaReboot():
     if continuousInstall:
@@ -279,18 +391,12 @@ def prepareUpdate():
     if os.path.isfile(settingsJsonPath):
         settingsJson = json.load(open(settingsJsonPath))
         defaultSettingsJson = json.load(open(defaultSettingsPath))
-        if "website" in settingsJson["settings"] and settingsJson["settings"]["website"] != "":
-            defaultSettingsJson["settings"]["website"] = settingsJson["settings"]["website"]
         if "language" in settingsJson["settings"] and settingsJson["settings"]["language"] != "":
             defaultSettingsJson["settings"]["language"] = settingsJson["settings"]["language"]
+        if "display" in settingsJson["settings"] and settingsJson["settings"]["display"] != "":
+            defaultSettingsJson["settings"]["display"] = settingsJson["settings"]["display"]
     else:
         defaultSettingsJson = json.load(open(defaultSettingsPath))
-
-    global defaultCronJson
-    if os.path.isfile(cronJsonPath):
-        defaultCronJson = json.load(open(cronJsonPath))
-    else:
-        defaultCronJson = json.load(open(defaultCronPath))
 
 def postpareUpdate():
     print("Postpare update")
@@ -299,23 +405,22 @@ def postpareUpdate():
     appendToFile(f"{certPath}/server.csr", certcsr)
     appendToFile(f"{certPath}/server.key", certkey)
 
-    settingsFile = open(settingsJsonPath, "w")
-    settingsFile.write(json.dumps(defaultSettingsJson, indent = 4))
-    settingsFile.close()
-    
-    cronFile = open(cronJsonPath, "w")
-    cronFile.write(json.dumps(defaultCronJson, indent = 4))
-    cronFile.close()
+    try:
+        settingsFile = open(settingsJsonPath, "w")
+        settingsFile.write(json.dumps(defaultSettingsJson, indent = 4))
+        settingsFile.close()
+    except:
+        exit("Error while writing to " + settingsJsonPath)
     
 def checkForPiUser():
     print("Checking for pi user")
     try:
         pwd.getpwnam('pi')
     except KeyError:
-        exit('User pi does not exist. Script is working only with username pi.')
+        exit('User pi does not exist. Script is working only with user pi.')
 
 def getSha():
-    output = str(executeWithReturnValue("timeout 1 openssl s_client -showcerts -connect piscreen:443")).split("\n")
+    output = str(executeWithReturnValue("timeout 1 openssl s_client -showcerts -connect localhost:443")).split("\n")
     for item in output:
         if "Peer signing digest" in item:
             return item.split(": ")[1].upper()
@@ -343,7 +448,7 @@ def getEntry(hostname, port, certPath):
     elif sha == "SHA512":
         returnVal += SHA512OID
     else:
-        exit("Hashing not correct! Exiting...")
+        exit("Hashing of certificate " + hostname + ":" + port + " not correct! Exiting...")
     returnVal += "\t"
 
     fingerprint = cert.digest(sha).decode('utf-8')
@@ -371,23 +476,31 @@ def getEntry(hostname, port, certPath):
     return returnVal
 
 def configureWebbrowser():
-    shutil.copyfile(f"{os.path.dirname(__file__)}/defaults/firefoxPiScreen.js", firefoxConfigPath)
-    firefoxProfilePath = "/home/pi/.mozilla/firefox/"
+    print("Configuring Webbrowser")
+    try:
+        copyFile(f"{os.path.dirname(__file__)}/defaults/firefoxPiScreen.js", firefoxConfigPath)
+    except:
+        exit("Error while copying to " + firefoxConfigPath)
+    firefoxProfilePath = userHomePath + ".mozilla/firefox/"
     certOverridePath = firefoxProfilePath
-    files = str(executeWithReturnValue(f"ls {firefoxProfilePath}")).split("\n")
+    try:
+        files = str(executeWithReturnValue(f"ls {firefoxProfilePath}")).split("\n")
+    except:
+        exit("Error while executing ls " + firefoxProfilePath)
     for item in files:
         if ".default-esr" in item:
             certOverridePath += str(item)
             certOverridePath += "/cert_override.txt"
             break
-
+    if not certOverridePath.endswith("cert_override.txt"): 
+        exit("No default-esr profile in " + firefoxProfilePath + "\nPlease reinstall firefox-esr. Exiting...")
     entry = getEntry("localhost", 443, certPath + certName)
     if not os.path.exists(certOverridePath):
         writeNewFile(certOverridePath, "")
     if entry not in open(certOverridePath).read():
         appendToFile(certOverridePath, entry)
     else:
-        print("Entry is already in cert_override.")
+        print("Entry already exists in cert_override.")
     
 def install():
     checkForRootPrivileges()
@@ -411,8 +524,8 @@ def install():
     if isUpdate:
         postpareUpdate()
     else:
-        shutil.copyfile(defaultSettingsPath, settingsJsonPath)
-        shutil.copyfile(defaultCronPath, cronJsonPath)
+        copyFile(defaultSettingsPath, settingsJsonPath)
+        copyFile(defaultSchedulePath, scheduleJsonPath)
 
     configureRamDisk()
 
@@ -433,8 +546,6 @@ def install():
     wannaReboot()
 
 def update():
-    global isUpdate
-    global isInstall
     isUpdate = True
     isInstall = not isUpdate
     install()
@@ -455,6 +566,8 @@ Parameters:
         Skips update and installation of dependencies
     --install
         Installs {oldManifest['application-name']}
+    --reinstall
+        Reinstalls {oldManifest['application-name']}
     --uninstall
         Uninstalls {oldManifest['application-name']}
     --update
@@ -476,19 +589,24 @@ if "-s" in sys.argv:
 
 if "--help" in sys.argv:
     printHelp()
+try:
+    if len(sys.argv) == 0:
+        install()
 
-if len(sys.argv) == 0:
-    install()
+    if "--uninstall" in sys.argv:
+        uninstall()
 
-if "--uninstall" in sys.argv:
-    uninstall()
+    if "--update" in sys.argv:
+        update()
 
-if "--update" in sys.argv:
-    update()
+    if "--install" in sys.argv:
+        install()
 
-if "--install" in sys.argv:
-    install()
-
+    if "--reinstall" in sys.argv:
+        isReinstall = True
+        install()
+except KeyboardInterrupt:
+    exit("\n\nStopped installation! Keyboard interrupt")
 
 print("Done.")
 sys.exit(os.EX_OK)

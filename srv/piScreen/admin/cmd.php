@@ -1,4 +1,5 @@
 <?php
+	umask(0);
 	$syscall = '/home/pi/piScreen/piScreenCmd.py';
 	$error = "EXITCODE1";
 	if ($_GET['id'] == 1) { //Restart Browser
