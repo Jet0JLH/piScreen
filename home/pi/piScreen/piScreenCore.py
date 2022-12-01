@@ -55,8 +55,6 @@ except ValueError as err:
 	print(err)
 	sys.exit(1)
 
-os.system(f"{piScreenSyscall} --screen-on")
-os.system(f"{piScreenSyscall} --screen-switch-input")
 os.system("touch " + piScreenScheduleActive)
 
 print("Start subprocesses")

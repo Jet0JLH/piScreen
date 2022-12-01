@@ -63,6 +63,8 @@ def printHelp():
 	Returns the display orientation from os.
 --schedule-firstrun
 	Start schedule firstrun manually.
+--schedule-lastcron
+	Start last crontab entry
 --add-cron <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"JJJJ-MM-DD hh:mm">] [--end <"JJJJ-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>]
 	Add a cronentry to schedule.json.
 --update-cron <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["JJJJ-MM-DD hh:mm"]] [--end ["JJJJ-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>]
@@ -735,6 +737,8 @@ for i, origItem in enumerate(sys.argv):
 		print(getDisplayOrientation())
 	elif item == "--schedule-firstrun":
 		open("/media/ramdisk/piScreenScheduleFirstRun","w").close()
+	elif item == "--schedule-lastcron":
+		open("/media/ramdisk/piScreenScheduleLastCron","w").close()
 	elif item == "--add-cron":
 		addCron()
 	elif item == "--update-cron":

@@ -1,7 +1,19 @@
 {
 	"structureVersion":"0.1",
 	"commandsets":[
-		
+		{
+			"id":1,
+			"name":"startup",
+			"commands": [
+				{
+					"command": 31
+				},
+				{
+					"command": 30,
+					"parameter": "1"
+				}
+			]
+		}
 	],
 	"cron":[
 
@@ -11,7 +23,8 @@
 			"enabled": true,
             "trigger": 1,
             "command": 40,
-			"parameter": "https://localhost"
+			"parameter": "https://localhost",
+			"commandset": 1
 		}
 	]
 }

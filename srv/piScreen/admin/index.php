@@ -187,7 +187,7 @@
 
 									</div>
 									<button id='newScheduleEntry' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='generateNewScheduleEntry()'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-entry'>Neuer Eintrag</span></button>
-									<button id='firstRunButton' class='disableOnDisconnect btn btn-outline-warning mt-2 px-2' onclick="sendHTTPRequest('GET', 'cmd.php?id=22', true);"><i class='bi bi-play pe-2'></i><span lang-data='first-run'>firstrun</span></button>
+									<button id='lastCronButton' class='disableOnDisconnect btn btn-outline-warning mt-2 px-2' onclick="sendHTTPRequest('GET', 'cmd.php?id=22', true);"><i class='bi bi-play pe-2'></i><span lang-data='lastcron'>Letzter Eintrag ausführen</span></button>
 									<div class='btn-group pt-2' role='group' style='float: right; display: none;'>
 										<button id='importSchedule' class='disableOnDisconnect btn btn-outline-primary' onclick='importSchedule()'><i class='bi bi-upload pe-2'></i><span lang-data='import-schedule'>Import</span></button>
 										<button id='exportSchedule' class='disableOnDisconnect btn btn-outline-primary' onclick='download("cmd.php?id=10", "schedule.json")'><i class='bi bi-download pe-2'></i><span lang-data='export-schedule'>Export</span></button>

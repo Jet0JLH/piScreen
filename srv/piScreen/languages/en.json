@@ -97,7 +97,7 @@
         "switch-display-input": "Switch display input",
         "change-display-protocol": "Change display protocol",
 
-        "first-run": "Execute last entry",
+        "lastcron": "Execute last cron entry",
         "connection-lost": "Connection to server lost!",
         "fill-required-fields": "Please fill in all required fields!",
         "in-use": "in use",

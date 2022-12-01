@@ -238,7 +238,7 @@
 		echo shell_exec("$syscall --get-website");
 	}
 	elseif ($_GET['id'] == 22) { //Run firstrun
-		echo shell_exec("$syscall --schedule-firstrun");
+		echo shell_exec("$syscall --schedule-lastcron");
 	}
 
 	

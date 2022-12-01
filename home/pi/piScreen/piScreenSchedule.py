@@ -7,6 +7,7 @@ syscall = "./piScreenCmd.py"
 configFile = "./schedule.json"
 activePath = "/media/ramdisk/piScreenScheduleActive"
 doFirstRunPath = "/media/ramdisk/piScreenScheduleFirstRun"
+doLastCronPath = "/media/ramdisk/piScreenScheduleLastCron"
 active = os.path.exists(activePath)
 threadLock = threading.Lock()
 
@@ -24,11 +25,11 @@ def isFloat(s):
 	except ValueError:
 		return False
 
-def firstRun():
+def firstRun(noTrigger):
 	global saveMode
 	saveMode = True
 	#Check if startup trigger (1) enabled
-	if not runTrigger(1):
+	if noTrigger or not runTrigger(1):
 		if "cron" in globalConf.conf:
 			found = False
 			entries = []
@@ -214,7 +215,7 @@ class cron(threading.Thread):
 	def run(self):
 		now = datetime.datetime.today()
 		lastMinute = now.minute
-		firstRun()
+		firstRun(False)
 		while active:
 			now = datetime.datetime.today()
 			if lastMinute is not now.minute:
@@ -348,11 +349,17 @@ while active:
 		configModify = os.path.getmtime(configFile)
 		active = os.path.exists(activePath)
 		if os.path.exists(doFirstRunPath):
-			firstRun()
+			firstRun(False)
 			try:
 				os.remove(doFirstRunPath)
 			except:
 				print("Unable to remove firstrun file in ramdisk")
+		if os.path.exists(doLastCronPath):
+			firstRun(True)
+			try:
+				os.remove(doLastCronPath)
+			except:
+				print("Unable to remove lastCron file in ramdisk")
 		time.sleep(5)
 	except KeyboardInterrupt:
 		active = False

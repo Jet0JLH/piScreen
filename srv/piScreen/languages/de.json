@@ -97,7 +97,7 @@
         "switch-display-input": "Displayeingang umschalten",
         "change-display-protocol": "Displayprotokoll ändern",
 
-        "first-run": "Zuletzt ausgeführten Eintrag ausführen",
+        "lastcron": "Zuletzt ausgeführten Eintrag ausführen",
         "connection-lost": "Verbindung zum Server unterbrochen!",
         "fill-required-fields": "Bitte alle Pflichtfelder ausfüllen!",
         "in-use": "belegt",
