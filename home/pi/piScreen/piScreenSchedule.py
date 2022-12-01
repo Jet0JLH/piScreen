@@ -8,6 +8,7 @@ configFile = "./schedule.json"
 activePath = "/media/ramdisk/piScreenScheduleActive"
 doFirstRunPath = "/media/ramdisk/piScreenScheduleFirstRun"
 doLastCronPath = "/media/ramdisk/piScreenScheduleLastCron"
+doManuallyPath = "/media/ramdisk/piScreenScheduleManually"
 active = os.path.exists(activePath)
 threadLock = threading.Lock()
 
@@ -102,30 +103,31 @@ class cronEntry():
 			if all(ch in "0123456789/-*, " for ch in jsonObj["pattern"]) and len(jsonObj["pattern"].split(" ")) == 5:
 				self.pattern = jsonObj["pattern"].split(" ")
 
-	def run(self, timestamp):
-		if not self.enabled:
-			return False
-		if self.start is not None:
-			if self.start > timestamp:
-				#Startdate in future
+	def run(self, timestamp, manually):
+		if not manually:
+			if not self.enabled:
 				return False
-		if self.end is not None:
-			if self.end < timestamp:
-				#Enddate in past
+			if self.start is not None:
+				if self.start > timestamp:
+					#Startdate in future
+					return False
+			if self.end is not None:
+				if self.end < timestamp:
+					#Enddate in past
+					return False
+			if self.pattern is None:
 				return False
-		if self.pattern is None:
-			return False
-		else:
-			if not self.checkPattern(self.pattern[4], timestamp.weekday()):
-				return False
-			if not self.checkPattern(self.pattern[3], timestamp.month):
-				return False
-			if not self.checkPattern(self.pattern[2], timestamp.day):
-				return False
-			if not self.checkPattern(self.pattern[1], timestamp.hour):
-				return False
-			if not self.checkPattern(self.pattern[0], timestamp.minute):
-				return False		
+			else:
+				if not self.checkPattern(self.pattern[4], timestamp.weekday()):
+					return False
+				if not self.checkPattern(self.pattern[3], timestamp.month):
+					return False
+				if not self.checkPattern(self.pattern[2], timestamp.day):
+					return False
+				if not self.checkPattern(self.pattern[1], timestamp.hour):
+					return False
+				if not self.checkPattern(self.pattern[0], timestamp.minute):
+					return False		
 		commandInterpreter(self.command, self.parameter)
 		runCommandset(self.commandset)
 		return True
@@ -210,7 +212,7 @@ class cron(threading.Thread):
 			now = datetime.datetime.today()
 			for item in globalConf.conf["cron"]:
 				cronItem = cronEntry(item)
-				cronItem.run(now)
+				cronItem.run(now,False)
 	
 	def run(self):
 		now = datetime.datetime.today()
@@ -360,6 +362,39 @@ while active:
 				os.remove(doLastCronPath)
 			except:
 				print("Unable to remove lastCron file in ramdisk")
+		if os.path.exists(doManuallyPath):
+			try:
+				manually = json.load(open(doManuallyPath))
+				if "type" in manually:
+					if manually["type"] == "command":
+						if "command" in manually and "parameter" in manually:
+							commandInterpreter(manually["command"],manually["parameter"])
+						elif "command" in manually:
+							commandInterpreter(manually["command"])
+					elif manually["type"] == "commandset":
+						if "id" in manually:
+							runCommandset(manually["id"])
+					elif manually["type"] == "cron":
+						if "index" in manually:
+							if isInt(manually["index"]) and len(globalConf.conf["cron"]) > int(manually["index"]):
+								cronEntry(globalConf.conf["cron"][int(manually["index"])]).run(None,True)
+					elif manually["type"] == "trigger":
+						if "index" in manually:
+							if isInt(manually["index"]) and len(globalConf.conf["trigger"]) > int(manually["index"]):
+								item = globalConf.conf["trigger"][int(manually["index"])]
+								if "command" in item:
+									if "parameter" in item:
+										commandInterpreter(item["command"],item["parameter"])
+									else:
+										commandInterpreter(item["command"],None)
+									if "commandset" in item:
+										runCommandset(item["commandset"])
+			except:
+				print("Error with 'manually' json file in ramdisk")
+			try:
+				os.remove(doManuallyPath)
+			except:
+				print("Unable to remove 'manually' file in ramdisk")
 		time.sleep(5)
 	except KeyboardInterrupt:
 		active = False
