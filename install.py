@@ -234,14 +234,16 @@ def installDependencies():
 def removeFiles():
     print("Removing files")
     removeFile(sudoersFilePath)
-    executeWait("a2dissite -q piScreen")
+    if executeWait("a2query -s piScreen -q") == 0:
+        executeWait("a2dissite -q piScreen")
     removeFile("/etc/apache2/sites-available/piScreen.conf")
     removeFile(htpasswdPath)
     removeFile(userHomePath + ".config/autostart/piScreenCore.desktop")
     executeWait(f"rm -f -R {userHomePath}piScreen")
     executeWait("rm -f -R /srv/piScreen")
     removeFile(firefoxConfigPath)
-    os.system("crontab -u pi -l | grep -v '/home/pi/piScreen/piScreenCron.py --check-now' | crontab -u pi -")#remove old crontab entry from version 1.x.x
+    if os.path.exists("/var/spool/cron/crontabs/pi"):
+        os.system("crontab -u pi -l | grep -v '/home/pi/piScreen/piScreenCron.py --check-now' | crontab -u pi -")#remove old crontab entry from version 1.x.x
     removeFile(userHomePath + "piScreen/cron.json")
 
     fstabConf = readFile(fstabPath)
