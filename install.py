@@ -11,7 +11,7 @@ userHomePath = "/home/pi/"
 certPath = userHomePath + "piScreen/certs/"
 certName = "server.crt"
 fstabPath = "/etc/fstab"
-fstabEntry = "\ntmpfs    /media/ramdisk  tmpfs   defaults,size=5%        0       0"
+fstabEntry = "\ntmpfs    /media/ramdisk  tmpfs   defaults,size=5%,mode=0777        0       0"
 sudoersFilePath = "/etc/sudoers.d/050_piScreen-nopasswd"
 scheduleJsonPath = userHomePath + "piScreen/schedule.json"
 settingsJsonPath = userHomePath + "piScreen/settings.json"
@@ -34,6 +34,7 @@ oldManifest = json.loads('{"application-name": "piScreen", "version": { "major":
 SHA256OID = "OID.2.16.840.1.101.3.4.2.1"
 SHA384OID = "OID.2.16.840.1.101.3.4.2.2"
 SHA512OID = "OID.2.16.840.1.101.3.4.2.3"
+os.environ["DISPLAY"] = ":0"
 
 
 def executeWait(command):
@@ -246,6 +247,7 @@ def removeFiles():
     fstabConf = readFile(fstabPath)
     if fstabEntry in fstabConf:
         fstabConf = fstabConf.replace(fstabEntry, "")
+        fstabConf = fstabConf.replace("tmpfs    /media/ramdisk  tmpfs   defaults,size=5%        0       0", "")
         removeFile(fstabPath)
         appendToFile(fstabPath, fstabConf)
 
@@ -344,9 +346,9 @@ def disableScreensaver():
 def configureDesktop():
     print("Configuring desktop")
     try:
-        os.system(f"export DISPLAY=:0;export XAUTHORITY={userHomePath}.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --wallpaper-mode=color")
+        os.system(f"export XAUTHORITY={userHomePath}.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --wallpaper-mode=color")
     except:
-        exit(f"Error while configuring desktop. \nexport DISPLAY=:0;export XAUTHORITY={userHomePath}.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --wallpaper-mode=color")
+        exit(f"Error while configuring desktop. \nexport XAUTHORITY={userHomePath}.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --wallpaper-mode=color")
     desktopConfig = readFile(desktopConfigPath)
     if desktopConfig1 in desktopConfig:
         desktopConfig = desktopConfig.replace(desktopConfig1, "show_trash=0")
@@ -364,9 +366,9 @@ def configureDesktop():
         appendToFile(desktopConfigPath, "show_mounts=0")
 
     try:
-        os.system(f"export DISPLAY=:0;export XAUTHORITY={userHomePath}.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --reconfigure")
+        os.system(f"export XAUTHORITY={userHomePath}.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --reconfigure")
     except:
-        exit(f"Error while configuring desktop. \nexport DISPLAY=:0;export XAUTHORITY={userHomePath}.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --reconfigure")
+        exit(f"Error while configuring desktop. \nexport XAUTHORITY={userHomePath}.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --reconfigure")
 
 def wannaReboot():
     if continuousInstall:
@@ -481,6 +483,12 @@ def configureWebbrowser():
         copyFile(f"{os.path.dirname(__file__)}/defaults/firefoxPiScreen.js", firefoxConfigPath)
     except:
         exit("Error while copying to " + firefoxConfigPath)
+    
+    try:
+        os.system("sudo -u pi firefox-esr -CreateProfile piScreen")
+    except:
+        exit("Error while creating piScreen Firefox profile.")
+
     firefoxProfilePath = userHomePath + ".mozilla/firefox/"
     certOverridePath = firefoxProfilePath
     try:
@@ -488,12 +496,12 @@ def configureWebbrowser():
     except:
         exit("Error while executing ls " + firefoxProfilePath)
     for item in files:
-        if ".default-esr" in item:
+        if ".piScreen" in item:
             certOverridePath += str(item)
             certOverridePath += "/cert_override.txt"
             break
     if not certOverridePath.endswith("cert_override.txt"): 
-        exit("No default-esr profile in " + firefoxProfilePath + "\nPlease reinstall firefox-esr. Exiting...")
+        exit("No piScreen profile in " + firefoxProfilePath + " Exiting...")
     entry = getEntry("localhost", 443, certPath + certName)
     if not os.path.exists(certOverridePath):
         writeNewFile(certOverridePath, "")
