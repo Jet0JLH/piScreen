@@ -65,6 +65,12 @@ def printHelp():
 	Start schedule firstrun manually.
 --schedule-lastcron
 	Start last crontab entry
+--schedule-manually-commandset <--id> <index>
+	Runs the commandset selected by id in schedule
+--schedule-manually-cron <--index> <index>
+	Runs the cron entry selected by index in schedule
+--schedule-manually-trigger <--index> <index>
+	Runs the trigger selected by index in schedule
 --add-cron <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"JJJJ-MM-DD hh:mm">] [--end <"JJJJ-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>]
 	Add a cronentry to schedule.json.
 --update-cron <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["JJJJ-MM-DD hh:mm"]] [--end ["JJJJ-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>]
@@ -739,6 +745,54 @@ for i, origItem in enumerate(sys.argv):
 		open("/media/ramdisk/piScreenScheduleFirstRun","w").close()
 	elif item == "--schedule-lastcron":
 		open("/media/ramdisk/piScreenScheduleLastCron","w").close()
+	elif item == "--schedule-manually-commandset":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 1] == "--id":
+				if isInt(sys.argv[i + 2]):
+					manualFile = open(f"{ramdisk}/piScreenScheduleManually", "w")
+					manualFile.write(json.dumps({"type":"commandset","id":int(sys.argv[i + 2])},indent=4))
+					manualFile.close()
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("Argument --index expected")
+				exit(1)
+		else:
+			verbose and print("Not enough arguments")
+			exit(1)
+	elif item == "--schedule-manually-cron":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 1] == "--index":
+				if isInt(sys.argv[i + 2]):
+					manualFile = open(f"{ramdisk}/piScreenScheduleManually", "w")
+					manualFile.write(json.dumps({"type":"cron","index":int(sys.argv[i + 2])},indent=4))
+					manualFile.close()
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("Argument --index expected")
+				exit(1)
+		else:
+			verbose and print("Not enough arguments")
+			exit(1)
+	elif item == "--schedule-manually-trigger":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 1] == "--index":
+				if isInt(sys.argv[i + 2]):
+					manualFile = open(f"{ramdisk}/piScreenScheduleManually", "w")
+					manualFile.write(json.dumps({"type":"trigger","index":int(sys.argv[i + 2])},indent=4))
+					manualFile.close()
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("Argument --index expected")
+				exit(1)
+		else:
+			verbose and print("Not enough arguments")
+			exit(1)
 	elif item == "--add-cron":
 		addCron()
 	elif item == "--update-cron":

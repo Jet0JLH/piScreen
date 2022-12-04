@@ -40,6 +40,9 @@ git update-index --skip-worktree home/pi/piScreen/settings.json
 git update-index --skip-worktree home/pi/piScreen/schedule.json
 git update-index --skip-worktree srv/piScreen/admin/piScreenScreenshot.png
 
+export DISPLAY=:0
+sudo -u pi firefox-esr -CreateProfile piScreen
+
 if test -f "./home/pi/piScreen/settings.json"; then
 	echo "[Ignore] Settings already exists"
 else
