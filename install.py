@@ -230,6 +230,7 @@ def updateDependencies():
 def installDependencies():
     print("Installing dependencies")
     executeWait("apt install firefox-esr unclutter apache2 php7.4 cec-utils ddcutil -y -qq")
+    os.system("sudo -u pi timeout 2 firefox-esr -headless &> /dev/null &")
 
 def removeFiles():
     print("Removing files")
@@ -481,16 +482,9 @@ def getEntry(hostname, port, certPath):
 
 def configureWebbrowser():
     print("Configuring Webbrowser")
-    try:
-        copyFile(f"{os.path.dirname(__file__)}/defaults/firefoxPiScreen.js", firefoxConfigPath)
-    except:
-        exit("Error while copying to " + firefoxConfigPath)
-    
-    try:
-        os.system("sudo -u pi firefox-esr -CreateProfile piScreen")
-    except:
-        exit("Error while creating piScreen Firefox profile.")
 
+    copyFile(f"{os.path.dirname(__file__)}/defaults/firefoxPiScreen.js", firefoxConfigPath)
+    
     firefoxProfilePath = userHomePath + ".mozilla/firefox/"
     certOverridePath = firefoxProfilePath
     try:
@@ -498,12 +492,12 @@ def configureWebbrowser():
     except:
         exit("Error while executing ls " + firefoxProfilePath)
     for item in files:
-        if ".piScreen" in item:
+        if ".default-esr" in item:
             certOverridePath += str(item)
             certOverridePath += "/cert_override.txt"
             break
     if not certOverridePath.endswith("cert_override.txt"): 
-        exit("No piScreen profile in " + firefoxProfilePath + " Exiting...")
+        exit("No default-esr profile in " + firefoxProfilePath + " Exiting...")
     entry = getEntry("localhost", 443, certPath + certName)
     if not os.path.exists(certOverridePath):
         writeNewFile(certOverridePath, "")
@@ -602,6 +596,8 @@ if "--help" in sys.argv:
 try:
     if len(sys.argv) == 0:
         install()
+    if "--test" in sys.argv:
+        os.system("sudo -u pi timeout 2 firefox-esr -headless &> /dev/null &")
 
     if "--uninstall" in sys.argv:
         uninstall()
