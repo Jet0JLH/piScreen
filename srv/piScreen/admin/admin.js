@@ -249,7 +249,7 @@ function addParameter(entryId, commandId, parameter) {
 	if (commandCollection[commandId][1] == false) {
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
-		div.innerHTML = `<input id='scheduleEntry${entryId}ParameterInput' type='text' class='disableOnDisconnect form-control' onkeyup='displayEntrySaved(false, ${entryId});' maxlength='50' value='${parameter}' lang-data='parameter'>`;
+		div.innerHTML = `<input id='scheduleEntry${entryId}ParameterInput' type='text' class='disableOnDisconnect form-control' onkeyup='displayEntrySaved(false, ${entryId});' value='${parameter}' lang-data='parameter'>`;
 		if (parameter == undefined) parameter = "";
 	} else if (Array.isArray(commandCollection[commandId][1])) {
 		let htmlSelect = `<select id='scheduleEntry${entryId}ParameterInput' onchange='displayEntrySaved(false, ${entryId});' class='disableOnDisconnect form-select border-secondary'>\n`;
@@ -283,7 +283,7 @@ function addParameterToTrigger(triggerId, commandId, parameter) {
 	if (commandCollection[commandId][1] == false) {
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
-		div.innerHTML = `<input id='trigger${triggerId}ParameterInput' type='text' class='disableOnDisconnect form-control' maxlength='50' onkeyup='triggerSaved(false, 0);' lang-data='parameter'>`;
+		div.innerHTML = `<input id='trigger${triggerId}ParameterInput' type='text' class='disableOnDisconnect form-control' onkeyup='triggerSaved(false, 0);' lang-data='parameter'>`;
 		if (parameter == undefined) parameter = "";
 	} else if (Array.isArray(commandCollection[commandId][1])) {
 		let htmlSelect = `<select id='trigger${triggerId}ParameterInput' class='disableOnDisconnect form-select border-secondary' style='width: 100%;' onchange='triggerSaved(false, 0);'>\n`;
