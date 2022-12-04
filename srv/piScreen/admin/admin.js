@@ -558,16 +558,24 @@ function settingNotSaved(elementId) {
 }
 
 function triggerSaved(saved, triggerId) {
-	let element = getElement("trigger" + triggerId + "SaveButton");
+	let saveButtonElement = getElement("trigger" + triggerId + "SaveButton");
+	let executeButtonElement = getElement("trigger" + triggerId + "ExecuteButton");
 	if (saved) {
-		element.className = "disableOnDisconnect btn btn-success mt-2";
-		element.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='saved'>" + getLanguageAsText("saved") + "</span>";
+		saveButtonElement.className = "disableOnDisconnect btn btn-success mt-2";
+		saveButtonElement.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='saved'>" + getLanguageAsText("saved") + "</span>";
+		executeButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2"
+		executeButtonElement.disabled = false;
 	} else {
-		element.className = "disableOnDisconnect btn btn-outline-success mt-2";
-		element.innerHTML = "<i class='bi bi-save pe-2'></i><span lang-data='save'>" + getLanguageAsText("save") + "</span>";
+		saveButtonElement.className = "disableOnDisconnect btn btn-outline-success mt-2";
+		saveButtonElement.innerHTML = "<i class='bi bi-save pe-2'></i><span lang-data='save'>" + getLanguageAsText("save") + "</span>";
+		executeButtonElement.className = "btn btn-outline-warning mt-2"
+		executeButtonElement.disabled = true;
 	}
 }
 
+function executeStartupTrigger() {
+	sendHTTPRequest('GET', 'cmd.php?id=20&cmd=execute&index=' + startupTriggerIndex, true);
+}
 
 function showEntryHeader(entryId) {
 	let sel = getElement("commandSelect" + entryId);

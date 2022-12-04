@@ -12,7 +12,7 @@
 	<main class='container'>
 		<div class='px-4 py-5 my-2 text-center'>
 			<button class='btn btn-outline-secondary' id='darkmodeBtn' onclick='toggleDarkmode();'><i class='bi bi-moon'></i></button>
-			<select id='languageSelect' onchange='fetchLanguage(value)' class='form-select border-secondary'>
+			<select id='languageSelect' onchange='fetchLanguage(value)' class='disableOnDisconnect form-select border-secondary'>
 				<option id='de' value='de'>🇩🇪 Deutsch</option>
 				<option id='en' value='en'>🇬🇧 English</option>
 			</select>
@@ -159,11 +159,12 @@
 						</select>
 						<label for="trigger0CommandSelect" lang-data='choose-command'>Command auswählen</label>
 					</div>
-
+					
 					<div id="trigger0ParameterCell" style='width: 100%;'>
 					</div>
 					<div>
 						<button id="trigger0SaveButton" type="button" class="disableOnDisconnect btn btn-success mt-2" onclick='triggerSaved(true, 0); saveTrigger(0);'><i class='bi bi-check2 pe-2'></i><span lang-data="saved">Speichern</span></button>
+						<button id="trigger0ExecuteButton" type="button" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeStartupTrigger();'><i class='bi bi-play pe-2'></i><span lang-data="execute">Ausführen</span></button>
 					</div>
 				</div>
 			</div>

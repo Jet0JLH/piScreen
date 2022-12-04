@@ -232,12 +232,21 @@
 			$parameterString = " --index " . $_GET['index'];
 			//echo "$syscall --delete-trigger$parameterString";
 			echo shell_exec("$syscall --delete-trigger$parameterString");
+
+		} elseif ($_GET['cmd'] == "execute") {
+			if ($_GET['index'] == NULL) {
+				echo $error;
+				return;
+			}
+			$parameterString = " --index " . $_GET['index'];
+			//echo "$syscall --—schedule-manually-trigger$parameterString";
+			echo shell_exec("$syscall --schedule-manually-trigger$parameterString");
 		}
 	}
 	elseif ($_GET['id'] == 21) { //Get current website
 		echo shell_exec("$syscall --get-website");
 	}
-	elseif ($_GET['id'] == 22) { //Run firstrun
+	elseif ($_GET['id'] == 22) { //Run lastcron
 		echo shell_exec("$syscall --schedule-lastcron");
 	}
 
