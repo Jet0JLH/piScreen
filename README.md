@@ -4,14 +4,28 @@
 
 Manage your info displays from anywhere.
 
-  * Show a webpage on your info display
-  * Reload page
-  * Restart browser / pi
-  * Turn on info display or set it to standby
-  * Use schedule for weekly commands
-  * Get info about current state of your system
+  * Observe
     * Display status
-    * Pi load
+    * Uptime
+    * CPU load
+    * CPU temperature
+    * RAM usage
+  * Administer
+    * Reboot Pi
+    * Shutdown Pi
+    * Restart browser
+    * Display on / off
+  * Configure your Raspberry Pi settings
+    * Hostname
+    * Display protocol
+    * Display orientation
+  * Plan with the advanced time schedule
+    * Show a webpage
+    * Reboot Pi
+    * Shutdown Pi
+    * Restart browser
+    * Display on / off
+    * Execute universal command
 
 ***
 
@@ -21,4 +35,4 @@ View the piScreen installation guide [here](https://github.com/Jet0JLH/piScreen/
 ***
 
 ## Overview
-![piScreen](https://raw.githubusercontent.com/Jet0JLH/piScreen/gh-pages/img/piScreen_pageAdmin_v1.4.0.JPG)
+![piScreen](https://raw.githubusercontent.com/Jet0JLH/piScreen/gh-pages/img/piScreen_pageAdmin_v2.0.0.JPG)
