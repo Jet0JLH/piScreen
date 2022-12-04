@@ -37,18 +37,21 @@ setfacl -Rm d:u:pi:rwx ./srv/piScreen/
 setfacl -Rm u:pi:rwx ./srv/piScreen/
 
 git update-index --skip-worktree home/pi/piScreen/settings.json
-git update-index --skip-worktree home/pi/piScreen/cron.json
+git update-index --skip-worktree home/pi/piScreen/schedule.json
 git update-index --skip-worktree srv/piScreen/admin/piScreenScreenshot.png
+
+export DISPLAY=:0
+sudo -u pi firefox-esr -CreateProfile piScreen
 
 if test -f "./home/pi/piScreen/settings.json"; then
 	echo "[Ignore] Settings already exists"
 else
 	cp ./defaults/default_settings.json ./home/pi/piScreen/settings.json
 fi
-if test -f "./home/pi/piScreen/cron.json"; then
-	echo "[Ignore] Cron already exists"
+if test -f "./home/pi/piScreen/schedule.json"; then
+	echo "[Ignore] schedule already exists"
 else
-	cp ./defaults/default_cron.json ./home/pi/piScreen/cron.json
+	cp ./defaults/default_schedule.json ./home/pi/piScreen/schedule.json
 fi
 if test -f "/etc/apache2/.piScreen_htpasswd"; then
 	echo "[Ignore] Weblogin Credentials alrady exists"

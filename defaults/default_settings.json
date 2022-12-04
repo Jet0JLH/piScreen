@@ -1,6 +1,9 @@
 {
-"settings": {
-	"website": "https://github.com/Jet0JLH/piScreen",
-	"language": "de"
+	"settings": {
+		"language": "de",
+		"display": {
+			"protocol": "cec",
+			"orientation": 0
+		}
 	}
 }

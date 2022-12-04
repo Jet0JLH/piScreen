@@ -1,5 +1,9 @@
 #!/usr/bin/python -u
-import json, sys, os, time
+import json, sys, os, time, datetime
+
+ramdisk = "/media/ramdisk/"
+piScreenModeFirefox = ramdisk + "piScreenModeFirefox"
+piScreenModeVLC = ramdisk + "piScreenModeVLC"
 
 def printHelp():
 	print("This tool is desigend for syscalls.\nSo you have one script, which controlls everything and get every info about.")
@@ -12,6 +16,8 @@ def printHelp():
 	Starts the Browser
 --stop-browser
 	Stops the Browser
+--restart-browser
+	Restart the Browser when active
 --reboot
 	Restarts the Device
 --shutdown
@@ -27,8 +33,6 @@ def printHelp():
 --screen-switch-input
 	Tells the display to change the input to our system,
 	if it is not currently displayed
---set-website <website>
-	Changes the website
 --get-website
 	Get the current in settings configured website
 --set-pw <user> [-f <file with password>] [password]
@@ -43,8 +47,56 @@ def printHelp():
 --do-upgrade [--draft] [--pre-release]
 	Check for updates, download install files if release is available and do upgrade.
 	Sudo rights are requiered!
---create-screenshot
-	Creates a screenshot of the display content""")
+--set-display-protocol <protocol>
+	Set the display protocol to CEC or DDC.
+--get-display-protocol
+	Retuns the current activ display protocol. CEC or DDC
+--set-display-orientation [--no-save] <orientation ID>
+	0 = 0 degrees
+	1 = 90 degrees
+	2 = 180 degrees
+	3 = 270 degrees
+	If --no-save is set, the orientation will be not permanent.
+--get-display-orientation-settings
+	Returns the display orientation in settingsfile.
+--get-display-orientation
+	Returns the display orientation from os.
+--schedule-firstrun
+	Start schedule firstrun manually.
+--schedule-lastcron
+	Start last crontab entry
+--schedule-manually-commandset <--id> <index>
+	Runs the commandset selected by id in schedule
+--schedule-manually-cron <--index> <index>
+	Runs the cron entry selected by index in schedule
+--schedule-manually-trigger <--index> <index>
+	Runs the trigger selected by index in schedule
+--add-cron <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"JJJJ-MM-DD hh:mm">] [--end <"JJJJ-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>]
+	Add a cronentry to schedule.json.
+--update-cron <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["JJJJ-MM-DD hh:mm"]] [--end ["JJJJ-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>]
+	Update a cronentry by index in schedule.json.
+--delete-cron <--index <cronIndex>>
+	Delete a cronentry by index from schedule.json.
+--add-trigger <--trigger <triggerID>> [--enabled <false/true>] [--command [commandID]] [--parameter [parameter]] [--commandset [commandsetID]]
+	Add a trigger to schedule.json.
+--update-trigger <--index <triggerIndex>> [--enabled <false/true>] [--trigger <triggerID>] [--command [commandID]] [--parameter [parameter]] [--commandset [commandsetID]]
+	Update a trigger by index in schedule.json.
+--delete-trigger <--index <triggerIndex>>
+	Delete a trigger by index from schedule.json.
+--add-commandset <--name <name>> [--command <commandID> [parameter]]
+	Add a commandset to schedule.json.
+--update-commandset <--id <id>> [--name <name>] [--command <commandID> [parameter]]
+	Update a commandset by id in schedule.json.
+--delete-commandset <--id <id>>
+	Delete a commandset by id from schedule.json.
+	""")
+
+def isInt(s):
+	try: 
+		int(s)
+		return True
+	except ValueError:
+		return False
 
 def checkForRootPrivileges():
 	if os.geteuid() != 0:
@@ -55,21 +107,31 @@ def checkForRootPrivileges():
 def loadSettings():
 	return json.load(open(f"{os.path.dirname(__file__)}/settings.json"))
 
-def loadMainifest():
+def loadSchedule():
+	return json.load(open(f"{os.path.dirname(__file__)}/schedule.json"))
+
+def loadManifest():
 	return json.load(open(f"{os.path.dirname(__file__)}/manifest.json"))
 
-def startBrowser():
-	verbose and print("Load settings")
-	settingsJson = loadSettings()
-	verbose and print("Start browser")
-	os.environ['DISPLAY'] = ":0"
-	os.system(f'firefox -kiosk -private-window {settingsJson["settings"]["website"]}')
-	verbose and print("Browser started")
+def endAllModes():
+	if os.path.exists(piScreenModeFirefox):
+		os.remove(piScreenModeFirefox)
+		os.system("killall -q -SIGTERM firefox-esr")
+	if os.path.exists(piScreenModeVLC):
+		os.remove(piScreenModeVLC)
+	
+
+def startBrowser(parameter):
+	endAllModes()
+	f = open(piScreenModeFirefox,"w")
+	f.write(parameter)
+	f.close()
 
 def stopBrowser():
-	verbose and print("Stop browser")
-	os.system("kill $(pgrep -x firefox-esr)")
-	verbose and print("Browser stopped")
+	endAllModes()
+
+def restartBrowser():
+	os.system("killall -q -SIGTERM firefox-esr")
 
 def reboot():
 	verbose and print("Reboot system")
@@ -78,22 +140,6 @@ def reboot():
 def shutdown():
 	verbose and print("Shutdown system")
 	os.system("poweroff")
-
-def screenOn():
-	verbose and print("Create file for turning on the screen")
-	open("/media/ramdisk/piScreenDisplayOn","w").close()
-
-def screenStandby():
-	verbose and print("Create file for turning screen to standby")
-	open("/media/ramdisk/piScreenDisplayStandby","w").close()
-
-def screenOff():
-	verbose and print("Create file for turning of the screen")
-	open("/media/ramdisk/piScreenDisplayOff","w").close()
-
-def screenSwitchInput():
-	verbose and print("Create file for switching display input")
-	open("/media/ramdisk/piScreenDisplaySwitch","w").close()
 
 def getStatus():
 	import psutil
@@ -113,20 +159,27 @@ def getStatus():
 		screenshotTime = os.path.getctime("/media/ramdisk/piScreenScreenshot.png")
 	return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s},"screenshotTime":%d}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,str(os.path.isfile("/media/ramdisk/piScreenDisplayStandby")).lower(),str(os.path.isfile("/media/ramdisk/piScreenDisplayOn")).lower(),screenshotTime)
 
-def setWebsite(website):
-	verbose and print(f"Write {website} as website in settings.json")
-	settingsJson = loadSettings()
-	settingsJson["settings"]["website"] = website
-	settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
-	settingsFile.write(json.dumps(settingsJson,indent=4))
-	settingsFile.close()
-	
 def getWebsite():
-	settingsJson = loadSettings()
-	print(settingsJson["settings"]["website"])
+	if os.path.exists(piScreenModeFirefox): print(open(piScreenModeFirefox,"r").read())
+
+def screenOn():
+	verbose and print("Create file for turning on the screen")
+	open("/media/ramdisk/piScreenDisplayOn","w").close()
+
+def screenStandby():
+	verbose and print("Create file for turning screen to standby")
+	open("/media/ramdisk/piScreenDisplayStandby","w").close()
+
+def screenOff():
+	verbose and print("Create file for turning of the screen")
+	open("/media/ramdisk/piScreenDisplayOff","w").close()
+
+def screenSwitchInput():
+	verbose and print("Create file for switching display input")
+	open("/media/ramdisk/piScreenDisplaySwitch","w").close()
 
 def checkUpdate(draft,prerelease,silent):
-	manifest = loadMainifest()
+	manifest = loadManifest()
 	verbose and print(f"Current version {manifest['version']['major']}.{manifest['version']['minor']}.{manifest['version']['patch']}")
 	latestRelease = getLatestVersion(draft,prerelease)
 	if latestRelease:
@@ -227,6 +280,332 @@ def rmDir(path):
 			os.rmdir(os.path.join(root, name))
 	os.rmdir(path)
 
+def setDisplayProtocol(protocol):
+	protocol = protocol.lower()
+	if protocol == "cec" or protocol == "ddc":
+		verbose and print(f"Write {protocol} as display protocol in settings.json")
+		settingsJson = loadSettings()
+		settingsJson["settings"]["display"]["protocol"] = protocol
+		settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
+		settingsFile.write(json.dumps(settingsJson,indent=4))
+		settingsFile.close()
+		if os.path.exists("/media/ramdisk/piScreenDisplayCEC"):
+			os.remove("/media/ramdisk/piScreenDisplayCEC")
+		if os.path.exists("/media/ramdisk/piScreenDisplayDDC"):
+			os.remove("/media/ramdisk/piScreenDisplayDDC")
+		if protocol == "cec":
+			open("/media/ramdisk/piScreenDisplayCEC","w").close()
+		elif protocol == "ddc":
+			open("/media/ramdisk/piScreenDisplayDDC","w").close()
+	else:
+		verbose and print(f"{protocol} is no permitted protocol")
+
+def getDisplayProtocol():
+	settingsJson = loadSettings()
+	print(settingsJson["settings"]["display"]["protocol"])
+
+def getDisplayOrientation():
+	import subprocess
+	orientation = subprocess.check_output("DISPLAY=:0 xrandr --query --verbose | grep HDMI-1 | cut -d ' ' -f 6",shell=True).decode("utf-8").replace("\n","")
+	if orientation == "normal":
+		return 0
+	elif orientation == "right":
+		return 1
+	elif orientation == "inverted":
+		return 2
+	elif orientation == "left":
+		return 3
+	return None
+
+def modifySchedule(element,typ,scheduleJson):
+	changed = False
+	if f"--{element}" in sys.argv:
+		indexOfElement = sys.argv.index(f"--{element}") + 1
+		if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+			try:
+				del scheduleJson[element]
+				changed = True
+			except:
+				pass
+		else:
+			if typ == bool:
+				if sys.argv[indexOfElement].lower() == "true":
+					scheduleJson[element] = True
+					changed = True
+				elif sys.argv[indexOfElement].lower() == "false":
+					scheduleJson[element] = False
+					changed = True
+				else:
+					verbose and print(f"{element} is not true or false")
+			elif typ == int:
+				if isInt(sys.argv[indexOfElement]):
+					scheduleJson[element] = int(sys.argv[indexOfElement])
+					changed = True
+				else:
+					verbose and print(f"{element} is no number")
+			elif typ == datetime.datetime:
+				try:
+					datetime.datetime.strptime(sys.argv[indexOfElement], "%Y-%m-%d %H:%M")
+					scheduleJson[element] = sys.argv[indexOfElement]
+					changed = True
+				except:
+					verbose and print(f"{element} is no valid date")
+			elif typ == "pattern":
+				if all(ch in "0123456789/-*, " for ch in sys.argv[indexOfElement]) and len(sys.argv[indexOfElement].split(" ")) == 5:
+					scheduleJson[element] = sys.argv[indexOfElement]
+					changed = True
+				else:
+					verbose and print(f"{element} is no valid pattern")
+			else:
+				#Normal String without validation
+				scheduleJson[element] = sys.argv[indexOfElement]
+				changed = True
+				pass
+	return changed
+
+def addCron():
+	if i + 2 < len(sys.argv):
+		if "--pattern" in sys.argv:
+			pattern = sys.argv.index("--pattern") + 1
+			if pattern < len(sys.argv):
+				changed = False
+				item = {}
+				changed = modifySchedule("enabled",bool,item) or changed
+				changed = modifySchedule("commandset",int,item) or changed
+				changed = modifySchedule("start",datetime.datetime,item) or changed
+				changed = modifySchedule("end",datetime.datetime,item) or changed
+				changed = modifySchedule("pattern","pattern",item) or changed
+				changed = modifySchedule("command",int,item) or changed
+				changed = modifySchedule("parameter",None,item) or changed
+				if changed:
+					try:
+						scheduleJson = loadSchedule()
+						scheduleJson["cron"].append(item)
+						scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+						scheduleFile.write(json.dumps(scheduleJson,indent=4))
+						scheduleFile.close()
+						verbose and print("Changed schedule.json")
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Empty cron element")
+					exit(1)
+			else:
+				verbose and print("No pattern value")
+				exit(1)
+		else:
+			verbose and print("Argument --pattern expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
+def updateCron():
+	if i + 2 < len(sys.argv):
+		if "--index" in sys.argv:
+			index = sys.argv.index("--index") + 1
+			if index < len(sys.argv):
+				if isInt(sys.argv[index]):
+					index = int(sys.argv[index])
+					try:
+						scheduleJson = loadSchedule()
+						if index < len(scheduleJson["cron"]) and index >= 0:
+							changed = False
+							changed = modifySchedule("enabled",bool,scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("commandset",int,scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("start",datetime.datetime,scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("end",datetime.datetime,scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("pattern","pattern",scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("command",int,scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("parameter",None,scheduleJson["cron"][index]) or changed
+							if changed:
+								scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+								scheduleFile.write(json.dumps(scheduleJson,indent=4))
+								scheduleFile.close()
+								verbose and print("Changed schedule.json")
+						else:
+							verbose and print("Index is bigger than count of cron entries")
+							exit(1)
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("No index value")
+				exit(1)
+		else:
+			verbose and print("Argument --index expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
+def addTrigger():
+	if i + 2 < len(sys.argv):
+		if "--trigger" in sys.argv:
+			if isInt(sys.argv.index("--trigger") + 1):
+				changed = False
+				item = {}
+				changed = modifySchedule("enabled",bool,item) or changed
+				changed = modifySchedule("trigger",int,item) or changed
+				changed = modifySchedule("command",int,item) or changed
+				changed = modifySchedule("parameter",None,item) or changed
+				changed = modifySchedule("commandset",int,item) or changed
+				if changed:
+					try:
+						scheduleJson = loadSchedule()
+						scheduleJson["trigger"].append(item)
+						scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+						scheduleFile.write(json.dumps(scheduleJson,indent=4))
+						scheduleFile.close()
+						verbose and print("Changed schedule.json")
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Empty trigger element")
+					exit(1)
+			else:
+				verbose and print("No pattern value")
+				exit(1)
+		else:
+			verbose and print("Argument --trigger expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
+def updateTrigger():
+	if i + 2 < len(sys.argv):
+		if "--index" in sys.argv:
+			index = sys.argv.index("--index") + 1
+			if index < len(sys.argv):
+				if isInt(sys.argv[index]):
+					index = int(sys.argv[index])
+					try:
+						scheduleJson = loadSchedule()
+						if index < len(scheduleJson["trigger"]) and index >= 0:
+							changed = False
+							changed = modifySchedule("enabled",bool,scheduleJson["trigger"][index]) or changed
+							changed = modifySchedule("trigger",int,scheduleJson["trigger"][index]) or changed
+							changed = modifySchedule("command",int,scheduleJson["trigger"][index]) or changed
+							changed = modifySchedule("parameter",None,scheduleJson["trigger"][index]) or changed
+							changed = modifySchedule("commandset",int,scheduleJson["trigger"][index]) or changed
+							if changed:
+								scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+								scheduleFile.write(json.dumps(scheduleJson,indent=4))
+								scheduleFile.close()
+								verbose and print("Changed schedule.json")
+						else:
+							verbose and print("Index is bigger than count of trigger entries")
+							exit(1)
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("No index value")
+				exit(1)
+		else:
+			verbose and print("Argument --index expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
+def addCommandset(update):
+	if i + 2 < len(sys.argv):
+		if "--name" in sys.argv or update:
+			import random
+			item = {}
+			if update and modifySchedule("id",int,item):
+				deleteCommandset()
+			else:
+				item["id"] = random.randint(100000,999999)
+			modifySchedule("name",str,item)
+			item["commands"] = []
+			for x in range(len(sys.argv)):
+				if sys.argv[x] == "--command":
+					if len(sys.argv) > x + 2:
+						if not sys.argv[x + 1].startswith("--"):
+							if isInt(sys.argv[x + 1]):
+								subitem = {}
+								subitem["command"] = int(sys.argv[x + 1])
+								if not sys.argv[x + 2].startswith("--"):
+									subitem["parameter"] = sys.argv[x + 2]
+								item["commands"].append(subitem)
+					elif len(sys.argv) > x + 1:
+						if not sys.argv[x + 1].startswith("--"):
+							if isInt(sys.argv[x + 1]):
+								subitem = {}
+								subitem["command"] = int(sys.argv[x + 1])
+								item["commands"].append(subitem)
+			try:
+				scheduleJson = loadSchedule()
+				scheduleJson["commandsets"].append(item)
+				scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+				scheduleFile.write(json.dumps(scheduleJson,indent=4))
+				scheduleFile.close()
+				verbose and print("Changed schedule.json")
+			except:
+				verbose and print("Error with schedule.json")
+				exit(1)
+		else:
+			verbose and print("Argument --name expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
+def updateCommandset():
+	if i + 2 < len(sys.argv):
+		if "--id" in sys.argv:
+			addCommandset(True)
+		else:
+			verbose and print("Argument --id expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
+def deleteCommandset():
+	if i + 2 < len(sys.argv):
+		if "--id" in sys.argv:
+			if isInt(sys.argv[sys.argv.index("--id") + 1]):
+				try:
+					found = False
+					scheduleJson = loadSchedule()
+					max = len(scheduleJson["commandsets"])
+					for x in range(0,max):
+						if "id" in scheduleJson["commandsets"][x]:
+							if scheduleJson["commandsets"][x]["id"] == int(sys.argv[sys.argv.index("--id") + 1]):
+								del scheduleJson["commandsets"][x]
+								found = True
+								max = max - 1
+					if found:
+						scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+						scheduleFile.write(json.dumps(scheduleJson,indent=4))
+						scheduleFile.close()
+						verbose and print("Changed schedule.json")
+				except:
+					verbose and print("Error with schedule.json")
+					exit(1)
+			else:
+				verbose and print("Index is no number")
+				exit(1)
+		else:
+			verbose and print("Argument --id expected")
+			exit(1)
+	else:
+		verbose and print("Not enough arguments")
+		exit(1)
+
+#Main
 verbose = False
 sys.argv.pop(0) #Remove Path
 if len(sys.argv) < 1:
@@ -236,7 +615,7 @@ if "-v" in sys.argv:
     verbose = True
     sys.argv.remove("-v")
 
-for i,origItem in enumerate(sys.argv):
+for i, origItem in enumerate(sys.argv):
 	item = origItem.lower()
 	if (
 		item == "-h" or
@@ -244,7 +623,12 @@ for i,origItem in enumerate(sys.argv):
 	):
 		printHelp()
 	elif item == "--start-browser":
-		startBrowser()
+		if i + 1 < len(sys.argv):
+			startBrowser(sys.argv[i + 1])
+		else:
+			print("Not enough arguments")
+	elif item == "--restart-browser":
+		restartBrowser()
 	elif item == "--stop-browser":
 		stopBrowser()
 	elif item == "--reboot":
@@ -261,11 +645,6 @@ for i,origItem in enumerate(sys.argv):
 		screenOff()
 	elif item == "--screen-switch-input":
 		screenSwitchInput()
-	elif item == "--set-website":
-		if i + 1 < len(sys.argv):
-			setWebsite(sys.argv[i + 1])
-		else:
-			verbose and print("Not enough arguments")
 	elif item == "--get-website":
 		getWebsite()
 	elif item == "--set-pw":
@@ -277,7 +656,7 @@ for i,origItem in enumerate(sys.argv):
 						os.system(f"head -1 {sys.argv[i + 3]} | tr -d '\n' | sudo xargs -0 htpasswd -c -b /etc/apache2/.piScreen_htpasswd '{sys.argv[i + 1]}'")
 						os.remove(sys.argv[i + 3])
 					else:
-						verbose and print("Passwordfile dosen't exist")
+						verbose and print("Passwordfile doesn't exist")
 				else:
 					verbose and print("No Passwordfile specified")
 			else: #Check direct mode
@@ -315,10 +694,172 @@ for i,origItem in enumerate(sys.argv):
 			elif sys.argv[i + 1].lower() == "--pre-release":
 				prerelease = True
 		downloadUpdate(draft,prerelease)
-	elif item == "--create-screenshot":
-		screenshotPath = "/media/ramdisk/piScreenScreenshot.png"
-		verbose and print("Create new screenshot")
-		os.system(f"export DISPLAY=:0 && scrot -z {screenshotPath}.png")
-		verbose and print("Remove old screenshot")
-		os.system(f"mv {screenshotPath}.png {screenshotPath}")
-		
+	elif item == "--set-display-protocol":
+		if i + 1 < len(sys.argv):
+			setDisplayProtocol(sys.argv[i + 1])
+		else:
+			verbose and print("Not enough arguments")
+	elif item == "--get-display-protocol":
+		getDisplayProtocol()
+	elif item == "--set-display-orientation":
+		saveSettings = True
+		if "--no-save" in sys.argv:
+			saveSettings = False
+			sys.argv.remove("--no-save")
+		if i + 1 < len(sys.argv):
+			found = False
+			if sys.argv[i + 1] == "0":
+				found = True
+				os.system("DISPLAY=:0 xrandr -o normal")
+				verbose and print("Change displayorientation to normal")
+			elif sys.argv[i + 1] == "1":
+				found = True
+				os.system("DISPLAY=:0 xrandr -o right")
+				verbose and print("Change displayorientation to right")
+			elif sys.argv[i + 1] == "2":
+				found = True
+				os.system("DISPLAY=:0 xrandr -o inverted")
+				verbose and print("Change displayorientation to inverted")
+			elif sys.argv[i + 1] == "3":
+				found = True
+				os.system("DISPLAY=:0 xrandr -o left")
+				verbose and print("Change displayorientation to left")
+			if found and saveSettings:
+				settingsJson = loadSettings()
+				settingsJson["settings"]["display"]["orientation"] = int(sys.argv[i + 1])
+				settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
+				settingsFile.write(json.dumps(settingsJson,indent=4))
+				settingsFile.close()
+				verbose and print("Write orientation in settings")
+		else:
+			verbose and print("Not enough arguments")
+	elif item == "--get-display-orientation-settings":
+		settingsJson = loadSettings()
+		try:
+			print(settingsJson["settings"]["display"]["orientation"])
+		except:
+			print(0)
+	elif item == "--get-display-orientation":
+		print(getDisplayOrientation())
+	elif item == "--schedule-firstrun":
+		open("/media/ramdisk/piScreenScheduleFirstRun","w").close()
+	elif item == "--schedule-lastcron":
+		open("/media/ramdisk/piScreenScheduleLastCron","w").close()
+	elif item == "--schedule-manually-commandset":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 1] == "--id":
+				if isInt(sys.argv[i + 2]):
+					manualFile = open(f"{ramdisk}/piScreenScheduleManually", "w")
+					manualFile.write(json.dumps({"type":"commandset","id":int(sys.argv[i + 2])},indent=4))
+					manualFile.close()
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("Argument --index expected")
+				exit(1)
+		else:
+			verbose and print("Not enough arguments")
+			exit(1)
+	elif item == "--schedule-manually-cron":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 1] == "--index":
+				if isInt(sys.argv[i + 2]):
+					manualFile = open(f"{ramdisk}/piScreenScheduleManually", "w")
+					manualFile.write(json.dumps({"type":"cron","index":int(sys.argv[i + 2])},indent=4))
+					manualFile.close()
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("Argument --index expected")
+				exit(1)
+		else:
+			verbose and print("Not enough arguments")
+			exit(1)
+	elif item == "--schedule-manually-trigger":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 1] == "--index":
+				if isInt(sys.argv[i + 2]):
+					manualFile = open(f"{ramdisk}/piScreenScheduleManually", "w")
+					manualFile.write(json.dumps({"type":"trigger","index":int(sys.argv[i + 2])},indent=4))
+					manualFile.close()
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("Argument --index expected")
+				exit(1)
+		else:
+			verbose and print("Not enough arguments")
+			exit(1)
+	elif item == "--add-cron":
+		addCron()
+	elif item == "--update-cron":
+		updateCron()
+	elif item == "--delete-cron":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 1] == "--index":
+				if isInt(sys.argv[i + 2]):
+					try:
+						scheduleJson = loadSchedule()
+						index = int(sys.argv[i + 2])
+						if index < len(scheduleJson["cron"]) and index >= 0:
+							del scheduleJson["cron"][index]
+							scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+							scheduleFile.write(json.dumps(scheduleJson,indent=4))
+							scheduleFile.close()
+							verbose and print("Changed schedule.json")
+						else:
+							verbose and print("Index is bigger than count of cron entries")
+							exit(1)
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("Argument --index expected")
+				exit(1)
+		else:
+			verbose and print("Not enough arguments")
+			exit(1)
+	elif item == "--add-commandset":
+		addCommandset(False)
+	elif item == "--update-commandset":
+		updateCommandset()
+	elif item == "--delete-commandset":
+		deleteCommandset()
+	elif item == "--add-trigger":
+		addTrigger()
+	elif item == "--update-trigger":
+		updateTrigger()
+	elif item == "--delete-trigger":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 1] == "--index":
+				if isInt(sys.argv[i + 2]):
+					try:
+						scheduleJson = loadSchedule()
+						index = int(sys.argv[i + 2])
+						if index < len(scheduleJson["trigger"]) and index >= 0:
+							del scheduleJson["trigger"][index]
+							scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+							scheduleFile.write(json.dumps(scheduleJson,indent=4))
+							scheduleFile.close()
+							verbose and print("Changed schedule.json")
+						else:
+							verbose and print("Index is bigger than count of trigger entries")
+							exit(1)
+					except:
+						verbose and print("Error with schedule.json")
+						exit(1)
+				else:
+					verbose and print("Index is no number")
+					exit(1)
+			else:
+				verbose and print("Argument --index expected")
+				exit(1)
+		else:
+			verbose and print("Not enough arguments")
+			exit(1)
