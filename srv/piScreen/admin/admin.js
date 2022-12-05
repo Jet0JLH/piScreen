@@ -631,7 +631,11 @@ function prepareTriggerString(triggerId) {
 
 	let msg = "enabled=" + enabled.toString().trim() + "&";
 	if (command != 0) msg += "command=" + command + "&";
-	if (parameter != null) msg += "parameter=" + parameter + "&";
+	if (parameter != null) {
+		parameter = parameter.replaceAll("%20", " ");
+		parameter = parameter.replaceAll("\"", "\\\"");
+		msg += "parameter=\"" + encodeURIComponent(parameter) + "\"&";
+	}
 	if (triggerId == 0) msg += "trigger=1&";
 	msg = msg.substring(0, msg.length - 1);
 
@@ -692,7 +696,11 @@ function prepareCronString(entryId) {
 	if (endDateTime) msg += "end=" + endDate + " " + endTime + "&";
 	else msg += "end= &";
 	if (command != 0) msg += "command=" + command + "&";
-	if (parameter != null) msg += "parameter=" + parameter + "&";
+	if (parameter != null) {
+		parameter = parameter.replaceAll("%20", " ");
+		parameter = parameter.replaceAll("\"", "\\\"");
+		msg += "parameter=\"" + encodeURIComponent(parameter) + "\"&";
+	}
 	msg = msg.substring(0, msg.length - 1);
 
 	return msg;
