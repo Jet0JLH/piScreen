@@ -72,7 +72,7 @@ while True:
 	if os.path.exists(piScreenModeFirefox):
 		if not checkIfProcessRunning("firefox-esr"):
 			parameter = open(piScreenModeFirefox,"r").read()
-			os.system(f"firefox-esr -kiosk {parameter} &")
+			os.system(f'firefox-esr -kiosk "{parameter}" &')
 	if os.path.exists(piScreenModeVLC):
 		pass
 	#check if settings has changed

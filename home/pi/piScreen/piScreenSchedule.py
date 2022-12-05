@@ -323,7 +323,7 @@ def commandInterpreter(cmd, parameter):
 	elif cmd == 40:
 		#StartBrowser
 		if parameter:
-			os.system(f"{syscall} --start-browser {parameter}")
+			os.system(f'{syscall} --start-browser "{parameter}"')
 	elif cmd == 41:
 		#RestartBrowser
 		pass
