@@ -11,7 +11,7 @@ userHomePath = "/home/pi/"
 certPath = userHomePath + "piScreen/certs/"
 certName = "server.crt"
 fstabPath = "/etc/fstab"
-fstabEntry = "\ntmpfs    /media/ramdisk  tmpfs   defaults,size=5%,mode=0777        0       0"
+fstabEntry = "tmpfs    /media/ramdisk  tmpfs   defaults,size=5%,mode=0777        0       0"
 sudoersFilePath = "/etc/sudoers.d/050_piScreen-nopasswd"
 scheduleJsonPath = userHomePath + "piScreen/schedule.json"
 settingsJsonPath = userHomePath + "piScreen/settings.json"
@@ -154,6 +154,15 @@ def replaceInFileWriteProtected(toReplace, replacement, filePath):
     except:
         exit("Error in replaceInFileWriteProtected")
 
+def deleteTextInFile(toDelete, filePath):
+    with open(filePath, "r") as fp:
+        lines = fp.readlines()
+
+    with open(filePath, "w") as fp:
+        for line in lines:
+            if line.strip("\n") != toDelete:
+                fp.write(line)
+
 def isLaterVersion(oMajor, oMinor, oPatch, nMajor, nMinor, nPatch):#Returns 1 if new is newer, 0 if equal, -1 if older
     if oMajor < nMajor:
         return 1
@@ -247,13 +256,9 @@ def removeFiles():
         os.system("crontab -u pi -l | grep -v '/home/pi/piScreen/piScreenCron.py --check-now' | crontab -u pi -")#remove old crontab entry from version 1.x.x
     removeFile(userHomePath + "piScreen/cron.json")
 
-    fstabConf = readFile(fstabPath)
-    if fstabEntry in fstabConf:
-        fstabConf = fstabConf.replace(fstabEntry, "")
-        fstabConf = fstabConf.replace("tmpfs    /media/ramdisk  tmpfs   defaults,size=5%        0       0", "")
-        removeFile(fstabPath)
-        appendToFile(fstabPath, fstabConf)
-
+    deleteTextInFile(fstabEntry, fstabPath)
+    deleteTextInFile("tmpfs    /media/ramdisk  tmpfs   defaults,size=5%        0       0", fstabPath)#old fstab entry
+    
 def copyFiles():
     print("Copying files")
     copyFile(f"{os.path.dirname(__file__)}/etc/apache2/sites-available/piScreen.conf", "/etc/apache2/sites-available/")
@@ -550,6 +555,7 @@ def install():
     wannaReboot()
 
 def update():
+    global isUpdate
     isUpdate = True
     isInstall = not isUpdate
     install()
