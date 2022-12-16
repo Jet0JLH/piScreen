@@ -73,8 +73,10 @@ while True:
 		if not checkIfProcessRunning("firefox-esr"):
 			parameter = open(piScreenModeFirefox,"r").read()
 			os.system(f'firefox-esr -kiosk "{parameter}" &')
-	if os.path.exists(piScreenModeVLC):
-		pass
+	elif os.path.exists(piScreenModeVLC):
+		if not checkIfProcessRunning("vlc"):
+			parameter = open(piScreenModeVLC,"r").read()
+			os.system(f'vlc --no-qt-privacy-ask -L --no-qt-name-in-title --no-video-title-show --no-qt-fs-controller --rc-host=127.0.0.1:9999 --intf=rc --video-wallpaper "{parameter}" &')
 	#check if settings has changed
 	if configModify != os.path.getmtime(piScreenSettings):
 		try:

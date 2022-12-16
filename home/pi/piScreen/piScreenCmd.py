@@ -12,12 +12,18 @@ def printHelp():
 	Show this information
 -v
 	Shows detailed informations during execution
---start-browser
+--start-browser <URL>
 	Starts the Browser
 --stop-browser
 	Stops the Browser
 --restart-browser
 	Restart the Browser when active
+--start-vlc <file>
+	Starts VLC Player
+--stop-vlc
+	Stops VLC Player
+--restart-vlc
+	Restarts the VLC Player when active
 --reboot
 	Restarts the Device
 --shutdown
@@ -35,6 +41,8 @@ def printHelp():
 	if it is not currently displayed
 --get-website
 	Get the current in settings configured website
+--get-mode
+	Get the current mode [firefox|vlc|none]
 --set-pw <user> [-f <file with password>] [password]
 	Change the password for the weblogin user. Removes the old password.
 	You can set the password directly --change-pw <user> <password>
@@ -119,6 +127,7 @@ def endAllModes():
 		os.system("killall -q -SIGTERM firefox-esr")
 	if os.path.exists(piScreenModeVLC):
 		os.remove(piScreenModeVLC)
+		os.system("killall -q -SIGTERM vlc")
 	
 
 def startBrowser(parameter):
@@ -132,6 +141,18 @@ def stopBrowser():
 
 def restartBrowser():
 	os.system("killall -q -SIGTERM firefox-esr")
+
+def startVLC(parameter):
+	endAllModes()
+	f = open(piScreenModeVLC,"w")
+	f.write(parameter)
+	f.close()
+
+def stopVLC():
+	endAllModes()
+
+def restartVLC():
+	os.system("killall -q -SIGTERM vlc")
 
 def reboot():
 	verbose and print("Reboot system")
@@ -631,6 +652,15 @@ for i, origItem in enumerate(sys.argv):
 		restartBrowser()
 	elif item == "--stop-browser":
 		stopBrowser()
+	elif item == "--start-vlc":
+		if i + 1 < len(sys.argv):
+			startVLC(sys.argv[i + 1])
+		else:
+			print("Not enough arguments")
+	elif item == "--restart-vlc":
+		restartVLC()
+	elif item == "--stop-vlc":
+		stopVLC()
 	elif item == "--reboot":
 		reboot()
 	elif item == "--shutdown":
@@ -647,6 +677,13 @@ for i, origItem in enumerate(sys.argv):
 		screenSwitchInput()
 	elif item == "--get-website":
 		getWebsite()
+	elif item == "--get-mode":
+		if os.path.exists(piScreenModeFirefox):
+			print("firefox")
+		elif os.path.exists(piScreenModeVLC):
+			print("vlc")
+		else:
+			print("none")
 	elif item == "--set-pw":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 2].lower() == "-f": #Check file Mode
