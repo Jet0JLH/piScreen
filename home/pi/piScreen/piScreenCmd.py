@@ -178,10 +178,17 @@ def getStatus():
 	screenshotTime = 0
 	if os.path.isfile("/media/ramdisk/piScreenScreenshot.png"):
 		screenshotTime = os.path.getctime("/media/ramdisk/piScreenScreenshot.png")
-	return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s},"screenshotTime":%d}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,str(os.path.isfile("/media/ramdisk/piScreenDisplayStandby")).lower(),str(os.path.isfile("/media/ramdisk/piScreenDisplayOn")).lower(),screenshotTime)
+	return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s},"screenshotTime":%d,"mode":"%s"}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,str(os.path.isfile("/media/ramdisk/piScreenDisplayStandby")).lower(),str(os.path.isfile("/media/ramdisk/piScreenDisplayOn")).lower(),screenshotTime,getMode())
 
 def getWebsite():
 	if os.path.exists(piScreenModeFirefox): print(open(piScreenModeFirefox,"r").read())
+
+def getMode():
+	if os.path.exists(piScreenModeFirefox):
+		return "firefox"
+	elif os.path.exists(piScreenModeVLC):
+		return "vlc"
+	return "none"
 
 def screenOn():
 	verbose and print("Create file for turning on the screen")
@@ -573,6 +580,7 @@ def addCommandset(update):
 				scheduleFile.write(json.dumps(scheduleJson,indent=4))
 				scheduleFile.close()
 				verbose and print("Changed schedule.json")
+				print(item["id"])
 			except:
 				verbose and print("Error with schedule.json")
 				exit(1)
@@ -678,12 +686,7 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--get-website":
 		getWebsite()
 	elif item == "--get-mode":
-		if os.path.exists(piScreenModeFirefox):
-			print("firefox")
-		elif os.path.exists(piScreenModeVLC):
-			print("vlc")
-		else:
-			print("none")
+		print(getMode())
 	elif item == "--set-pw":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 2].lower() == "-f": #Check file Mode
