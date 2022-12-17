@@ -326,13 +326,31 @@ def commandInterpreter(cmd, parameter):
 			os.system(f'{syscall} --start-browser "{parameter}"')
 	elif cmd == 41:
 		#RestartBrowser
-		pass
+		os.system(f'{syscall} --restart-browser')
 	elif cmd == 42:
 		#ReloadBrowser
 		pass
 	elif cmd == 43:
 		#CloseBrowser
 		os.system(f"{syscall} --stop-browser")
+	elif cmd == 50:
+		#StartVLC
+		if parameter:
+			os.system(f'{syscall} --start-vlc "{parameter}"')
+	elif cmd == 51:
+		#RestartVLC
+		os.system(f"{syscall} --restart-vlc")
+	elif cmd == 52:
+		#StopVLC
+		os.system(f"{syscall} --stop-vlc")
+	elif cmd == 53:
+		#Pause/PlayVLC
+		os.system(f"{syscall} --pause-vlc")
+	elif cmd == 54:
+		#PlayVLC
+		os.system(f"{syscall} --play-vlc")
+	
+
 	
 
 #Main
