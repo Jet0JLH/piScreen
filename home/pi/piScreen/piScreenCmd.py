@@ -24,6 +24,10 @@ def printHelp():
 	Stops VLC Player
 --restart-vlc
 	Restarts the VLC Player when active
+--pause-vlc
+	Pause/Play the video if mode ist VLC
+--play-vlc
+	Play the video if mode is VLC
 --reboot
 	Restarts the Device
 --shutdown
@@ -169,16 +173,68 @@ def getStatus():
 	ramTotal = round(psutil.virtual_memory().total / 1024)
 	ramUsed = round(ramTotal - psutil.virtual_memory().available / 1024)
 	upTime = time.time() - psutil.boot_time()
-	upSecound = int(upTime % 60)
-	upMinutes = int((upTime / 60) % 60)
-	upHours = int((upTime / 60 / 60) % 24)
-	upDays = int(upTime / 60 / 60 / 24)
-	displayState = open("/media/ramdisk/piScreenDisplay.txt","r").read().strip()
 	cpuTemp = round(psutil.sensors_temperatures()["cpu_thermal"][0].current * 1000)
 	screenshotTime = 0
 	if os.path.isfile("/media/ramdisk/piScreenScreenshot.png"):
 		screenshotTime = os.path.getctime("/media/ramdisk/piScreenScreenshot.png")
-	return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s},"screenshotTime":%d,"mode":"%s"}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,str(os.path.isfile("/media/ramdisk/piScreenDisplayStandby")).lower(),str(os.path.isfile("/media/ramdisk/piScreenDisplayOn")).lower(),screenshotTime,getMode())
+	#return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s},"screenshotTime":%d,"mode":"%s"}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,str(os.path.isfile("/media/ramdisk/piScreenDisplayStandby")).lower(),str(os.path.isfile("/media/ramdisk/piScreenDisplayOn")).lower(),screenshotTime,getMode())
+	jsonData = {}
+	jsonData["uptime"] = {}
+	jsonData["uptime"]["secs"] = int(upTime % 60)
+	jsonData["uptime"]["mins"] = int((upTime / 60) % 60)
+	jsonData["uptime"]["hours"] = int((upTime / 60 / 60) % 24)
+	jsonData["uptime"]["days"] = int(upTime / 60 / 60 / 24)
+	jsonData["displayState"] = open("/media/ramdisk/piScreenDisplay.txt","r").read().strip()
+	jsonData["cpuTemp"] = cpuTemp
+	jsonData["cpuLoad"] = cpuLoad
+	jsonData["ramTotal"] = ramTotal
+	jsonData["ramUsed"] = ramUsed
+	jsonData["display"] = {}
+	jsonData["display"]["standbySet"] = os.path.isfile("/media/ramdisk/piScreenDisplayStandby")
+	jsonData["display"]["onSet"] = os.path.isfile("/media/ramdisk/piScreenDisplayOn")
+	jsonData["screenshotTime"] = screenshotTime
+	jsonData["modeInfo"] = {}
+	jsonData["modeInfo"]["mode"] = getMode()
+	if jsonData["modeInfo"]["mode"] == "firefox":
+		try:
+			if os.path.exists(piScreenModeFirefox): jsonData["modeInfo"]["url"] = open(piScreenModeFirefox,"r").read()
+		except:
+			verbose and print("Error while reading Firefox data")
+	elif jsonData["mode"] == "vlc":
+		try:
+			import telnetlib
+			telnetClient = telnetlib.Telnet("127.0.0.1",9999)
+			time.sleep(0.05)
+			telnetClient.read_very_eager()
+			
+			telnetClient.write(b'status\n')
+			time.sleep(0.05)
+			result = telnetClient.read_very_eager().decode("utf-8")
+			result = result.split("\r")
+			if len(result) == 4:
+				result1 = result[0][result[0].find("(")+2:result[0].find(")")-1]
+				result2 = result[1][result[1].find("(")+2:result[1].find(")")-1]
+				jsonData["modeInfo"]["file"] = result1[-len(result1)+result1.index(":")+2:]
+				jsonData["modeInfo"]["volume"] = int(result2[-len(result2)+result2.index(":")+2:])
+				jsonData["modeInfo"]["state"] = result[2][result[2].find("(")+2:result[2].find(")")-1].split(" ")[1]
+			elif len(result) == 3:
+				result1 = result[0][result[0].find("(")+2:result[0].find(")")-1]
+				result2 = result[1][result[1].find("(")+2:result[1].find(")")-1]
+				jsonData["modeInfo"]["volume"] = int(result1[-len(result1)+result1.index(":")+2:])
+				jsonData["modeInfo"]["state"] = result[1][result[1].find("(")+2:result[1].find(")")-1].split(" ")[1]
+
+			telnetClient.write(b'get_time\n')
+			time.sleep(0.05)
+			result = telnetClient.read_very_eager().decode("utf-8")
+			jsonData["modeInfo"]["time"] = int(result[:result.index("\r")])
+			telnetClient.write(b'get_length\n')
+			time.sleep(0.05)
+			result = telnetClient.read_very_eager().decode("utf-8")
+			jsonData["modeInfo"]["length"] = int(result[:result.index("\r")])
+
+		except:
+			verbose and print("Error while reading VLC data")
+	return json.dumps(jsonData)
 
 def getWebsite():
 	if os.path.exists(piScreenModeFirefox): print(open(piScreenModeFirefox,"r").read())
@@ -669,6 +725,20 @@ for i, origItem in enumerate(sys.argv):
 		restartVLC()
 	elif item == "--stop-vlc":
 		stopVLC()
+	elif item == "--pause-vlc":
+		if getMode() == "vlc":
+			import telnetlib
+			telnetClient = telnetlib.Telnet("127.0.0.1",9999)
+			telnetClient.write(b'pause\n')
+		else:
+			verbose and print("Mode is not VLC")
+	elif item == "--play-vlc":
+		if getMode() == "vlc":
+			import telnetlib
+			telnetClient = telnetlib.Telnet("127.0.0.1",9999)
+			telnetClient.write(b'play\n')
+		else:
+			verbose and print("Mode is not VLC")
 	elif item == "--reboot":
 		reboot()
 	elif item == "--shutdown":
