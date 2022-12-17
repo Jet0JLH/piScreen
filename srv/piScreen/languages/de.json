@@ -65,6 +65,7 @@
         "parameter": "Parameter",
         "valid-from": "Gültig von",
         "valid-to": "Gültig bis",
+        "edit-timeschedule": "Zeitplan bearbeiten",
 
         "saved": "Gespeichert",
         "saved-settings": "Einstellungen wurden gespeichert",
@@ -88,6 +89,15 @@
         "update-button": "Update vorhanden auf Version ",
         "update-info-header": "Information für das Update",
         "update-info-text": "Verbinde dich mit deinem Pi und setze folgenden Befehl ab, um das Update durchzuführen:<br><code>sudo /home/pi/piScreen/piScreenCmd.py --do-upgrade -v</code>",
+
+        "description": "Beschreibung",
+        "commandset": "Befehlssatz",
+        "command": "Befehl",
+        "edit-commandsets": "Befehlssätze bearbeiten",
+        "new-commandset": "Befehlssatz hinzufügen",
+        "new-command": "Befehl hinzufügen",
+        "delete-commandset": "Befehlssatz löschen",
+        "choose-commandset": "Befehlssatz auswählen",
 
         "---": "---",
         "sleep": "Warten",

@@ -177,7 +177,58 @@
 		}*/
 	}
 	elseif ($_GET['id'] == 19) { //commandset functions
-		//echo shell_exec("$syscall --get-display-orientation-settings");
+		if ($_GET['cmd'] == "add"){
+			$parameterString = "";
+			if ($_GET['name'] == NULL) {
+				echo $error;
+				return;
+			} else {
+				$parameterString .= " --name " . $_GET['name'];
+			}
+			for ($id = 1; true; $id++) {
+				if ($_GET['command' . $id] != NULL) {
+					$parameterString .= " --command " . $_GET['command' . $id];
+					if ($_GET['parameter' . $id] != NULL) {
+						$parameterString .= $_GET['parameter' . $id];
+					}
+				} else {
+					break;
+				}
+			}
+			//echo "$syscall --add-commandset$parameterString";
+			echo shell_exec("$syscall --add-commandset$parameterString");
+		} elseif ($_GET['cmd'] == "update") {
+			if ($_GET['commandsetid'] == NULL) {
+				echo $error;
+				return;
+			} else {
+				$parameterString .= " --id " . $_GET['commandsetid'];
+			}
+			if ($_GET['name'] != NULL) {
+				$parameterString .= " --name " . $_GET['name'];
+			}
+			for ($id = 1; true; $id++) {
+				if ($_GET['command' . $id] != NULL) {
+					$parameterString .= " --command " . $_GET['command' . $id];
+					if ($_GET['parameter' . $id] != NULL) {
+						$parameterString .= " " . $_GET['parameter' . $id];
+					}
+				} else {
+					break;
+				}
+			}
+			//echo "$syscall --update-commandset$parameterString";
+			echo shell_exec("$syscall --update-commandset$parameterString");
+		} elseif ($_GET['cmd'] == "delete") {
+			if ($_GET['commandsetid'] == NULL) {
+				echo $error;
+				return;
+			}
+			$parameterString = " --id " . $_GET['commandsetid'];
+			//echo "$syscall --delete-commandset$parameterString";
+			echo shell_exec("$syscall --delete-commandset$parameterString");
+
+		}
 	}
 	elseif ($_GET['id'] == 20) { //Trigger functions
 		if ($_GET['cmd'] == "add"){
