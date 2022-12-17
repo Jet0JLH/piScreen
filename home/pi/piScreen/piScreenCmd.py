@@ -200,7 +200,7 @@ def getStatus():
 			if os.path.exists(piScreenModeFirefox): jsonData["modeInfo"]["url"] = open(piScreenModeFirefox,"r").read()
 		except:
 			verbose and print("Error while reading Firefox data")
-	elif jsonData["mode"] == "vlc":
+	elif jsonData["modeInfo"]["mode"] == "vlc":
 		try:
 			import telnetlib
 			telnetClient = telnetlib.Telnet("127.0.0.1",9999)
