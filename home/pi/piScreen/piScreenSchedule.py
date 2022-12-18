@@ -349,6 +349,16 @@ def commandInterpreter(cmd, parameter):
 	elif cmd == 54:
 		#PlayVLC
 		os.system(f"{syscall} --play-vlc")
+	elif cmd == 60:
+		#StartImpress
+		if parameter:
+			os.system(f'{syscall} --start-impress "{parameter}"')
+	elif cmd == 61:
+		#RestartImpress
+		os.system(f"{syscall} --restart-impress")
+	elif cmd == 62:
+		#StopImpress
+		os.system(f"{syscall} --stop-impress")
 	
 
 	

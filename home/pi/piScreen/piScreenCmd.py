@@ -4,6 +4,7 @@ import json, sys, os, time, datetime
 ramdisk = "/media/ramdisk/"
 piScreenModeFirefox = ramdisk + "piScreenModeFirefox"
 piScreenModeVLC = ramdisk + "piScreenModeVLC"
+piScreenModeImpress = ramdisk + "piScreenModeImpress"
 
 def printHelp():
 	print("This tool is desigend for syscalls.\nSo you have one script, which controlls everything and get every info about.")
@@ -15,19 +16,25 @@ def printHelp():
 --start-browser <URL>
 	Starts the Browser
 --stop-browser
-	Stops the Browser
+	Stops the Browser when active
 --restart-browser
 	Restart the Browser when active
 --start-vlc <file>
 	Starts VLC Player
 --stop-vlc
-	Stops VLC Player
+	Stops VLC Player when active
 --restart-vlc
 	Restarts the VLC Player when active
 --pause-vlc
 	Pause/Play the video if mode ist VLC
 --play-vlc
 	Play the video if mode is VLC
+--start-impress <file>
+	Starts Libreoffice Impress
+--stop-impress
+	Stops Libreoffice Impress when active
+--restart-impress
+	Restarts Libreoffice Impress when active
 --reboot
 	Restarts the Device
 --shutdown
@@ -132,6 +139,9 @@ def endAllModes():
 	if os.path.exists(piScreenModeVLC):
 		os.remove(piScreenModeVLC)
 		os.system("killall -q -SIGTERM vlc")
+	if os.path.exists(piScreenModeImpress):
+		os.remove(piScreenModeImpress)
+		os.system("killall -q -SIGTERM soffice.bin")
 	
 
 def startBrowser(parameter):
@@ -157,6 +167,18 @@ def stopVLC():
 
 def restartVLC():
 	os.system("killall -q -SIGTERM vlc")
+
+def startImpress(parameter):
+	endAllModes()
+	f = open(piScreenModeImpress,"w")
+	f.write(parameter)
+	f.close()
+
+def stopImpress():
+	endAllModes()
+
+def restartImpress():
+	os.system("killall -q -SIGTERM soffice.bin")
 
 def reboot():
 	verbose and print("Reboot system")
@@ -739,6 +761,15 @@ for i, origItem in enumerate(sys.argv):
 			telnetClient.write(b'play\n')
 		else:
 			verbose and print("Mode is not VLC")
+	elif item == "--start-impress":
+		if i + 1 < len(sys.argv):
+			startImpress(sys.argv[i + 1])
+		else:
+			print("Not enough arguments")
+	elif item == "--restart-impress":
+		restartImpress()
+	elif item == "--stop-impress":
+		stopImpress()
 	elif item == "--reboot":
 		reboot()
 	elif item == "--shutdown":

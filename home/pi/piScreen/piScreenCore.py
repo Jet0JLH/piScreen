@@ -26,6 +26,7 @@ os.environ["DISPLAY"] = ":0"
 ramdisk = "/media/ramdisk/"
 piScreenModeFirefox = ramdisk + "piScreenModeFirefox"
 piScreenModeVLC = ramdisk + "piScreenModeVLC"
+piScreenModeImpress = ramdisk + "piScreenModeImpress"
 piScreenDisplayOn = ramdisk + "piScreenDisplayOn"
 piScreenDisplaySwitch = ramdisk + "piScreenDisplaySwitch"
 piScreenDisplayCEC = ramdisk + "piScreenDisplayCEC"
@@ -77,6 +78,10 @@ while True:
 		if not checkIfProcessRunning("vlc"):
 			parameter = open(piScreenModeVLC,"r").read()
 			os.system(f'vlc --no-qt-privacy-ask -L --no-qt-name-in-title --no-video-title-show --no-qt-fs-controller --rc-host=127.0.0.1:9999 --intf=rc --video-wallpaper "{parameter}" &')
+	elif os.path.exists(piScreenModeImpress):
+		if not checkIfProcessRunning("soffice.bin"):
+			parameter = open(piScreenModeImpress,"r").read()
+			os.system(f'soffice --nolockcheck --norestore --nologo --show "{parameter}" &')
 	#check if settings has changed
 	if configModify != os.path.getmtime(piScreenSettings):
 		try:
