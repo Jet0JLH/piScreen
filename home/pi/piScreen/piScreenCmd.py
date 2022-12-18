@@ -690,7 +690,7 @@ def updateCommandset():
 def deleteCommandset():
 	if i + 2 < len(sys.argv):
 		if "--id" in sys.argv:
-			if isInt(sys.argv[sys.argv.index("--id") + 1]):
+			if len(sys.argv) > sys.argv.index("--id") + 1 and isInt(sys.argv[sys.argv.index("--id") + 1]):
 				try:
 					found = False
 					scheduleJson = loadSchedule()
@@ -701,6 +701,7 @@ def deleteCommandset():
 								del scheduleJson["commandsets"][x]
 								found = True
 								max = max - 1
+								break
 					if found:
 						scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
 						scheduleFile.write(json.dumps(scheduleJson,indent=4))
