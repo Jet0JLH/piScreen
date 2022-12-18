@@ -53,7 +53,7 @@ def printHelp():
 --get-website
 	Get the current in settings configured website
 --get-mode
-	Get the current mode [firefox|vlc|none]
+	Get the current mode [firefox|vlc|impress|none]
 --set-pw <user> [-f <file with password>] [password]
 	Change the password for the weblogin user. Removes the old password.
 	You can set the password directly --change-pw <user> <password>
@@ -156,8 +156,9 @@ def stopBrowser():
 def restartBrowser():
 	os.system("killall -q -SIGTERM firefox-esr")
 
-def startVLC(parameter):
-	endAllModes()
+def startVLC(parameter,soft=False):
+	if not soft:
+		endAllModes()
 	f = open(piScreenModeVLC,"w")
 	f.write(parameter)
 	f.close()
@@ -199,7 +200,6 @@ def getStatus():
 	screenshotTime = 0
 	if os.path.isfile("/media/ramdisk/piScreenScreenshot.png"):
 		screenshotTime = os.path.getctime("/media/ramdisk/piScreenScreenshot.png")
-	#return '{"uptime":{"secs":%d,"mins":%d,"hours":%d,"days":%d},"displayState":"%s","cpuTemp":%d,"cpuLoad":%d,"ramTotal":%d,"ramUsed":%d,"display":{"standbySet":%s,"onSet":%s},"screenshotTime":%d,"mode":"%s"}' % (upSecound,upMinutes,upHours,upDays,displayState,cpuTemp,cpuLoad,ramTotal,ramUsed,str(os.path.isfile("/media/ramdisk/piScreenDisplayStandby")).lower(),str(os.path.isfile("/media/ramdisk/piScreenDisplayOn")).lower(),screenshotTime,getMode())
 	jsonData = {}
 	jsonData["uptime"] = {}
 	jsonData["uptime"]["secs"] = int(upTime % 60)
@@ -236,7 +236,7 @@ def getStatus():
 			if len(result) == 4:
 				result1 = result[0][result[0].find("(")+2:result[0].find(")")-1]
 				result2 = result[1][result[1].find("(")+2:result[1].find(")")-1]
-				jsonData["modeInfo"]["file"] = result1[-len(result1)+result1.index(":")+2:]
+				jsonData["modeInfo"]["source"] = result1[-len(result1)+result1.index(":")+2:]
 				jsonData["modeInfo"]["volume"] = int(result2[-len(result2)+result2.index(":")+2:])
 				jsonData["modeInfo"]["state"] = result[2][result[2].find("(")+2:result[2].find(")")-1].split(" ")[1]
 			elif len(result) == 3:
@@ -256,6 +256,11 @@ def getStatus():
 
 		except:
 			verbose and print("Error while reading VLC data")
+	elif jsonData["modeInfo"]["mode"] == "impress":
+		try:
+			if os.path.exists(piScreenModeImpress): jsonData["modeInfo"]["file"] = open(piScreenModeImpress,"r").read()
+		except:
+			verbose and print("Error while reading Impress data")
 	return json.dumps(jsonData)
 
 def getWebsite():
@@ -266,6 +271,8 @@ def getMode():
 		return "firefox"
 	elif os.path.exists(piScreenModeVLC):
 		return "vlc"
+	elif os.path.exists(piScreenModeImpress):
+		return "impress"
 	return "none"
 
 def screenOn():
@@ -740,7 +747,17 @@ for i, origItem in enumerate(sys.argv):
 		stopBrowser()
 	elif item == "--start-vlc":
 		if i + 1 < len(sys.argv):
-			startVLC(sys.argv[i + 1])
+			if getMode() == "vlc":
+				try:
+					import telnetlib
+					telnetClient = telnetlib.Telnet("127.0.0.1",9999)
+					telnetClient.write(bytes(f"clear\nadd {sys.argv[i + 1]}\n","utf-8"))
+					startVLC(sys.argv[i + 1],True)
+				except:
+					print("Not able to control VLC by telnet")
+					startVLC(sys.argv[i + 1])
+			else:
+				startVLC(sys.argv[i + 1])
 		else:
 			print("Not enough arguments")
 	elif item == "--restart-vlc":

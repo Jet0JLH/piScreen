@@ -68,20 +68,33 @@ time.sleep(5)
 os.system("./piScreenSchedule.py &")
 
 print("Start observation")
+modeFileModify = 0
 while True:
 	#Check in which mode we are
 	if os.path.exists(piScreenModeFirefox):
 		if not checkIfProcessRunning("firefox-esr"):
 			parameter = open(piScreenModeFirefox,"r").read()
+			modeFileModify = os.path.getmtime(piScreenModeFirefox)
 			os.system(f'firefox-esr -kiosk "{parameter}" &')
+		else:
+			if modeFileModify != os.path.getmtime(piScreenModeFirefox):
+				modeFileModify = os.path.getmtime(piScreenModeFirefox)
 	elif os.path.exists(piScreenModeVLC):
 		if not checkIfProcessRunning("vlc"):
 			parameter = open(piScreenModeVLC,"r").read()
+			modeFileModify = os.path.getmtime(piScreenModeVLC)
 			os.system(f'vlc --no-qt-privacy-ask -L --no-qt-name-in-title --no-video-title-show --no-qt-fs-controller --rc-host=127.0.0.1:9999 --intf=rc --video-wallpaper "{parameter}" &')
+		else:
+			if modeFileModify != os.path.getmtime(piScreenModeVLC):
+				modeFileModify = os.path.getmtime(piScreenModeVLC)
 	elif os.path.exists(piScreenModeImpress):
 		if not checkIfProcessRunning("soffice.bin"):
 			parameter = open(piScreenModeImpress,"r").read()
+			fileModmodeFileModifyify = os.path.getmtime(piScreenModeImpress)
 			os.system(f'soffice --nolockcheck --norestore --nologo --show "{parameter}" &')
+		else:
+			if modeFileModify != os.path.getmtime(piScreenModeImpress):
+				modeFileModify = os.path.getmtime(piScreenModeImpress)
 	#check if settings has changed
 	if configModify != os.path.getmtime(piScreenSettings):
 		try:
