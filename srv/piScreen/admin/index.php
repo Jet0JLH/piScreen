@@ -178,6 +178,7 @@
 					<div class="accordion" id="scheduleAccordion">
 						<div class="accordion-item" style='background-color: transparent; border: none !important;'>
 							<div id="collapseCommandsets" class="accordion-collapse collapse show" data-bs-parent="#scheduleAccordion">
+							<h3 class='pb-2 accordion-header' lang-data="edit-timeschedule">Zeitplan bearbeiten</h3>
 								<div class="accordion-body p-0">
 									<!--<div style='display:flex;flex-flow:row wrap;align-items:center;'>
 										<div style='width:auto' class='form-check form-switch'>

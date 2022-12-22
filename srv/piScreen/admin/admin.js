@@ -23,6 +23,8 @@ screenshotTime = document.getElementById("screenshotTime");
 //schedule
 var scheduleEntryCount = 0;
 var commandsetEntryCount = 0;
+var commandEntryCounts = {};
+var unsavedCommandsets = 0;
 const commandCollection = [//text, parameter
 		["---", false], ["sleep", "text"], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["universal", "text"], ["restart-device", false], ["shutdown-device", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
@@ -131,12 +133,12 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 								</div>
 							</td>
 							<td style='width: 50%;'>
-								<button id="scheduleEntry${eId}ButtonDelete" class="disableOnDisconnect btn btn-danger" onclick='deleteScheduleEntry(${eId})' style='float: right;'><i class='bi bi-trash'></i></button>
+								<button id="scheduleEntry${eId}ButtonExecute" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeScheduleEntry();' style='float: right;'><i class='bi bi-play pe-2'></i><span lang-data="execute">Ausführen</span></button>
 							</td>
 						</tr>
 						<tr>
 							<td>
-								<div class='form-floating mb-3'>
+								<div class='form-floating'>
 									<input type='text' class='disableOnDisconnect form-control border border-secondary' name='cronentry' id='cronentry${eId}' value='${pattern}' onkeyup='checkCronEntryValidity(this, ${eId}); showScheduleEntryHeader(${eId}); displayScheduleEntrySaved(false, ${eId});'>
 									<label for='cronentry${eId}'lang-data="cron-entry">Croneintrag</label>
 								</div>
@@ -147,7 +149,7 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 						</tr>
 						<tr>
 							<td colspan="2">
-								<div class='form-floating mb-3'>
+								<div class='form-floating'>
 									<select id='scheduleEntry${eId}CommandsetSelect' class='disableOnDisconnect form-select border border-secondary' onchange='showScheduleEntryHeader(${eId}); displayScheduleEntrySaved(false, ${eId});'>
 									</select>
 									<label for="scheduleEntry${eId}CommandsetSelect" lang-data="choose-commandset">Befehlssatz auswählen</label>
@@ -156,7 +158,7 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 						</tr>
 						<tr>
 							<td>
-								<div class='form-floating mb-3'>
+								<div class='form-floating'>
 									<select id='scheduleEntry${eId}CommandSelect' class='disableOnDisconnect form-select border border-secondary' onchange='showScheduleEntryHeader(${eId}); displayScheduleEntrySaved(false, ${eId}); addParameterToScheduleEntry(${eId}, value);'>
 									</select>
 									<label for="scheduleEntry${eId}CommandSelect" lang-data="choose-command">Befehl auswählen</label>
@@ -166,7 +168,7 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 							</td>
 						</tr>
 						<tr>
-							<td colspan='3' class=' border-top border-light p-0'>
+							<td colspan='3' class='p-0'>
 								<table class='p-0' style="width: 100%;">
 									<tr>
 										<td colspan='2' class='p-2'>
@@ -208,7 +210,8 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 					</div>
 				</table>
 				<button id="scheduleEntry${eId}SaveButton" class="disableOnDisconnect btn btn-outline-success mt-2" onclick='saveScheduleEntry(${eId})' data-bs-toggle="collapse" data-bs-target="#collapseScheduleEntry${eId}Collection"><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
-				<i id='scheduleEntryInfo${eId}' data='${newScheduleEntry}' class='bi bi-info-circle mt-3' style="float: right;" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="CronID: ${eId}"></i>
+				<button id="scheduleEntry${eId}ButtonDelete" class="disableOnDisconnect btn btn-danger mt-2" onclick='deleteScheduleEntry(${eId})' style='float: right;'><i class='bi bi-trash pe-2'></i><span lang-data='delete-commandset'>${getLanguageAsText("delete-entry")}</span></button>
+				<i id='scheduleEntryInfo${eId}' data='${newScheduleEntry}' class='bi bi-info-circle mt-3' style="float: right;" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="CronID: ${eId}" hidden></i>
 			</div>
 		</div>
 	</div>`;
@@ -223,12 +226,6 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 	toggleValidityTo(eId, document.getElementById("scheduleEntry" + eId + "ValiditySwitchCheckTo").checked);
 
 	addCommandsetsToDropdown("scheduleEntry" + eId + "CommandsetSelect");
-	try {
-		getCommandsetName(commandset);
-	} catch (error) {
-		commandset = 0;
-	}
-	getElement("scheduleEntry" + eId + "CommandsetSelect").value = commandset;
 
 	addCommandsToDropdown("scheduleEntry" + eId + "CommandSelect");
 	getElement("scheduleEntry" + eId + "CommandSelect").value = command;
@@ -260,7 +257,7 @@ function addParameterToScheduleEntry(scheduleEntryId, commandId, parameter) {
 	//add element
 	let div = document.createElement("div");
 	div.id = "scheduleEntry" + scheduleEntryId + "ParameterInputDiv";
-	div.className = "form-floating mb-3";
+	div.className = "form-floating";
 
 	if (commandCollection[commandId][1] == false) {
 		return;
@@ -327,6 +324,9 @@ function getScheduleFromServer() {
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.onloadend = function() {
 		let scheduleObj = JSON.parse(xmlhttp.responseText);
+		for (let i = 0; i < scheduleObj.commandsets.length; i++) {
+			commandEntryCounts[scheduleObj.commandsets[i].id] = 0;
+		}
 		getElement("commandsetCollectionAccordion").innerHTML = "";
 		for (let i = 0; i < scheduleObj.commandsets.length; i++) {//commandsets
 			let commandsetCommandsArray = [];
@@ -485,11 +485,11 @@ function reloadBrowser() {
 }
 
 function restartHost() {
-	showModal(getLanguageAsText('attention'), getLanguageAsText('reboot-really'), undefined, undefined, undefined, 4, getLanguageAsText('restart-device'), actionFunction=sendHTTPRequest('GET', 'cmd.php?id=2', true, () => {modal.hide();}));
+	showModal(getLanguageAsText('attention'), getLanguageAsText('reboot-really'), undefined, undefined, undefined, 4, getLanguageAsText('restart-device'), () => {sendHTTPRequest('GET', 'cmd.php?id=2', true, () => {modal.hide();})});
 }
 
 function shutdownHost() {
-	showModal(getLanguageAsText('attention'), getLanguageAsText('shutdown-really'), undefined, undefined, undefined, 4, getLanguageAsText('shutdown-device'), actionFunction=sendHTTPRequest('GET', 'cmd.php?id=3', true, () => {modal.hide();}));
+	showModal(getLanguageAsText('attention'), getLanguageAsText('shutdown-really'), undefined, undefined, undefined, 4, getLanguageAsText('shutdown-device'), () => {sendHTTPRequest('GET', 'cmd.php?id=3', true, () => {modal.hide();})});
 }
 
 function setDisplayOn() {
@@ -535,7 +535,7 @@ getElement("showTimeschedule").addEventListener("shown.bs.collapse", event => {
 
 function setDisplayProtocol() {
 	let protocol = document.getElementById('displayProtocolSelect').value;
-	sendHTTPRequest('GET', 'cmd.php?id=14&protocol=' + protocol, true, settingSaved("settingsButtonSaveDisplayProtocol"));
+	sendHTTPRequest('GET', 'cmd.php?id=14&protocol=' + protocol, true, () => settingSaved("settingsButtonSaveDisplayProtocol"));
 }
 
 function setDisplayProtocolSelect() {
@@ -550,7 +550,7 @@ function setDisplayProtocolSelect() {
 function setDisplayOrientation() {
 	// 0 - horizontal, 1 - vertical, 2 - horizontal inverted, 3 - vertical inverted
 	let orientation = document.getElementById('displayOrientationSelect').value;
-	sendHTTPRequest('GET', 'cmd.php?id=16&orientation=' + orientation, true, settingSaved("settingsButtonSaveDisplayOrientation"));
+	sendHTTPRequest('GET', 'cmd.php?id=16&orientation=' + orientation, true, () => settingSaved("settingsButtonSaveDisplayOrientation"));
 }
 
 function setDisplayOrientationSelect() {
@@ -682,10 +682,10 @@ function prepareTriggerString(triggerId) {
 function saveScheduleEntry(scheduleEntryId) {
 	//send to server
 	if (document.getElementById("scheduleEntryInfo" + scheduleEntryId).getAttribute("data") == "true") {//add
-		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=add&' + prepareScheduleString(scheduleEntryId), true, displayScheduleEntrySaved(true, scheduleEntryId));
+		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=add&' + prepareScheduleString(scheduleEntryId), true, () => displayScheduleEntrySaved(true, scheduleEntryId));
 		getElement("scheduleEntryInfo" + scheduleEntryId).setAttribute("data", "false");
 	} else {//update
-		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=update&' + prepareScheduleString(scheduleEntryId) + '&index=' + scheduleEntryId, true, displayScheduleEntrySaved(true, scheduleEntryId));
+		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=update&' + prepareScheduleString(scheduleEntryId) + '&index=' + scheduleEntryId, true, () => displayScheduleEntrySaved(true, scheduleEntryId));
 	}
 }
 
@@ -693,7 +693,7 @@ function deleteScheduleEntry(scheduleEntryId) {
 	if (getElement("scheduleEntry" + scheduleEntryId + "HeaderSaved").children[0].className.includes("bi-file-earmark-x-fill")) {
 		getElement('scheduleEntry' + scheduleEntryId).remove();
 	} else {
-		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=delete&index=' + scheduleEntryId, true, getElement('scheduleEntry' + scheduleEntryId).remove());
+		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=delete&index=' + scheduleEntryId, true, () => getElement('scheduleEntry' + scheduleEntryId).remove());
 	}
 
 }
@@ -784,8 +784,17 @@ function enabledChanged(check, scheduleEntryId) {
 	}
 }
 
+function executeScheduleEntry(scheduleEntryId) {
+	console.log("not implemented yet");
+	//sendHTTPRequest('GET', 'cmd.php?id=19&cmd=delete&commandsetid=' + getCommandsetId(commandsetEntryId), true, () => getElement("commandsetEntry" + commandsetEntryId).remove());
+}
+
 function generateCommandsetEntry(name=getLanguageAsText("new-commandset"), commands=[], commandsetId=0, saved=false) {
 	let cId = commandsetEntryCount;
+	if (commandsetId == 0) {
+		commandsetId = Math.floor(Math.random() * 9999) + 1;
+		commandsetId -= commandsetId * 2;
+	}
 	let newCommandsetEntryObj = document.createElement('div');
 	newCommandsetEntryObj.id = "commandsetEntry" + cId;
 	newCommandsetEntryObj.className = "accordion-item border border-primary";
@@ -814,7 +823,7 @@ function generateCommandsetEntry(name=getLanguageAsText("new-commandset"), comma
 		<button id='commandEntry${cId}ButtonNew' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='addCommandToCommandset(${cId}); commandsetEntrySaved(false, ${cId});'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-command'>${getLanguageAsText("new-command")}</span></button>
 		<hr>
 		<button id="commandsetEntry${cId}ButtonSave" class="disableOnDisconnect btn btn-outline-success mt-2" onclick='saveCommandsetEntry(${cId})' data-bs-toggle="collapse" data-bs-target="#collapseCommandset${cId}"><i class='bi bi-save pe-2'></i><span lang-data="save">${getLanguageAsText("save")}</span></button>
-		<button id='deleteCommandsetEntry${cId}' class='disableOnDisconnect btn btn-danger mt-2' onclick='deleteCommandsetEntry(${cId});' style='float: right;'><i class='bi bi-trash pe-2'></i><span lang-data='delete-commandset'>${getLanguageAsText("delete-commandset")}</span></button>
+		<button id='commandsetEntry${cId}ButtonDelete' class='disableOnDisconnect btn btn-danger mt-2' onclick='deleteCommandsetEntry(${cId});' style='float: right;'><i class='bi bi-trash pe-2'></i><span lang-data='delete-commandset'>${getLanguageAsText("delete-commandset")}</span></button>
 	</div>
 </div>
 `;
@@ -822,7 +831,7 @@ function generateCommandsetEntry(name=getLanguageAsText("new-commandset"), comma
 	//Adding element to document
 	getElement("commandsetCollectionAccordion").appendChild(newCommandsetEntryObj);
 	
-	if (commandsetId == 0) getElement("commandsetEntry" + cId + "Label").click();
+	if (commandsetId < 0) getElement("commandsetEntry" + cId + "Label").click();
 
 	commandsetEntrySaved(saved, cId);
 
@@ -833,16 +842,17 @@ function generateCommandsetEntry(name=getLanguageAsText("new-commandset"), comma
 }
 
 function addCommandToCommandset(commandsetEntryId, command=0, parameter="") {
-	let commandCount = getElement("commandsetEntry" + commandsetEntryId + "CommandCollection").getElementsByTagName("tr").length - 1;
+	let commandId = commandEntryCounts[getCommandsetId(commandsetEntryId)];
 	let newCommandEntryObj = document.createElement('tr');
+	newCommandEntryObj.className = "border-top border-bottom border-primary commandrow";
 	newCommandEntryObj.innerHTML = `<td class='p-1' style='width: 50%;'>
 	<div class='form-floating'>
-		<select id='commandsetEntry${commandsetEntryId}CommandSelect${commandCount}' class='disableOnDisconnect form-select border border-secondary commandSelect' onchange='addParameterToCommandsetEntryCommand(${commandsetEntryId}, ${commandCount}, value); commandsetEntrySaved(false, ${commandsetEntryId});'>
+		<select id='commandsetEntry${commandsetEntryId}CommandSelect${commandId}' class='disableOnDisconnect form-select border border-secondary commandSelect' onchange='addParameterToCommandsetEntryCommand(${commandsetEntryId}, ${commandId}, value); commandsetEntrySaved(false, ${commandsetEntryId});'>
 		</select>
-		<label for="commandsetEntry${commandsetEntryId}CommandSelect${commandCount}" lang-data="choose-command">${getLanguageAsText("choose-command")}</label>
+		<label for="commandsetEntry${commandsetEntryId}CommandSelect${commandId}" lang-data="choose-command">${getLanguageAsText("choose-command")}</label>
 	</div>
 </td>
-<td id='commandsetEntry${commandsetEntryId}Command${commandCount}ParameterCell' class='p-1' style='width: 40%;'>
+<td id='commandsetEntry${commandsetEntryId}Command${commandId}ParameterCell' class='p-1' style='width: 40%;'>
 </td>
 <td class='p-1' style='width: 10%;'>
 	<button id="commandsetEntry${commandsetEntryId}CommandButtonDelete" class="disableOnDisconnect btn btn-danger" onclick='deleteCommandFromCommandset(this); commandsetEntrySaved(false, ${commandsetEntryId});' style='float: right;'><i class='bi bi-trash'></i></button>
@@ -852,10 +862,12 @@ function addCommandToCommandset(commandsetEntryId, command=0, parameter="") {
 	getElement("commandsetEntry" + commandsetEntryId + "CommandCollection").appendChild(newCommandEntryObj);
 
 	//Adding dropdown options
-	addCommandsToDropdown("commandsetEntry" + commandsetEntryId + "CommandSelect" + commandCount);
-	getElement("commandsetEntry" + commandsetEntryId + "CommandSelect" + commandCount).value = command;
+	addCommandsToDropdown("commandsetEntry" + commandsetEntryId + "CommandSelect" + commandId);
+	getElement("commandsetEntry" + commandsetEntryId + "CommandSelect" + commandId).value = command;
 
-	addParameterToCommandsetEntryCommand(commandsetEntryId, commandCount, command, parameter);
+	addParameterToCommandsetEntryCommand(commandsetEntryId, commandId, command, parameter);
+
+	commandEntryCounts[getCommandsetId(commandsetEntryId)]++;
 }
 
 function addParameterToCommandsetEntryCommand(commandsetEntryId, commandEntryId, commandId, parameter="") {
@@ -896,10 +908,10 @@ function deleteCommandFromCommandset(commandEntry) {
 }
 
 function deleteCommandsetEntry(commandsetEntryId) {
-	if (getCommandsetId(commandsetEntryId) == 0) {
+	if (getCommandsetId(commandsetEntryId) < 0) {// < 0 is unsaved, > 0 is saved
 		getElement("commandsetEntry" + commandsetEntryId).remove();
 	} else {
-		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=delete&commandsetid=' + getCommandsetId(commandsetEntryId), true, getElement("commandsetEntry" + commandsetEntryId).remove());
+		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=delete&commandsetid=' + getCommandsetId(commandsetEntryId), true, () => getElement("commandsetEntry" + commandsetEntryId).remove());
 	}
 }
 
@@ -908,7 +920,7 @@ function getCommandsetId(entryIndex) {
 }
 
 function getCommandsetName(commandsetEntryId) {
-	return getElement("commandset" + commandsetEntryId + "Id").textContent;
+	return getElement("commandsetEntry" + commandsetEntryId + "Name").value;
 }
 
 function showCommandsetEntryHeader(commandsetEntryId) {
@@ -931,7 +943,7 @@ function saveCommandsetEntry(commandsetEntryId) {
 	}
 
 	let sendString = prepareCommandsetString(commandsetEntryId, commandsetEntryNameElement.value);
-	if (getCommandsetId(commandsetEntryId) == 0) {//add
+	if (getCommandsetId(commandsetEntryId) < 0) {//add
 		let xmlhttp = new XMLHttpRequest();
 		xmlhttp.onloadend = function () {
 			commandsetEntrySaved(true, commandsetEntryId);
@@ -940,29 +952,33 @@ function saveCommandsetEntry(commandsetEntryId) {
 		xmlhttp.open('GET', 'cmd.php?id=19&cmd=add&' + sendString, true);
 		xmlhttp.send();
 	} else {//update
-		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=update&commandsetid=' + getCommandsetId(commandsetEntryId) + '&' + sendString, true, commandsetEntrySaved(true, commandsetEntryId));
+		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=update&commandsetid=' + getCommandsetId(commandsetEntryId) + '&' + sendString, true, () => commandsetEntrySaved(true, commandsetEntryId));
 	}
 }
 
 function prepareCommandsetString(commandsetEntryId, commandsetName) {
 	let msg = "name=\"" + commandsetName + "\"&";
-	let commandEntries = getElement("commandsetEntry" + commandsetEntryId + "CommandCollection").getElementsByTagName("tr");
-	for (let i = 1; i < commandEntries.length; i++) {//first tr is name
+	let commandEntries = getElement("commandsetEntry" + commandsetEntryId + "CommandCollection").getElementsByClassName("commandrow");
+	for (let i = 0; i < commandEntries.length; i++) {
 		let commandSelect = commandEntries[i].getElementsByClassName("commandSelect")[0];
 		msg += "command" + i + "=" + commandSelect.value + "&"
-		let commandParameter = null;
+		let parameter = "";
 		try {
-			commandParameter = commandEntries[i].getElementsByClassName("commandParameter")[0];
-			msg += "parameter" + i + "=" + commandParameter.value + "&"
+			parameter = commandEntries[i].getElementsByClassName("commandParameter")[0].value;
+			if (parameter != null) {
+				parameter = parameter.replaceAll("%20", " ");
+				parameter = parameter.replaceAll("\"", "\\\"");
+				msg += "parameter" + i + "=\"" + encodeURIComponent(parameter) + "\"&"
+			}
 		} catch (error) {
-			//no parameter for command
+			//no parameter on this command
 		}
 	}
 	msg = msg.substring(0, msg.length - 1);
 	return msg;
 }
 
-function addCommandsetsToDropdown(dropdownId) {
+function addCommandsetsToDropdown(dropdownId, selectedId=0) {
 	//Add commandsets dropdown options
 	getElement(dropdownId).innerHTML = "";
 	let firstoptionTag = document.createElement("option"); //---
@@ -975,6 +991,11 @@ function addCommandsetsToDropdown(dropdownId) {
 		optionTag.value = savedEntries[i][0];
 		optionTag.innerText = savedEntries[i][1];
 		getElement(dropdownId).appendChild(optionTag);
+	}
+	try {
+		getElement(dropdownId).value = selectedId;
+	} catch (error) {
+		
 	}
 
 }

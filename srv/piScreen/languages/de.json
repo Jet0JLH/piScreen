@@ -55,6 +55,7 @@
         "timeschedule-tile-header": "Zeitplan",
         "ignore-timeschedule": "Zeitplan ignorieren",
         "new-entry": "Neuer Eintrag",
+        "delete-entry": "Eintrag löschen",
         "import-schedule": "Import",
         "export-schedule": "Export",
         "help": "Hilfe",

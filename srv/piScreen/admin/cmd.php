@@ -185,11 +185,11 @@
 			} else {
 				$parameterString .= " --name " . $_GET['name'];
 			}
-			for ($id = 1; true; $id++) {
+			for ($id = 0; true; $id++) {
 				if ($_GET['command' . $id] != NULL) {
 					$parameterString .= " --command " . $_GET['command' . $id];
 					if ($_GET['parameter' . $id] != NULL) {
-						$parameterString .= $_GET['parameter' . $id];
+						$parameterString .= " " . $_GET['parameter' . $id];
 					}
 				} else {
 					break;
@@ -207,7 +207,7 @@
 			if ($_GET['name'] != NULL) {
 				$parameterString .= " --name " . $_GET['name'];
 			}
-			for ($id = 1; true; $id++) {
+			for ($id = 0; true; $id++) {
 				if ($_GET['command' . $id] != NULL) {
 					$parameterString .= " --command " . $_GET['command' . $id];
 					if ($_GET['parameter' . $id] != NULL) {

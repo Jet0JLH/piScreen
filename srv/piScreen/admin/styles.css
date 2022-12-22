@@ -27,6 +27,9 @@
 	right: 20px;
 }
 
+.commandrow:nth-child(even) {
+	background-color: rgba(128, 128, 128, 0.2);
+}
 
 @keyframes fadeout {
 	from { opacity: 1; }
