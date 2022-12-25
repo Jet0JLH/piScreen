@@ -39,6 +39,12 @@ def printHelp():
 	Restarts the Device
 --shutdown
 	Shutdown the Device
+--configure-desktop [<--mode> <mode>] [<--wallpaper> <path>] [<--color> <hexColor>]
+	Configure the desktop wallpaper.
+	Possible modes are: color|stretch|fit|crop|center|tile|screen
+	Hex colors has 6 characters and starts with a hash. Keep in mind, this character has to be escaped with a backslash!
+--get-desktop-configuration
+	Returns the full desktop configuration
 --get-status
 	Returns a JSON String with statusinfos
 --screen-on
@@ -190,6 +196,64 @@ def reboot():
 def shutdown():
 	verbose and print("Shutdown system")
 	os.system("poweroff")
+
+def configureDesktop():
+	try:
+		os.environ["DISPLAY"] = ":0"
+		os.environ["XAUTHORITY"] = "{userHomePath}.Xauthority"
+		os.environ["XDG_RUNTIME_DIR"] = "/run/user/1000"
+		if f"--mode" in sys.argv:
+			indexOfElement = sys.argv.index(f"--mode") + 1
+			if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+				verbose and print("No parameter given")
+			else:
+				if sys.argv[indexOfElement].lower() in ["color", "stretch", "fit", "crop", "center", "tile", "screen"]:
+					os.system(f"pcmanfm --wallpaper-mode={sys.argv[indexOfElement].lower()}")
+				else:
+					verbose and print("No possible mode selected")
+		if f"--wallpaper" in sys.argv:
+			indexOfElement = sys.argv.index(f"--wallpaper") + 1
+			if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+				verbose and print("No parameter given")
+			else:
+				if os.path.exists(sys.argv[indexOfElement]):
+					os.system(f'pcmanfm "--set-wallpaper={os.path.abspath(sys.argv[indexOfElement])}"')
+				else:
+					verbose and print("Wallpaper File dose't exist")
+		if f"--bg-color" in sys.argv:
+			indexOfElement = sys.argv.index(f"--bg-color") + 1
+			if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+				verbose and print("No parameter given")
+			else:
+				import re
+				if re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', sys.argv[indexOfElement]):
+					desktopConfig = open("/home/pi/.config/pcmanfm/LXDE-pi/desktop-items-0.conf","r").readlines()
+					count = 0
+					found = False
+					for i in desktopConfig:
+						if i.startswith("desktop_bg="):
+							desktopConfig[count] = f"desktop_bg={sys.argv[indexOfElement]}\n"
+							found = True
+						count = count + 1
+					if not found:
+						desktopConfig.append(f"desktop_bg={sys.argv[indexOfElement]}\n")
+					open("/home/pi/.config/pcmanfm/LXDE-pi/desktop-items-0.conf","w").writelines(desktopConfig)
+					os.system("pcmanfm --reconfigure")
+				else:
+					verbose and print("Given color is no valid hex string")
+
+	except:
+		verbose and print("Error while access desktop configuration")
+		exit(1)
+
+def getDekstopConfig():
+	desktopJson = {}
+	desktopConfig = open("/home/pi/.config/pcmanfm/LXDE-pi/desktop-items-0.conf","r").readlines()
+	for i in desktopConfig:
+		tmp = i.split("=")
+		if len(tmp) > 1:
+			desktopJson[tmp[0]] = tmp[1].replace("\n","")
+	print(json.dumps(desktopJson))
 
 def getStatus():
 	import psutil
@@ -794,6 +858,10 @@ for i, origItem in enumerate(sys.argv):
 		reboot()
 	elif item == "--shutdown":
 		shutdown()
+	elif item == "--configure-desktop":
+		configureDesktop()
+	elif item == "--get-desktop-configuration":
+		getDekstopConfig()
 	elif item == "--get-status":
 		print(getStatus())
 	elif item == "--screen-on":
