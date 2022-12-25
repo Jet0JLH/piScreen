@@ -84,6 +84,8 @@ def printHelp():
 	Start schedule firstrun manually.
 --schedule-lastcron
 	Start last crontab entry
+--schedule-manually-command <--commandID> <commandID> [<--parameter> <parameter>]
+	Runs a single command selected by commandid
 --schedule-manually-commandset <--id> <index>
 	Runs the commandset selected by id in schedule
 --schedule-manually-cron <--index> <index>
@@ -904,6 +906,31 @@ for i, origItem in enumerate(sys.argv):
 		open("/media/ramdisk/piScreenScheduleFirstRun","w").close()
 	elif item == "--schedule-lastcron":
 		open("/media/ramdisk/piScreenScheduleLastCron","w").close()
+	elif item == "--schedule-manually-command":
+		if i + 2 < len(sys.argv):
+			if sys.argv[i + 1] == "--command":
+				if isInt(sys.argv[i + 2]):
+					command = {}
+					command["type"] = "command"
+					command["command"] = int(sys.argv[i + 2])
+					if i + 4 < len(sys.argv):
+						if sys.argv[i + 3] == "--parameter":
+							command["parameter"] = sys.argv[i + 4]
+						else:
+							verbose and print("Missing parameter flag")
+							exit(1)
+					manualFile = open(f"{ramdisk}/piScreenScheduleManually", "w")
+					manualFile.write(json.dumps(command))
+					manualFile.close()
+				else:
+					verbose and print("Command is no number")
+					exit(1)
+			else:
+				verbose and print("Argument --command expected")
+				exit(1)
+		else:
+			verbose and print("Not enough arguments")
+			exit(1)
 	elif item == "--schedule-manually-commandset":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--id":

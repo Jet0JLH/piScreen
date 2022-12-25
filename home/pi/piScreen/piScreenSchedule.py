@@ -423,6 +423,6 @@ while active:
 				os.remove(doManuallyPath)
 			except:
 				print("Unable to remove 'manually' file in ramdisk")
-		time.sleep(5)
+		time.sleep(1)
 	except KeyboardInterrupt:
 		active = False
