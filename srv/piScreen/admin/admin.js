@@ -1,4 +1,4 @@
-//neccessary html elements
+//necessary html elements
 darkmodeButton = document.getElementById("darkmodeButton");
 theme = document.getElementById("theme");
 languageSelect = document.getElementById("languageSelect");
@@ -150,7 +150,7 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 						<tr>
 							<td colspan="2">
 								<div class='form-floating'>
-									<select id='scheduleEntry${eId}CommandsetSelect' class='disableOnDisconnect form-select border border-secondary' onchange='showScheduleEntryHeader(${eId}); displayScheduleEntrySaved(false, ${eId});'>
+									<select id='scheduleEntry${eId}CommandsetSelect' class='disableOnDisconnect form-select border border-secondary' onchange='showScheduleEntryHeader(${eId}); displayScheduleEntrySaved(false, ${eId});' value='${commandset}'>
 									</select>
 									<label for="scheduleEntry${eId}CommandsetSelect" lang-data="choose-commandset">Befehlssatz auswählen</label>
 								</div>
@@ -225,7 +225,7 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 	toggleValidityFrom(eId, document.getElementById("scheduleEntry" + eId + "ValiditySwitchCheckFrom").checked);
 	toggleValidityTo(eId, document.getElementById("scheduleEntry" + eId + "ValiditySwitchCheckTo").checked);
 
-	addCommandsetsToDropdown("scheduleEntry" + eId + "CommandsetSelect");
+	addCommandsetsToDropdown("scheduleEntry" + eId + "CommandsetSelect", commandset);
 
 	addCommandsToDropdown("scheduleEntry" + eId + "CommandSelect");
 	getElement("scheduleEntry" + eId + "CommandSelect").value = command;
@@ -319,46 +319,50 @@ function addParameterToTrigger(triggerId, commandId, parameter) {
 	div.appendChild(label);
 }
 
-
 function getScheduleFromServer() {
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.onloadend = function() {
-		let scheduleObj = JSON.parse(xmlhttp.responseText);
-		for (let i = 0; i < scheduleObj.commandsets.length; i++) {
-			commandEntryCounts[scheduleObj.commandsets[i].id] = 0;
-		}
-		getElement("commandsetCollectionAccordion").innerHTML = "";
-		for (let i = 0; i < scheduleObj.commandsets.length; i++) {//commandsets
-			let commandsetCommandsArray = [];
-			let commandsetObj = scheduleObj.commandsets[i];
-			for (let j = 0; j < commandsetObj.commands.length; j++) {//commands
-				commandsetCommandsArray.push([commandsetObj.commands[j].command, commandsetObj.commands[j].parameter]);
-			}
-			generateCommandsetEntry(commandsetObj.name, commandsetCommandsArray, commandsetObj.id, true);
-		}
-		getElement("scheduleEntryCollectionAccordion").innerHTML = "";
-		for (let i = 0; i < scheduleObj.cron.length; i++) {//crons
-			let cronObj = scheduleObj.cron[i];
-			generateNewScheduleEntry(cronObj.enabled, cronObj.pattern, cronObj.start, cronObj.end, cronObj.command, cronObj.commandset, cronObj.parameter, true, false);
-		}
-		addCommandsToDropdown("trigger0CommandSelect");//trigger
-		addCommandsetsToDropdown("trigger0CommandsetSelect");//trigger
-		for (let i = 0; i < scheduleObj.trigger.length; i++) {//trigger parameter
-			let triggerObj = scheduleObj.trigger[i];
-			if (triggerObj.trigger == 1) {
-				startupTriggerIndex = i;
-				getElement("trigger0EnabledSwitch").checked = triggerObj.enabled;
-				getElement("trigger0CommandSelect").value = triggerObj.command;
-				getElement("trigger0CommandsetSelect").value = triggerObj.commandset;
-				addParameterToTrigger(0, triggerObj.command, triggerObj.parameter);
-				break;
-			}
-		}
+		loadScheduleJson(xmlhttp.responseText)
 	}
 	xmlhttp.open('GET', 'cmd.php?id=10', true);
 	xmlhttp.send();
-
 }
+
+function loadScheduleJson(jsonString) {
+	scheduleEntryCount = 0;
+	commandsetEntryCount = 0;
+	commandEntryCounts = {};
+	let scheduleObj = JSON.parse(jsonString);
+	for (let i = 0; i < scheduleObj.commandsets.length; i++) {
+		commandEntryCounts[scheduleObj.commandsets[i].id] = 0;
+	}
+	getElement("commandsetCollectionAccordion").innerHTML = "";
+	for (let i = 0; i < scheduleObj.commandsets.length; i++) {//commandsets
+		let commandsetCommandsArray = [];
+		let commandsetObj = scheduleObj.commandsets[i];
+		for (let j = 0; j < commandsetObj.commands.length; j++) {//commands
+			commandsetCommandsArray.push([commandsetObj.commands[j].command, commandsetObj.commands[j].parameter]);
+		}
+		generateCommandsetEntry(commandsetObj.name, commandsetCommandsArray, commandsetObj.id, true);
+	}
+	getElement("scheduleEntryCollectionAccordion").innerHTML = "";
+	for (let i = 0; i < scheduleObj.cron.length; i++) {//crons
+		let cronObj = scheduleObj.cron[i];
+		generateNewScheduleEntry(cronObj.enabled, cronObj.pattern, cronObj.start, cronObj.end, cronObj.command, cronObj.commandset, cronObj.parameter, true, false);
+	}
+	addCommandsToDropdown("trigger0CommandSelect");//trigger
+	addCommandsetsToDropdown("trigger0CommandsetSelect");//trigger
+	for (let i = 0; i < scheduleObj.trigger.length; i++) {//trigger parameter
+		let triggerObj = scheduleObj.trigger[i];
+		if (triggerObj.trigger == 1) {
+			startupTriggerIndex = i;
+			getElement("trigger0EnabledSwitch").checked = triggerObj.enabled;
+			getElement("trigger0CommandSelect").value = triggerObj.command;
+			getElement("trigger0CommandsetSelect").value = triggerObj.commandset;
+			addParameterToTrigger(0, triggerObj.command, triggerObj.parameter);
+			break;
+		}
+	}}
 
 function showModal(title="Titel", body="---", showClose=true, showCancel=true, cancelText=getLanguageAsText('cancel'), actionType=0, actionText=getLanguageAsText('ok'), actionFunction=function(){alert("Kein Befehl gesetzt")}) {
 	modalTitle.innerText = title;
@@ -415,8 +419,7 @@ function setDarkMode(dark) {
 		theme.href = "/bootstrap/darkpan-1.0.0/css/bootstrap.min.css";
 		darkmodeButton.classList.replace("btn-outline-secondary", "btn-outline-light");
 		languageSelect.classList.replace("border-secondary", "border-light");
-	}
-	else {
+	} else {
 		theme.href = "/bootstrap/css/bootstrap.min.css";
 		darkmodeButton.classList.replace("btn-outline-light", "btn-outline-secondary");
 		languageSelect.classList.replace("border-light", "border-secondary");
@@ -468,15 +471,19 @@ function importSchedule() {
 		let reader = new FileReader();
 		reader.readAsText(file, 'UTF-8');
 		reader.onload = readerEvent => {
-			console.log("in omload");
-			loadScheduleJson(readerEvent.target.result);
+			let jsonString = readerEvent.target.result
+			loadScheduleJson(jsonString);
+			saveEntireSchedule(jsonString);
 		}
 	}
 	input.click();
 }
 
-function loadScheduleJson(jsonString) {
-	console.log(jsonString);
+function saveEntireSchedule(jsonString) {
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.open('POST', 'cmd.php?id=18', true);
+	xmlhttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
+	xmlhttp.send(jsonString);
 }
 
 //click events
@@ -485,11 +492,11 @@ function reloadBrowser() {
 }
 
 function restartHost() {
-	showModal(getLanguageAsText('attention'), getLanguageAsText('reboot-really'), undefined, undefined, undefined, 4, getLanguageAsText('restart-device'), () => {sendHTTPRequest('GET', 'cmd.php?id=2', true, () => {modal.hide();})});
+	showModal(getLanguageAsText('attention'), getLanguageAsText('reboot-really'), undefined, undefined, undefined, 4, getLanguageAsText('restart-device'), () => {sendHTTPRequest('GET', 'cmd.php?id=2', true, () => {}); modal.hide();});
 }
 
 function shutdownHost() {
-	showModal(getLanguageAsText('attention'), getLanguageAsText('shutdown-really'), undefined, undefined, undefined, 4, getLanguageAsText('shutdown-device'), () => {sendHTTPRequest('GET', 'cmd.php?id=3', true, () => {modal.hide();})});
+	showModal(getLanguageAsText('attention'), getLanguageAsText('shutdown-really'), undefined, undefined, undefined, 4, getLanguageAsText('shutdown-device'), () => {sendHTTPRequest('GET', 'cmd.php?id=3', true, () => {}); modal.hide();});
 }
 
 function setDisplayOn() {
@@ -611,12 +618,12 @@ function executeStartupTrigger() {
 }
 
 function showScheduleEntryHeader(scheduleEntryId) {
-	let sel = getElement("scheduleEntry" + scheduleEntryId + "CommandSelect");
-	getElement("scheduleEntry" + scheduleEntryId + "HeaderCommand").innerText = sel.options[sel.selectedIndex].text;
-	getElement("scheduleEntry" + scheduleEntryId + "HeaderCommand").setAttribute("lang-data", commandCollection[sel.value][0]);
-	let sel2 = getElement("scheduleEntry" + scheduleEntryId + "CommandsetSelect");
-	getElement("scheduleEntry" + scheduleEntryId + "HeaderCommandset").innerText = sel2.options[sel2.selectedIndex].text;
-	getElement("scheduleEntry" + scheduleEntryId + "HeaderCron").innerText = document.getElementById("cronentry" + scheduleEntryId).value;
+	let commandSelect = getElement("scheduleEntry" + scheduleEntryId + "CommandSelect");
+	getElement("scheduleEntry" + scheduleEntryId + "HeaderCommand").innerText = commandSelect.options[commandSelect.selectedIndex].text;
+	getElement("scheduleEntry" + scheduleEntryId + "HeaderCommand").setAttribute("lang-data", commandCollection[commandSelect.value][0]);
+	let commandsetSelect = getElement("scheduleEntry" + scheduleEntryId + "CommandsetSelect");
+	getElement("scheduleEntry" + scheduleEntryId + "HeaderCommandset").innerText = commandsetSelect.options[commandsetSelect.selectedIndex].text;
+	getElement("scheduleEntry" + scheduleEntryId + "HeaderCron").innerText = getElement("cronentry" + scheduleEntryId).value;
 }
 
 function toggleValidityFrom(scheduleEntryId, checked){
@@ -624,7 +631,7 @@ function toggleValidityFrom(scheduleEntryId, checked){
 	scheduleEntry2 = document.getElementById('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanFrom2');
 	if (checked) {
 		scheduleEntry1.style.visibility = "";
-		scheduleEntry2.style.visibility = "";	
+		scheduleEntry2.style.visibility = "";
 	} else {
 		scheduleEntry1.style.visibility = "hidden";
 		scheduleEntry2.style.visibility = "hidden";
@@ -695,7 +702,6 @@ function deleteScheduleEntry(scheduleEntryId) {
 	} else {
 		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=delete&index=' + scheduleEntryId, true, () => getElement('scheduleEntry' + scheduleEntryId).remove());
 	}
-
 }
 
 function prepareScheduleString(scheduleEntryId) {
@@ -730,7 +736,7 @@ function prepareScheduleString(scheduleEntryId) {
 		msg += "parameter=\"" + encodeURIComponent(parameter) + "\"&";
 	}
 	msg = msg.substring(0, msg.length - 1);
-
+	
 	return msg;
 }
 
@@ -894,6 +900,7 @@ function addParameterToCommandsetEntryCommand(commandsetEntryId, commandEntryId,
 	}
 
 	cell.appendChild(div);
+	getElement("commandsetEntry" + commandsetEntryId + "Command" + commandEntryId + "ParameterInput").value = parameter;
 
 	//add label
 	let label = document.createElement("label");
@@ -991,13 +998,10 @@ function addCommandsetsToDropdown(dropdownId, selectedId=0) {
 		optionTag.value = savedEntries[i][0];
 		optionTag.innerText = savedEntries[i][1];
 		getElement(dropdownId).appendChild(optionTag);
+		if (selectedId == savedEntries[i][0]) {
+			getElement(dropdownId).value = selectedId;
+		}
 	}
-	try {
-		getElement(dropdownId).value = selectedId;
-	} catch (error) {
-		
-	}
-
 }
 
 function getSavedCommandsetEntryIds() {
