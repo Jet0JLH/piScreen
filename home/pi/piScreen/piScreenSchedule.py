@@ -10,6 +10,7 @@ doFirstRunPath = "/media/ramdisk/piScreenScheduleFirstRun"
 doLastCronPath = "/media/ramdisk/piScreenScheduleLastCron"
 doManuallyPath = "/media/ramdisk/piScreenScheduleManually"
 active = os.path.exists(activePath)
+allTrigger = []
 threadLock = threading.Lock()
 
 def isInt(s):
@@ -30,7 +31,7 @@ def firstRun(noTrigger):
 	global saveMode
 	saveMode = True
 	#Check if startup trigger (1) enabled
-	if noTrigger or not runTrigger(1):
+	if noTrigger or not runTrigger(1,"true"):
 		if "cron" in globalConf.conf:
 			found = False
 			entries = []
@@ -43,7 +44,7 @@ def firstRun(noTrigger):
 			#Check last commandsets in a Week
 			while count < 10080 and not found:
 				for item in entries:
-					if item.run(now):
+					if item.run(now,False):
 						found = True
 				now = now - oneMinute
 				count = count + 1
@@ -54,7 +55,37 @@ def loadCrons():
 	cronThread.start()
 
 def loadTrigger():
-	pass
+	if not "trigger" in globalConf.conf:
+		return False
+	founds = []
+	outerCounter = 0
+	for item in globalConf.conf["trigger"]:
+		if "enabled" in item and item["enabled"]:
+			tmpTrigger = trigger()
+			tmpTrigger.config = item
+			found = -1
+			innerCounter = 0
+			for triggerItem in allTrigger:
+				if tmpTrigger == triggerItem:
+					found = innerCounter
+				innerCounter = innerCounter + 1
+			if found == -1:
+				tmpTrigger.start()
+				allTrigger.append(tmpTrigger)
+				founds.append(innerCounter)
+			else:
+				founds.append(found)
+			outerCounter = outerCounter + 1
+	founds.sort()
+	missingTrigger = set(range(len(allTrigger))).difference(founds)
+	offset = 0
+	for item in missingTrigger:
+		allTrigger[item + offset].stop()
+		del allTrigger[item + offset]
+		offset = offset - 1
+def stopAllTrigger():
+	for triggerItem in allTrigger:
+		triggerItem.stop()
 
 class cronEntry():
 	enabled = False
@@ -242,6 +273,66 @@ class config():
 			return False
 		return True
 
+class trigger(threading.Thread):
+	active = True
+	config = {}
+	mode = 0
+	lastState = None
+	def __init__(self):
+		threading.Thread.__init__(self)
+		self.config = json.dumps({})
+	def __exit__(self, exc_type, exc_value, traceback):
+		self.active = False
+		self.package_obj.cleanup()
+	def stop(self):
+		self.active = False
+	def __eq__(self, __o: object) -> bool:
+		return self.config == __o.config
+	def __hash__(self) -> int:
+		return 0
+		
+
+	def run(self):
+		if "trigger" in self.config:
+			self.mode = self.config["trigger"]
+			if self.mode == 1: #Firstrun
+				self.active = False
+			elif self.mode == 10: #File exists
+				if "file" in self.config:
+					while self.active:
+						exists = os.path.exists(self.config["file"])
+						if exists != self.lastState:
+							self.lastState = exists
+							self.execute("onChange")
+							if exists:
+								self.execute("true")
+							else:
+								self.execute("false")
+						time.sleep(1)
+			elif self.mode == 11: #File changed
+				while self.active:
+					time.sleep(1)
+			elif self.mode == 20: #Ping
+				while self.active:
+					time.sleep(1)
+			elif self.mode == 30: #Display state changed
+				while self.active:
+					time.sleep(1)
+			elif self.mode == 40: #GPiO pin high
+				while self.active:
+					time.sleep(1)
+			
+
+	def execute(self,state:str):
+		if state in self.config:
+			if "command" in self.config[state]:
+				if "parameter" in self.config[state]:
+					commandInterpreter(self.config[state]["command"],self.config[state]["parameter"])
+				else:
+					commandInterpreter(self.config[state]["command"],None)
+			if "commandset" in self.config[state]:
+				runCommandset(self.config[state]["commandset"])
+
 def runCommandset(commandsetID):
 	if "commandsets" in globalConf.conf:
 		for item in globalConf.conf["commandsets"]:
@@ -254,31 +345,22 @@ def runCommandset(commandsetID):
 									commandInterpreter(commandset["command"], commandset["parameter"])
 								else:
 									commandInterpreter(commandset["command"], None)
-
-def runTrigger(trigger):
+def findTrigger(mode:int):
 	found = False
-	if not trigger: return False
-	if not isInt(trigger): return False
-	trigger = int(trigger)
-	if "trigger" in globalConf.conf:
-		for item in globalConf.conf["trigger"]:
-			if "enabled" in item:
-				if item["enabled"]:
-					if "trigger" in item:
-						if isInt(item["trigger"]):
-							if trigger == int(item["trigger"]):
-								found = True
-								if "command" in item:
-									if "parameter" in item:
-										commandInterpreter(item["command"],item["parameter"])
-									else:
-										commandInterpreter(item["command"],None)
-									if "commandset" in item:
-										runCommandset(item["commandset"])
+	for item in allTrigger:
+		if item.mode == mode:
+			found = True
 	return found
-				
 
-def commandInterpreter(cmd, parameter):
+def runTrigger(mode:int,state:str="true"):
+	found = False
+	for item in allTrigger:
+		if item.mode == mode:
+			found = True
+			item.execute(state)
+	return found
+
+def commandInterpreter(cmd:int, parameter:str):
 	if not cmd: return False
 	if not isInt(cmd): return False
 	cmd = int(cmd)
@@ -368,14 +450,17 @@ globalConf = config()
 if not globalConf.loadConfig():
 	print("Json File seems to be damaged")
 	exit(1)
-loadCrons()
 loadTrigger()
+loadCrons()
 configModify = os.path.getmtime(configFile)
 while active:
 	try:
 		if configModify != os.path.getmtime(configFile):
+			#Config changed
 			if not globalConf.loadConfig():
 				print("Json File seems to be damaged")
+			else:
+				loadTrigger()
 		configModify = os.path.getmtime(configFile)
 		active = os.path.exists(activePath)
 		if os.path.exists(doFirstRunPath):
@@ -426,3 +511,4 @@ while active:
 		time.sleep(1)
 	except KeyboardInterrupt:
 		active = False
+		stopAllTrigger()

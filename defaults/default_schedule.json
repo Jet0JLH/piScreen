@@ -22,9 +22,11 @@
 		{
 			"enabled": true,
             "trigger": 1,
-            "command": 40,
-			"parameter": "https://localhost",
-			"commandset": 1
+			"true":{
+				"command": 40,
+				"parameter": "https://localhost",
+				"commandset": 1
+			}
 		}
 	]
 }
