@@ -297,7 +297,7 @@ class trigger(threading.Thread):
 			self.mode = self.config["trigger"]
 			if self.mode == 1: #Firstrun
 				self.active = False
-			elif self.mode == 10: #File exists
+			elif self.mode == 10: #File exists [onChange,true,false]
 				if "file" in self.config:
 					while self.active:
 						exists = os.path.exists(self.config["file"])
@@ -309,16 +309,46 @@ class trigger(threading.Thread):
 							else:
 								self.execute("false")
 						time.sleep(1)
-			elif self.mode == 11: #File changed
+			elif self.mode == 11: #File changed [true]
+				if "file" in self.config:
+					fileModifyDate = 0
+					if os.path.exists(self.config["file"]):
+						fileModifyDate = os.path.getmtime(self.config["file"])
+					while self.active:
+						if os.path.exists(self.config["file"]):
+							newModifyDate = os.path.getmtime(self.config["file"])
+							if newModifyDate != fileModifyDate:
+								fileModifyDate = newModifyDate
+								self.execute("true")
+						time.sleep(1)
+			elif self.mode == 20: #Ping [onChange,true,false]
 				while self.active:
 					time.sleep(1)
-			elif self.mode == 20: #Ping
+			elif self.mode == 21: #TCP request [onChange,true,false]
+				if "host" in self.config and "port" in self.config and isInt(self.config["port"]) and "timeout" in self.config and isInt(self.config["timeout"]) and "runs" in self.config and isInt(self.config["runs"]):
+					import socket
+					host = self.config["host"]
+					port = int(self.config["port"])
+					timeout = int(self.config["timeout"])
+					runs = int(self.config["runs"])
+					trueCounter = 0
+					falseCounter = 0
+					while self.active:
+						try:
+							socket.setdefaulttimeout(timeout)
+							socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+							if falseCounter > 0: falseCounter = 0 ; self.execute("onChange")
+							trueCounter = trueCounter + 1
+							if trueCounter == runs: self.execute("true")
+							time.sleep(timeout)
+						except:
+							if trueCounter > 0: trueCounter = 0 ; self.execute("onChange")
+							falseCounter = falseCounter + 1
+							if falseCounter == runs: self.execute("false")
+			elif self.mode == 30: #Display state on [onChange,true,false]
 				while self.active:
 					time.sleep(1)
-			elif self.mode == 30: #Display state changed
-				while self.active:
-					time.sleep(1)
-			elif self.mode == 40: #GPiO pin high
+			elif self.mode == 40: #GPiO pin high [onChange,true,false]
 				while self.active:
 					time.sleep(1)
 			
