@@ -164,17 +164,9 @@
 	elseif ($_GET['id'] == 17) { //Get diplay orientation
 		echo shell_exec("$syscall --get-display-orientation-settings");
 	}
-	elseif ($_GET['id'] == 18) { //cron functions
-		/*if ($_GET['cmd'] == "add") {
-			$parameter = $_GET['parameter'];
-			echo shell_exec("$syscall --add-cron ");
-		}
-		elseif ($_GET['cmd'] == "update") {
-			//shell_exec("$syscall --screen-on");
-		}
-		elseif ($_GET['cmd'] == "delete") {
-			echo shell_exec("$syscall --delete-cron " . $_GET['entryId']);
-		}*/
+	elseif ($_GET['id'] == 18) { //Set entire schedule
+		file_put_contents('/home/pi/piScreen/schedule.json', file_get_contents('php://input'));
+		echo 'true';
 	}
 	elseif ($_GET['id'] == 19) { //commandset functions
 		if ($_GET['cmd'] == "add"){

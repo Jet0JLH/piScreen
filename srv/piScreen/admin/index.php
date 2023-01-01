@@ -22,7 +22,7 @@
 		<div id='masonry' class='row' data-masonry='{&quot;percentPosition&quot;: true }'>
 			<div class='col-sm-12 col-lg-6 mb-4'>
 				<div class='card p-3 shadow'>
-					<div class='pb-3' style='float:left'><h1 style='display:inline'><i class='bi-lightbulb bigIcon px-2'></i><span lang-data='status-tile-header'>Status</span></h1> <span id='idle' class='badge bg-success'>&nbsp;</span></div>
+					<div class='pb-3' style='float: left;'><h1 style='display:inline'><i class='bi-lightbulb bigIcon px-2'></i><span lang-data='status-tile-header'>Status</span></h1> <span id='idle' class='badge bg-success'>&nbsp;</span></div>
 					<p>
 						<i class='bi bi-activity'> </i><span lang-data='activity'>Aktivität</span>: <span id='active' class='badge rounded-pill bg-secondary'>???</span><br>
 						<i class='bi bi-display'> </i><span lang-data='display-status'>Display Status</span>: <span id='displayState' class='badge rounded-pill bg-secondary'>???</span><br>
@@ -81,9 +81,9 @@
 								<div class="accordion-body p-0">
 									<table style='width: 100%;'>
 										<tr>
-											<td>
+											<td colspan="2">
 												<div class='form-floating mb-3'>
-													<input type='text' class='disableOnDisconnect form-control border-secondary' id='settingsHostnameInput' value='<?php echo shell_exec('hostname'); ?>' onkeyup='settingNotSaved("settingsButtonSaveHostname");'>
+													<input type='text' class='disableOnDisconnect form-control border-secondary' id='settingsHostnameInput' value='<?php echo shell_exec('hostname'); ?>' onkeyup='settingSaved("settingsButtonSaveHostname", false);'>
 													<label for='settingsHostnameInput' lang-data='hostname'>Hostname</label>
 												</div>
 											</td>
@@ -92,9 +92,9 @@
 											</td>
 										</tr>
 										<tr>
-											<td>
+											<td colspan="2">
 												<div class='form-floating mb-3'>
-													<select id='displayProtocolSelect' onchange='settingNotSaved("settingsButtonSaveDisplayProtocol");' class='disableOnDisconnect form-select border-secondary'>
+													<select id='displayProtocolSelect' onchange='settingSaved("settingsButtonSaveDisplayProtocol", false);' class='disableOnDisconnect form-select border-secondary'>
 														<option id='cec' value='cec' lang-data='cec'>CEC</option>
 														<option id='ddc' value='ddc' lang-data='ddc'>DDC/CI</option>
 													</select>
@@ -106,9 +106,9 @@
 											</td>
 										</tr>
 										<tr>
-											<td>
+											<td colspan="2">
 												<div class='form-floating mb-3'>
-													<select id='displayOrientationSelect' onchange='settingNotSaved("settingsButtonSaveDisplayOrientation");' class='disableOnDisconnect form-select border-secondary'>
+													<select id='displayOrientationSelect' onchange='settingSaved("settingsButtonSaveDisplayOrientation", false);' class='disableOnDisconnect form-select border-secondary'>
 														<option id='horizontal' value='0' lang-data='horizontal'>Horizontal</option>
 														<option id='vertical' value='1' lang-data='vertical'>Vertikal</option>
 														<option id='horizontalInverted' value='2' lang-data='rotated-horizontally'>Horizontal gedreht</option>
@@ -119,6 +119,22 @@
 											</td>
 											<td style='width: 8%;'>
 												<button id='settingsButtonSaveDisplayOrientation' class='disableOnDisconnect btn btn-success ms-3 mb-3' onclick='setDisplayOrientation();'><i class='bi bi-check2'></i></button>
+											</td>
+										</tr>
+										<tr>
+											<td>
+												<div class="mb-3">
+													<button id='exportScheduleButton' class='disableOnDisconnect btn btn-outline-primary border-secondary' onclick='download("cmd.php?id=10", "schedule.json")'><i class='bi bi-download pe-2'></i><span lang-data='export'>Export</span></button>
+												</div>
+											</td>
+											<td>
+												<div class="input-group mb-3">
+													<button id='importScheduleButton' class='disableOnDisconnect btn btn-outline-primary border-secondary border-end-0' ondragover='event.preventDefault();' ondrop='dropScheduleJson(event);' onclick='selectScheduleToImport();'><i class='bi bi-upload pe-2'></i><span lang-data='import'>Import</span></button>
+													<input id='importScheduleInputTextfield' type="text" class="form-control border-secondary border-start-0" style='float: right;' ondragover='event.preventDefault();' ondrop='dropScheduleJson(event);' onclick='this.blur(); selectScheduleToImport();' value=''>
+												</div>
+											</td>
+											<td style='width: 8%;'>
+												<button id='settingsButtonSaveImportSchedule' class='disableOnDisconnect btn btn-success ms-3 mb-3' onclick='setSchedule();'><i class='bi bi-check2'></i></button>
 											</td>
 										</tr>
 									</table>
@@ -194,10 +210,6 @@
 									</div>
 									<button id='newScheduleEntry' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='generateNewScheduleEntry()'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-entry'>Neuer Eintrag</span></button>
 									<button id='lastCronButton' class='disableOnDisconnect btn btn-outline-warning mt-2 px-2' onclick="sendHTTPRequest('GET', 'cmd.php?id=22', true);"><i class='bi bi-play pe-2'></i><span lang-data='lastcron'>Letzter Eintrag ausführen</span></button>
-									<div class='btn-group pt-2' role='group' style='float: right;'>
-										<button id='importSchedule' class='disableOnDisconnect btn btn-outline-primary' onclick='importSchedule()'><i class='bi bi-upload pe-2'></i><span lang-data='import-schedule'>Import</span></button>
-										<button id='exportSchedule' class='disableOnDisconnect btn btn-outline-primary' onclick='download("cmd.php?id=10", "schedule.json")'><i class='bi bi-download pe-2'></i><span lang-data='export-schedule'>Export</span></button>
-									</div>
 									<hr>
 									<button id='showCommandsets' class='disableOnDisconnect btn btn-outline-primary' onclick='getScheduleFromServer(); rearrangeGui();' data-bs-toggle="collapse" data-bs-target="#collapseTimeSchedule"><i class='bi bi-pencil-square pe-2'></i><span lang-data="edit-commandsets">Commandsets bearbeiten</span></button>
 								</div>

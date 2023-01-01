@@ -38,7 +38,8 @@ const commandCollection = [//text, parameter
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 	];
 var scheduleEntryShown = false;
-
+//import
+var scheduleToImport = null;
 //trigger
 var startupTriggerIndex = -1;
 //modal
@@ -99,8 +100,11 @@ function getElement(id) {
 
 function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", end="", command=0, commandset=0, parameter="", saved=false, newScheduleEntry=true) {
 	let eId = scheduleEntryCount;
-	if (commandCollection[command][0] == "") {
-		console.error("Command " + command + " not found! CronID: " + eId);
+	if (command < 0 || command > commandCollection.length - 1) {
+		console.error("Command " + command + " not known! CronID: " + eId);
+		command = 0;
+	} else if (commandCollection[command][0] == "") {
+		console.error("Command " + command + " not assigned! CronID: " + eId);
 		command = 0;
 	}
 
@@ -462,21 +466,62 @@ function download(path, filename) {
 	anchor.click();
 }
 
-function importSchedule() {
+function setSchedule() {
+	if (importSchedule(scheduleToImport)) {
+		getElement("importScheduleInputTextfield").value = "";
+		settingSaved("settingsButtonSaveImportSchedule", true);
+		showModal(getLanguageAsText('info'), getLanguageAsText('import-success'), true, true, getLanguageAsText('ok'), 0);
+	}
+}
+
+function selectScheduleToImport() {
 	let input = document.createElement('input');
 	input.type = 'file';
 	input.accept = 'application/JSON';
 	input.onchange = e => {
 		let file = e.target.files[0];
+		getElement("importScheduleInputTextfield").value = file.name;
 		let reader = new FileReader();
 		reader.readAsText(file, 'UTF-8');
 		reader.onload = readerEvent => {
-			let jsonString = readerEvent.target.result
-			loadScheduleJson(jsonString);
-			saveEntireSchedule(jsonString);
+			scheduleToImport = readerEvent.target.result;
+			settingSaved("settingsButtonSaveImportSchedule", false);
 		}
 	}
 	input.click();
+}
+
+function dropScheduleJson(ev) {
+	ev.preventDefault();
+	let file = ev.dataTransfer.files[0];
+	getElement("importScheduleInputTextfield").value = file.name;
+	let reader = new FileReader();
+	reader.readAsText(file, 'UTF-8');
+	reader.onload = readerEvent => {
+		scheduleToImport = readerEvent.target.result;
+		settingSaved("settingsButtonSaveImportSchedule", false);
+	}
+}
+
+function importSchedule(scheduleAsJson) {
+	if (scheduleToImport == null) {
+		showModal(getLanguageAsText('import-failed'), getLanguageAsText('file-empty'), true, true, getLanguageAsText('ok'), 0);
+		return false;
+	}
+	try {
+		loadScheduleJson(scheduleAsJson);
+	} catch (error) {
+		showModal(getLanguageAsText('import-failed'), getLanguageAsText('file-wrong-format'), true, true, getLanguageAsText('ok'), 0);
+		return false;
+	}
+	try {
+		saveEntireSchedule(scheduleAsJson);	
+	} catch (error) {
+		showModal(getLanguageAsText('import-failed'), getLanguageAsText('schedule-save-failed'), true, true, getLanguageAsText('ok'), 0);
+		return false;
+	}
+	scheduleToImport = null;
+	return true;
 }
 
 function saveEntireSchedule(jsonString) {
@@ -542,7 +587,7 @@ getElement("showTimeschedule").addEventListener("shown.bs.collapse", event => {
 
 function setDisplayProtocol() {
 	let protocol = document.getElementById('displayProtocolSelect').value;
-	sendHTTPRequest('GET', 'cmd.php?id=14&protocol=' + protocol, true, () => settingSaved("settingsButtonSaveDisplayProtocol"));
+	sendHTTPRequest('GET', 'cmd.php?id=14&protocol=' + protocol, true, () => settingSaved("settingsButtonSaveDisplayProtocol", true));
 }
 
 function setDisplayProtocolSelect() {
@@ -557,7 +602,7 @@ function setDisplayProtocolSelect() {
 function setDisplayOrientation() {
 	// 0 - horizontal, 1 - vertical, 2 - horizontal inverted, 3 - vertical inverted
 	let orientation = document.getElementById('displayOrientationSelect').value;
-	sendHTTPRequest('GET', 'cmd.php?id=16&orientation=' + orientation, true, () => settingSaved("settingsButtonSaveDisplayOrientation"));
+	sendHTTPRequest('GET', 'cmd.php?id=16&orientation=' + orientation, true, () => settingSaved("settingsButtonSaveDisplayOrientation", true));
 }
 
 function setDisplayOrientationSelect() {
@@ -575,7 +620,7 @@ function setHostname(elementId) {
 	xmlhttp.open('POST', 'cmd.php?id=4', true);
 	xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 	xmlhttp.send("hostname=" + hostname);
-	settingSaved("settingsButtonSaveHostname");
+	settingSaved("settingsButtonSaveHostname", true);
 }
 
 function setWebLoginAndPassword() {
@@ -585,16 +630,15 @@ function setWebLoginAndPassword() {
 	xmlhttp.send("user=" + document.getElementById("webUserInput").value + "&pwd=" + document.getElementById("webPasswordInput").value);
 }
 
-function settingSaved(elementId) {
+function settingSaved(elementId, saved) {
 	let element = document.getElementById(elementId);
-	element.className = "disableOnDisconnect btn btn-success ms-3 mb-3";
-	element.innerHTML = "<i class='bi bi-check2'></i>";
-}
-
-function settingNotSaved(elementId) {
-	let element = document.getElementById(elementId);
-	element.className = "disableOnDisconnect btn btn-outline-success ms-3 mb-3";
-	element.innerHTML = "<i class='bi bi-save'></i>";
+	if (saved) {
+		element.className = "disableOnDisconnect btn btn-success ms-3 mb-3";
+		element.innerHTML = "<i class='bi bi-check2'></i>";
+	} else {
+		element.className = "disableOnDisconnect btn btn-outline-success ms-3 mb-3";
+		element.innerHTML = "<i class='bi bi-save'></i>";
+	}
 }
 
 function triggerSaved(saved, triggerId) {
@@ -884,7 +928,9 @@ function addParameterToCommandsetEntryCommand(commandsetEntryId, commandEntryId,
 	div.id = "commandsetEntry" + commandsetEntryId + "ParameterInputDiv";
 	div.className = "form-floating";
 
-	if (commandCollection[commandId][1] == false) {
+	if (commandId < 0 || commandId > commandCollection.length - 1) {
+		return;
+	} else if (commandCollection[commandId][1] == false) {
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
 		if (parameter == undefined) parameter = "";

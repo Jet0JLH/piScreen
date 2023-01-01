@@ -40,6 +40,13 @@
         "vertical": "Vertical",
         "rotated-horizontally": "Rotated horizontally",
         "rotated-vertically": "Rotated vertically",
+        "import": "Import",
+        "export": "Export",
+        "import-success": "Time schedule was imported successfully.",
+        "import-failed": "Import failed",
+        "file-empty": "This is an empty file.",
+        "file-wrong-format": "The content of this file is in the wrong format.",
+        "schedule-save-failed": "Unable to save schedule.",
         "save-weblogin": "Save weblogin",
         "edit-weblogin": "Edit weblogin",
         "username-web": "Username for weblogin",
@@ -56,8 +63,6 @@
         "ignore-timeschedule": "Ignore time schedule",
         "new-entry": "Add new entry",
         "delete-entry": "Delete entry",
-        "import-schedule": "Import",
-        "export-schedule": "Export",
         "help": "Help",
         "cronHelpText": "Explanation of the cronentry<br>The cronentry is divided in five sections, which are separated with spaces. <br>Section 1: Minute (0-59)<br>Section 2: Hour (0-59)<br>Section 3: Day (1-31)<br>Section 4: Month (1-12)<br>Section 5: Day of week (0-6)<br><br>If you want to execute a command by 8 o'clock, it'll displayed like this:<br>0 8 * * *<br>The stars are placeholders for every valid value. <br><br>If you want to execute a command every friday by 8 o'clock, you can chance the entry like so:<br>0 8 * * 4<br><br>If you want to execute the command every workday, adjust the entry like this:<br>0 8 * * 0-4<br>You can depict a timespan with a dash.<br><br>If you want to execute the command every second hour, the cronentry looks like this:<br>0 */2 * * *<br>With a slash you can tell piScreen every x hour.<br><br>If you want to execute the command every second hour between 8 and 16 o'clock, adjust the entry like this:<br>0 8-16/2 * * *<br>You can combine a dash and a slash.<br><br>If you want to execute the command at 8, 15 and 16 o'clock, write the entry so:<br>0 8,15,16 * * *<br>The comma is an enumeration.<br><br>If you want to execute the command between 8 and 12 o'clock and by 15 and 16 o'clock, the entry is like:<br>0 8-12,15,16 * * *<br>Commas and dashes can be combined.",
         "active": "Active",
@@ -114,6 +119,7 @@
         "fill-required-fields": "Please fill in all required fields!",
         "in-use": "in use",
         "from": "from",
-        "to": "until"
+        "to": "until",
+        "info": "Info"
     }
 }
