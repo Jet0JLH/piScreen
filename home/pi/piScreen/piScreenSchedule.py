@@ -291,7 +291,6 @@ class trigger(threading.Thread):
 	def __hash__(self) -> int:
 		return 0
 		
-
 	def run(self):
 		if "trigger" in self.config:
 			self.mode = self.config["trigger"]
@@ -324,7 +323,7 @@ class trigger(threading.Thread):
 			elif self.mode == 20: #Ping [onChange,true,false]
 				while self.active:
 					time.sleep(1)
-			elif self.mode == 21: #TCP request [onChange,true,false]
+			elif self.mode == 21: #TCP connection [onChange,true,false]
 				if "host" in self.config and "port" in self.config and isInt(self.config["port"]) and "timeout" in self.config and isInt(self.config["timeout"]) and "runs" in self.config and isInt(self.config["runs"]):
 					import socket
 					host = self.config["host"]
@@ -347,12 +346,37 @@ class trigger(threading.Thread):
 							if falseCounter == runs: self.execute("false")
 			elif self.mode == 30: #Display state on [onChange,true,false]
 				while self.active:
+					try:
+						state = open("/media/ramdisk/piScreenDisplay.txt","r").read().strip()
+						if self.lastState != state:
+							if state == "on":
+								self.execute("onChange")
+								self.execute("true")
+							elif self.lastState == "on" or self.lastState == None:
+								self.execute("onChange")
+								self.execute("false")
+							self.lastState = state
+							
+					except:
+						pass #Error
 					time.sleep(1)
-			elif self.mode == 40: #GPiO pin high [onChange,true,false]
+			elif self.mode == 40: #Mode changed [true,<mode>]
+				import subprocess
+				while self.active:
+					try:
+						state = subprocess.check_output(f"{syscall} --get-mode",shell=True).decode("utf-8").strip()
+						if self.lastState != state:
+							self.lastState = state
+							self.execute("true")
+							self.execute(state)
+					except:
+						pass #Error
+					time.sleep(1)
+
+			elif self.mode == 50: #GPiO pin high [onChange,true,false]
 				while self.active:
 					time.sleep(1)
 			
-
 	def execute(self,state:str):
 		if state in self.config:
 			if "command" in self.config[state]:
@@ -364,17 +388,28 @@ class trigger(threading.Thread):
 				runCommandset(self.config[state]["commandset"])
 
 def runCommandset(commandsetID):
-	if "commandsets" in globalConf.conf:
-		for item in globalConf.conf["commandsets"]:
-			if "id" in item:
-				if item["id"] == commandsetID:
-					if "commands" in item:
-						for commandset in item["commands"]:
-							if "command" in commandset:
-								if "parameter" in commandset:
-									commandInterpreter(commandset["command"], commandset["parameter"])
-								else:
-									commandInterpreter(commandset["command"], None)
+	if not isInt(commandsetID):
+		return False
+	commandsetID = int(commandsetID)
+	if "commandsets" not in globalConf.conf:
+		return False
+	for item in globalConf.conf["commandsets"]:
+		if "id" not in item:
+			continue
+		if item["id"] != commandsetID:
+			continue
+		if "commands" not in item:
+			continue
+		for commandset in item["commands"]:
+			if "command" not in commandset:
+				continue
+			if "parameter" in commandset:
+				commandInterpreter(commandset["command"], commandset["parameter"])
+			else:
+				commandInterpreter(commandset["command"], None)
+		break
+	return True
+
 def findTrigger(mode:int):
 	found = False
 	for item in allTrigger:
@@ -394,82 +429,66 @@ def commandInterpreter(cmd:int, parameter:str):
 	if not cmd: return False
 	if not isInt(cmd): return False
 	cmd = int(cmd)
-	if cmd == 1:
-		#Sleep
+	if cmd == 1: #Sleep
 		if isFloat(parameter):
 			time.sleep(float(parameter))
-	elif cmd == 10:
-		#Universal Call
+	elif cmd == 2: #LastCron
+		firstRun(True)
+	elif cmd == 10: #Universal Call
 		if parameter:
 			try:
 				os.system(parameter)
 			except:
-				#Error
-				pass
-	elif cmd == 11:
-		#Reboot
+				pass #Error
+	elif cmd == 11: #Reboot
 		if saveMode: time.sleep(300)
 		os.system("reboot")
-	elif cmd == 12:
-		#Shutdown
+	elif cmd == 12: #Shutdown
 		if saveMode: time.sleep(300)
 		os.system("poweroff")
-	elif cmd == 30:
-		#Control display [0 = Standby, 1 = On]
+	elif cmd == 13: #Call commandset
+		runCommandset(parameter)
+	elif cmd == 30: #Control display [0 = Standby, 1 = On]
 		if isInt(parameter):
 			if int(parameter) == 0:
 				os.system(syscall + " --screen-standby")
 			else:
 				os.system(syscall + " --screen-on")
 		pass
-	elif cmd == 31:
-		#Switch display input
+	elif cmd == 31: #Switch display input
 		os.system(syscall + " --screen-switch-input")
-	elif cmd == 32:
-		#Change display protocol [0 = CEC, 1 = DDC]
+	elif cmd == 32: #Change display protocol [0 = CEC, 1 = DDC]
 		if isInt(parameter):
 			if int(parameter):
 				os.system(syscall + " --set-display-protocol cec")
 			else:
 				os.system(syscall + " --set-display-protocol ddc")
-	elif cmd == 40:
-		#StartBrowser
+	elif cmd == 40: #StartBrowser
 		if parameter:
 			os.system(f'{syscall} --start-browser "{parameter}"')
-	elif cmd == 41:
-		#RestartBrowser
+	elif cmd == 41: #RestartBrowser
 		os.system(f'{syscall} --restart-browser')
-	elif cmd == 42:
-		#ReloadBrowser
+	elif cmd == 42: #ReloadBrowser
 		pass
-	elif cmd == 43:
-		#CloseBrowser
+	elif cmd == 43: #CloseBrowser
 		os.system(f"{syscall} --stop-browser")
-	elif cmd == 50:
-		#StartVLC
+	elif cmd == 50: #StartVLC
 		if parameter:
 			os.system(f'{syscall} --start-vlc "{parameter}"')
-	elif cmd == 51:
-		#RestartVLC
+	elif cmd == 51: #RestartVLC
 		os.system(f"{syscall} --restart-vlc")
-	elif cmd == 52:
-		#StopVLC
+	elif cmd == 52: #StopVLC
 		os.system(f"{syscall} --stop-vlc")
-	elif cmd == 53:
-		#Pause/PlayVLC
+	elif cmd == 53: #Pause/PlayVLC
 		os.system(f"{syscall} --pause-vlc")
-	elif cmd == 54:
-		#PlayVLC
+	elif cmd == 54: #PlayVLC
 		os.system(f"{syscall} --play-vlc")
-	elif cmd == 60:
-		#StartImpress
+	elif cmd == 60: #StartImpress
 		if parameter:
 			os.system(f'{syscall} --start-impress "{parameter}"')
-	elif cmd == 61:
-		#RestartImpress
+	elif cmd == 61: #RestartImpress
 		os.system(f"{syscall} --restart-impress")
-	elif cmd == 62:
-		#StopImpress
+	elif cmd == 62: #StopImpress
 		os.system(f"{syscall} --stop-impress")
 	
 
