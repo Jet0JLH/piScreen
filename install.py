@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import os, sys, shutil, json, subprocess, pwd, time
 from OpenSSL.crypto import FILETYPE_PEM, load_certificate
 from base64 import b64encode
@@ -239,6 +239,7 @@ def updateDependencies():
 def installDependencies():
     print("Installing dependencies")
     executeWait("apt install firefox-esr unclutter apache2 php7.4 cec-utils ddcutil vlc libreoffice-impress -y -qq")
+    executeWait("python3 -m pip install cec")
     os.system("sudo -u pi timeout 2 firefox-esr -headless &> /dev/null &")
 
 def removeFiles():

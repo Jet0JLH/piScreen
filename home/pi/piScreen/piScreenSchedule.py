@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 import json, datetime, os, threading, time
 
 skriptPath = os.path.dirname(os.path.abspath(__file__))

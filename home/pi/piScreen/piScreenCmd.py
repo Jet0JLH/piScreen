@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/python3 -u
 import json, sys, os, time, datetime
 
 ramdisk = "/media/ramdisk/"

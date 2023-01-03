@@ -3,3 +3,5 @@ home/pi/piScreen/cron.json
 home/pi/piScreen/schedule.json
 home/pi/piScreen/settings.json
 srv/piScreen/admin/piScreenScreenshot.png
+__pycache__/
+*.py[cod]

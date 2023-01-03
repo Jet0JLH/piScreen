@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/python3 -u
 def checkIfProcessRunning(processName):
 	for proc in psutil.process_iter():
 		try:
