@@ -296,13 +296,13 @@ class trigger(threading.Thread):
 			self.mode = self.config["trigger"]
 			if self.mode == 1: #Firstrun
 				self.active = False
-			elif self.mode == 10: #File exists [onChange,true,false]
+			elif self.mode == 10: #File exists [change,true,false]
 				if "file" in self.config:
 					while self.active:
 						exists = os.path.exists(self.config["file"])
 						if exists != self.lastState:
 							self.lastState = exists
-							self.execute("onChange")
+							self.execute("change")
 							if exists:
 								self.execute("true")
 							else:
@@ -320,10 +320,10 @@ class trigger(threading.Thread):
 								fileModifyDate = newModifyDate
 								self.execute("true")
 						time.sleep(1)
-			elif self.mode == 20: #Ping [onChange,true,false]
+			elif self.mode == 20: #Ping [change,true,false]
 				while self.active:
 					time.sleep(1)
-			elif self.mode == 21: #TCP connection [onChange,true,false]
+			elif self.mode == 21: #TCP connection [change,true,false]
 				if "host" in self.config and "port" in self.config and isInt(self.config["port"]) and "timeout" in self.config and isInt(self.config["timeout"]) and "runs" in self.config and isInt(self.config["runs"]):
 					import socket
 					host = self.config["host"]
@@ -336,24 +336,24 @@ class trigger(threading.Thread):
 						try:
 							socket.setdefaulttimeout(timeout)
 							socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
-							if falseCounter > 0: falseCounter = 0 ; self.execute("onChange")
+							if falseCounter > 0: falseCounter = 0 ; self.execute("change")
 							trueCounter = trueCounter + 1
 							if trueCounter == runs: self.execute("true")
 							time.sleep(timeout)
 						except:
-							if trueCounter > 0: trueCounter = 0 ; self.execute("onChange")
+							if trueCounter > 0: trueCounter = 0 ; self.execute("change")
 							falseCounter = falseCounter + 1
 							if falseCounter == runs: self.execute("false")
-			elif self.mode == 30: #Display state on [onChange,true,false]
+			elif self.mode == 30: #Display state on [change,true,false]
 				while self.active:
 					try:
 						state = open("/media/ramdisk/piScreenDisplay.txt","r").read().strip()
 						if self.lastState != state:
 							if state == "on":
-								self.execute("onChange")
+								self.execute("change")
 								self.execute("true")
 							elif self.lastState == "on" or self.lastState == None:
-								self.execute("onChange")
+								self.execute("change")
 								self.execute("false")
 							self.lastState = state
 							
@@ -373,19 +373,20 @@ class trigger(threading.Thread):
 						pass #Error
 					time.sleep(1)
 
-			elif self.mode == 50: #GPiO pin high [onChange,true,false]
+			elif self.mode == 50: #GPiO pin high [change,true,false]
 				while self.active:
 					time.sleep(1)
 			
 	def execute(self,state:str):
-		if state in self.config:
-			if "command" in self.config[state]:
-				if "parameter" in self.config[state]:
-					commandInterpreter(self.config[state]["command"],self.config[state]["parameter"])
-				else:
-					commandInterpreter(self.config[state]["command"],None)
-			if "commandset" in self.config[state]:
-				runCommandset(self.config[state]["commandset"])
+		if "cases" not in self.config: return
+		if state not in self.config["cases"]: return
+		if "command" in self.config["cases"][state]:
+			if "parameter" in self.config["cases"][state]:
+				commandInterpreter(self.config["cases"][state]["command"],self.config["cases"][state]["parameter"])
+			else:
+				commandInterpreter(self.config["cases"][state]["command"],None)
+		if "commandset" in self.config["cases"][state]:
+			runCommandset(self.config["cases"][state]["commandset"])
 
 def runCommandset(commandsetID):
 	if not isInt(commandsetID):
