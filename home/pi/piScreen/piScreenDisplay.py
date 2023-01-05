@@ -75,8 +75,9 @@ class cecElement:
 
 def doCEC():
 	cecObj = cecElement(cec.CECDEVICE_TV)
-	while os.path.exists(displayCEC):
-		for i in range(60) and os.path.exists(displayCEC):
+	while True:
+		for i in range(60):
+			if not os.path.exists(displayCEC): return
 			if os.path.exists(displayOff):
 				cecObj.cmdSelector("setStandby")
 				try:
@@ -110,39 +111,44 @@ def doDDC():
 		monitors = monitorcontrol.get_monitors()
 		if len(monitors) > 0:
 			with monitors[0]:
-				mode = monitors[0].get_power_mode()
-				if os.path.exists(displayOff):
-					try:
-						monitors[0].set_power_mode(mode.off_soft)
-						os.remove(displayOff)
-					except: 
-						pass
-				elif os.path.exists(displayOn):
-					try:
-						monitors[0].set_power_mode(mode.on)
-						os.remove(displayOn)
-					except: 
-						pass
-				elif os.path.exists(displayStandby):
-					try:
-						monitors[0].set_power_mode(mode.standby)
-						os.remove(displayStandby)
-					except: 
-						pass
-				elif os.path.exists(displaySwitchChannel):
-						#Not implemented yet
-						#monitors[0].set_input_source()
-					try:
-						os.remove(displaySwitchChannel)
-					except: 
-						pass
+				try:
+					mode = monitors[0].get_power_mode()
+					if os.path.exists(displayOff):
+						try:
+							monitors[0].set_power_mode(mode.off_hard)
+							os.remove(displayOff)
+						except: 
+							pass
+					elif os.path.exists(displayOn):
+						try:
+							monitors[0].set_power_mode(mode.on)
+							os.remove(displayOn)
+						except: 
+							pass
+					elif os.path.exists(displayStandby):
+						try:
+							#Code 04 is for standby, but not every system supports it, so we decided to use 05 instead
+							monitors[0].set_power_mode(mode.off_hard)
+							os.remove(displayStandby)
+						except: 
+							pass
+					elif os.path.exists(displaySwitchChannel):
+							#Not implemented yet
+							#monitors[0].set_input_source()
+						try:
+							os.remove(displaySwitchChannel)
+						except: 
+							pass
 
-			if mode == mode.on:
-				if lastValue != "on": lastValue = "on" ; open(displayStatus,"w").write("on")
-			elif mode == mode.off_hard or mode == mode.off_soft:
-				if lastValue != "off": lastValue = "off" ; open(displayStatus,"w").write("off")
-			elif mode == mode.standby or mode == mode.suspend:
-				if lastValue != "standby": lastValue = "standby" ; open(displayStatus,"w").write("standby")
+					if mode == mode.on:
+						if lastValue != "on": lastValue = "on" ; open(displayStatus,"w").write("on")
+					elif mode == mode.off_hard or mode == mode.off_soft:
+						if lastValue != "off": lastValue = "off" ; open(displayStatus,"w").write("off")
+					elif mode == mode.standby or mode == mode.suspend:
+						if lastValue != "standby": lastValue = "standby" ; open(displayStatus,"w").write("standby")
+				except:
+					#Trouble with reading DDC/CI power mode
+					pass
 		time.sleep(1)
 
 

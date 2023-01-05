@@ -472,6 +472,8 @@ def setDisplayProtocol(protocol):
 			os.remove("/media/ramdisk/piScreenDisplayCEC")
 		if os.path.exists("/media/ramdisk/piScreenDisplayDDC"):
 			os.remove("/media/ramdisk/piScreenDisplayDDC")
+		if os.path.exists("/media/ramdisk/piScreenDisplayMANUALLY"):
+			os.remove("/media/ramdisk/piScreenDisplayMANUALLY")
 		if protocol == "cec":
 			open("/media/ramdisk/piScreenDisplayCEC","w").close()
 		elif protocol == "ddc":

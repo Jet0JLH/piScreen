@@ -238,7 +238,7 @@ def updateDependencies():
 
 def installDependencies():
     print("Installing dependencies")
-    executeWait("apt install firefox-esr unclutter apache2 php7.4 cec-utils ddcutil vlc libreoffice-impress -y -qq")
+    executeWait("apt install firefox-esr unclutter apache2 php7.4 cec-utils ddcutil vlc libreoffice-impress libcec-dev build-essential python-dev -y -qq")
     executeWait("python3 -m pip install cec")
     executeWait("python3 -m pip install monitorcontrol")
     os.system("sudo -u pi timeout 2 firefox-esr -headless &> /dev/null &")
