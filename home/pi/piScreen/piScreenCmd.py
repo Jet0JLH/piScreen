@@ -461,7 +461,7 @@ def rmDir(path):
 
 def setDisplayProtocol(protocol):
 	protocol = protocol.lower()
-	if protocol == "cec" or protocol == "ddc":
+	if protocol == "cec" or protocol == "ddc" or protocol == "manually":
 		verbose and print(f"Write {protocol} as display protocol in settings.json")
 		settingsJson = loadSettings()
 		settingsJson["settings"]["display"]["protocol"] = protocol
@@ -476,6 +476,8 @@ def setDisplayProtocol(protocol):
 			open("/media/ramdisk/piScreenDisplayCEC","w").close()
 		elif protocol == "ddc":
 			open("/media/ramdisk/piScreenDisplayDDC","w").close()
+		elif protocol == "manually":
+			open("/media/ramdisk/piScreenDisplayMANUALLY","w").close()
 	else:
 		verbose and print(f"{protocol} is no permitted protocol")
 

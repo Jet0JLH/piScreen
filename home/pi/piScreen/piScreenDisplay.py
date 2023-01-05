@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import cec, time, os
+import cec, time, os, subprocess, monitorcontrol
 
 ramdisk="/media/ramdisk/"
 displayStatus=f"{ramdisk}piScreenDisplay.txt"
@@ -9,6 +9,7 @@ displayStandby=f"{ramdisk}piScreenDisplayStandby"
 displaySwitchChannel=f"{ramdisk}piScreenDisplaySwitch"
 displayCEC=f"{ramdisk}piScreenDisplayCEC"
 displayDDC=f"{ramdisk}piScreenDisplayDDC"
+displayMANUALLY=f"{ramdisk}piScreenDisplayMANUALLY"
 
 class cecElement:
 	device:cec.Device = None
@@ -72,11 +73,10 @@ class cecElement:
 			cec.set_active_source()
 
 
-if __name__ == "__main__":
-	cec.init("/dev/cec0")
+def doCEC():
 	cecObj = cecElement(cec.CECDEVICE_TV)
-	while os.path.exists(displayCEC):	
-		for i in range(60):
+	while os.path.exists(displayCEC):
+		for i in range(60) and os.path.exists(displayCEC):
 			if os.path.exists(displayOff):
 				cecObj.cmdSelector("setStandby")
 				try:
@@ -103,3 +103,100 @@ if __name__ == "__main__":
 					pass
 			time.sleep(1)
 		cecObj.updateStatus()
+
+def doDDC():
+	lastValue = None
+	while os.path.exists(displayDDC):
+		monitors = monitorcontrol.get_monitors()
+		if len(monitors) > 0:
+			with monitors[0]:
+				mode = monitors[0].get_power_mode()
+				if os.path.exists(displayOff):
+					try:
+						monitors[0].set_power_mode(mode.off_soft)
+						os.remove(displayOff)
+					except: 
+						pass
+				elif os.path.exists(displayOn):
+					try:
+						monitors[0].set_power_mode(mode.on)
+						os.remove(displayOn)
+					except: 
+						pass
+				elif os.path.exists(displayStandby):
+					try:
+						monitors[0].set_power_mode(mode.standby)
+						os.remove(displayStandby)
+					except: 
+						pass
+				elif os.path.exists(displaySwitchChannel):
+						#Not implemented yet
+						#monitors[0].set_input_source()
+					try:
+						os.remove(displaySwitchChannel)
+					except: 
+						pass
+
+			if mode == mode.on:
+				if lastValue != "on": lastValue = "on" ; open(displayStatus,"w").write("on")
+			elif mode == mode.off_hard or mode == mode.off_soft:
+				if lastValue != "off": lastValue = "off" ; open(displayStatus,"w").write("off")
+			elif mode == mode.standby or mode == mode.suspend:
+				if lastValue != "standby": lastValue = "standby" ; open(displayStatus,"w").write("standby")
+		time.sleep(1)
+
+
+def doMANUALLY():
+	lastValue = None
+	os.system("xset +dpms")
+	os.system("xset s 0")
+	os.system("xset dpms 0 0 0")
+	while os.path.exists(displayMANUALLY):
+		status = str(subprocess.check_output(["xset", "-q"]))
+		if "Monitor is Off" in status:
+			if lastValue != "off": lastValue = "off" ; open(displayStatus,"w").write("off")
+		elif "Monitor is On" in status:
+			if lastValue != "on": lastValue = "on" ; open(displayStatus,"w").write("on")
+		elif "Monitor is in Standby" in status or "Monitor is in Suspend" in status:
+			if lastValue != "standby": lastValue = "standby" ; open(displayStatus,"w").write("standby")
+		
+		if os.path.exists(displayOff):
+			os.system("xset dpms force off")
+			try:
+				os.remove(displayOff)
+			except: 
+				pass
+		elif os.path.exists(displayOn):
+			os.system("xset dpms force on")
+			try:
+				os.remove(displayOn)
+			except: 
+				pass
+		elif os.path.exists(displayStandby):
+			os.system("xset dpms force off")
+			try:
+				os.remove(displayStandby)
+			except: 
+				pass
+		elif os.path.exists(displaySwitchChannel):
+			#Not possible in this mode
+			try:
+				os.remove(displaySwitchChannel)
+			except: 
+				pass
+		time.sleep(1)
+	os.system("xset -dpms")
+
+		
+
+if __name__ == "__main__":
+	cec.init("/dev/cec0") #Can be run only once
+	os.environ["DISPLAY"] = ":0"
+	while True:
+		if os.path.exists(displayCEC):	
+			doCEC()
+		elif os.path.exists(displayDDC):
+			doDDC()
+		elif os.path.exists(displayMANUALLY):
+			doMANUALLY()
+		time.sleep(1)

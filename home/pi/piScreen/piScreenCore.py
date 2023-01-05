@@ -31,6 +31,7 @@ piScreenDisplayOn = ramdisk + "piScreenDisplayOn"
 piScreenDisplaySwitch = ramdisk + "piScreenDisplaySwitch"
 piScreenDisplayCEC = ramdisk + "piScreenDisplayCEC"
 piScreenDisplayDDC = ramdisk + "piScreenDisplayDDC"
+piScreenDisplayMANUALLY = f"{ramdisk}piScreenDisplayMANUALLY"
 piScreenScheduleActive = ramdisk + "piScreenScheduleActive"
 piScreenSettings = "./settings.json"
 piScreenSyscall = "./piScreenCmd.py"
@@ -47,10 +48,13 @@ try:
 			piScreenDisplayProtocol = conf["display"]["protocol"]
 			if os.path.exists(piScreenDisplayCEC): os.remove(piScreenDisplayCEC)
 			if os.path.exists(piScreenDisplayDDC): os.remove(piScreenDisplayDDC)
+			if os.path.exists(piScreenDisplayMANUALLY): os.remove(piScreenDisplayMANUALLY)
 			if piScreenDisplayProtocol == "cec":
 				os.system(f"touch {piScreenDisplayCEC}")
 			elif piScreenDisplayProtocol == "ddc":
 				os.system(f"touch {piScreenDisplayDDC}")
+			elif piScreenDisplayProtocol == "manually":
+				os.system(f"touch {piScreenDisplayMANUALLY}")
 
 except ValueError as err:
 	print(err)
