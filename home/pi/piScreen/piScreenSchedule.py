@@ -8,6 +8,7 @@ allTrigger = []
 threadLock = threading.Lock()
 
 def firstRun(noTrigger):
+	piScreenUtils.logging.debug(f"noTrigger={noTrigger}")
 	global saveMode
 	saveMode = True
 	#Check if startup trigger (1) enabled
@@ -219,6 +220,7 @@ class cron(threading.Thread):
 		threading.Thread.__init__(self)
 
 	def doCron(self):
+		piScreenUtils.logging.debug("Do cron")
 		if "cron" in globalConf.conf:
 			now = datetime.datetime.today()
 			for item in globalConf.conf["cron"]:
@@ -226,6 +228,7 @@ class cron(threading.Thread):
 				cronItem.run(now,False)
 	
 	def run(self):
+		piScreenUtils.logging.debug("Start cron thread")
 		now = datetime.datetime.today()
 		lastMinute = now.minute
 		firstRun(False)
@@ -233,8 +236,10 @@ class cron(threading.Thread):
 			now = datetime.datetime.today()
 			if lastMinute is not now.minute:
 				lastMinute = now.minute
+				piScreenUtils.logging.debug("Start thread lock")
 				threadLock.acquire()
 				self.doCron()
+				piScreenUtils.logging.debug("Stop thread lock")
 				threadLock.release()
 			time.sleep(1)
 
@@ -245,10 +250,15 @@ class config():
 
 	def loadConfig(self):
 		try:
+			piScreenUtils.logging.debug("Start thread lock")
 			threadLock.acquire()
+			piScreenUtils.logging.info("Load configuration")
 			self.conf = json.load(open(piScreenUtils.paths.schedule))
+			piScreenUtils.logging.debug("Stop thread lock")
 			threadLock.release()
 		except ValueError as err:
+			piScreenUtils.logging.error("Problem while loading configuration")
+			piScreenUtils.logging.debug("Stop thread lock")
 			threadLock.release()
 			return False
 		return True
@@ -274,6 +284,7 @@ class trigger(threading.Thread):
 	def run(self):
 		if "trigger" in self.config:
 			self.mode = self.config["trigger"]
+			piScreenUtils.logging.info(f"Trigger {self.mode} is starting")
 			if self.mode == 1: #Firstrun
 				self.active = False
 			elif self.mode == 10: #File exists [change,true,false]
@@ -352,12 +363,15 @@ class trigger(threading.Thread):
 					except:
 						pass #Error
 					time.sleep(1)
-
 			elif self.mode == 50: #GPiO pin high [change,true,false]
 				while self.active:
 					time.sleep(1)
+			piScreenUtils.logging.info(f"Trigger {self.mode} has been stopped")
+		else:
+			piScreenUtils.logging.warning("Trigger is not right defined")
 			
 	def execute(self,state:str):
+		piScreenUtils.logging.info(f"Run trigger {self.mode}")
 		if "cases" not in self.config: return
 		if state not in self.config["cases"]: return
 		if "command" in self.config["cases"][state]:
@@ -370,9 +384,12 @@ class trigger(threading.Thread):
 
 def runCommandset(commandsetID):
 	if not piScreenUtils.isInt(commandsetID):
+		piScreenUtils.logging.warning("Given commandsetID is not a number")
 		return False
+	piScreenUtils.logging.info(f"Run commandset {commandsetID}")
 	commandsetID = int(commandsetID)
 	if "commandsets" not in globalConf.conf:
+		piScreenUtils.logging.info(f"Commandset {commandsetID} is not in config")
 		return False
 	for item in globalConf.conf["commandsets"]:
 		if "id" not in item:
@@ -409,10 +426,13 @@ def runTrigger(mode:int,state:str="true"):
 def commandInterpreter(cmd:int, parameter:str):
 	if not cmd: return False
 	if not piScreenUtils.isInt(cmd): return False
+	piScreenUtils.logging.debug(f"Run command {cmd} with parameter {parameter}")
 	cmd = int(cmd)
 	if cmd == 1: #Sleep
 		if piScreenUtils.isFloat(parameter):
 			time.sleep(float(parameter))
+		else:
+			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 2: #LastCron
 		firstRun(True)
 	elif cmd == 10: #Universal Call
@@ -420,22 +440,28 @@ def commandInterpreter(cmd:int, parameter:str):
 			try:
 				os.system(parameter)
 			except:
-				pass #Error
+				piScreenUtils.logging.error("Error while executing universal call")
+		else:
+			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 11: #Reboot
-		if saveMode: time.sleep(300)
+		if saveMode: time.sleep(300) ; piScreenUtils.logging.info("We are in save mode. Reboot starts in 300s")
 		os.system("reboot")
 	elif cmd == 12: #Shutdown
-		if saveMode: time.sleep(300)
+		if saveMode: time.sleep(300) ; piScreenUtils.logging.info("We are in save mode. Shutdown starts in 300s")
 		os.system("poweroff")
 	elif cmd == 13: #Call commandset
-		runCommandset(parameter)
+		if parameter:
+			runCommandset(parameter)
+		else:
+			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 30: #Control display [0 = Standby, 1 = On]
 		if piScreenUtils.isInt(parameter):
 			if int(parameter) == 0:
 				os.system(piScreenUtils.paths.syscall + " --screen-standby")
 			else:
 				os.system(piScreenUtils.paths.syscall + " --screen-on")
-		pass
+		else:
+			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 31: #Switch display input
 		os.system(piScreenUtils.paths.syscall + " --screen-switch-input")
 	elif cmd == 32: #Change display protocol [0 = CEC, 1 = DDC]
@@ -444,9 +470,13 @@ def commandInterpreter(cmd:int, parameter:str):
 				os.system(piScreenUtils.paths.syscall + " --set-display-protocol cec")
 			else:
 				os.system(piScreenUtils.paths.syscall + " --set-display-protocol ddc")
+		else:
+			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 40: #StartBrowser
 		if parameter:
 			os.system(f'{piScreenUtils.paths.syscall} --start-browser "{parameter}"')
+		else:
+			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 41: #RestartBrowser
 		os.system(f'{piScreenUtils.paths.syscall} --restart-browser')
 	elif cmd == 42: #ReloadBrowser
@@ -456,6 +486,8 @@ def commandInterpreter(cmd:int, parameter:str):
 	elif cmd == 50: #StartVLC
 		if parameter:
 			os.system(f'{piScreenUtils.paths.syscall} --start-vlc "{parameter}"')
+		else:
+			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 51: #RestartVLC
 		os.system(f"{piScreenUtils.paths.syscall} --restart-vlc")
 	elif cmd == 52: #StopVLC
@@ -467,6 +499,8 @@ def commandInterpreter(cmd:int, parameter:str):
 	elif cmd == 60: #StartImpress
 		if parameter:
 			os.system(f'{piScreenUtils.paths.syscall} --start-impress "{parameter}"')
+		else:
+			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 61: #RestartImpress
 		os.system(f"{piScreenUtils.paths.syscall} --restart-impress")
 	elif cmd == 62: #StopImpress
@@ -476,9 +510,11 @@ def commandInterpreter(cmd:int, parameter:str):
 	
 
 #Main
+piScreenUtils.logging.info("Startup")
 globalConf = config()
 if not globalConf.loadConfig():
-	print("Json File seems to be damaged")
+	piScreenUtils.logging.error("Json file seems to be damaged")
+	print("Json file seems to be damaged")
 	exit(1)
 loadTrigger()
 loadCrons()
@@ -486,8 +522,10 @@ configModify = os.path.getmtime(piScreenUtils.paths.schedule)
 while active:
 	try:
 		if configModify != os.path.getmtime(piScreenUtils.paths.schedule):
+			piScreenUtils.logging.info("Config seems to be changed")
 			#Config changed
 			if not globalConf.loadConfig():
+				piScreenUtils.logging.error("Json file seems to be damaged")
 				print("Json File seems to be damaged")
 			else:
 				loadTrigger()
@@ -498,12 +536,14 @@ while active:
 			try:
 				os.remove(piScreenUtils.paths.scheduleDoFirstRun)
 			except:
+				piScreenUtils.logging.error("Unable to remove firstrun file in ramdisk")
 				print("Unable to remove firstrun file in ramdisk")
 		if os.path.exists(piScreenUtils.paths.scheduleDoLastCron):
 			firstRun(True)
 			try:
 				os.remove(piScreenUtils.paths.scheduleDoLastCron)
 			except:
+				piScreenUtils.logging.error("Unable to remove lastCron file in ramdisk")
 				print("Unable to remove lastCron file in ramdisk")
 		if os.path.exists(piScreenUtils.paths.scheduleDoManually):
 			try:
@@ -533,10 +573,12 @@ while active:
 									if "commandset" in item:
 										runCommandset(item["commandset"])
 			except:
+				piScreenUtils.logging.error("Error with manually json file in ramdisk")
 				print("Error with 'manually' json file in ramdisk")
 			try:
 				os.remove(piScreenUtils.paths.scheduleDoManually)
 			except:
+				piScreenUtils.logging.error("Unable to remove manually file in ramdisk")
 				print("Unable to remove 'manually' file in ramdisk")
 		time.sleep(1)
 	except KeyboardInterrupt:

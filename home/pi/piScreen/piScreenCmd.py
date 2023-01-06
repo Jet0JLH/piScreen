@@ -133,30 +133,38 @@ def loadManifest():
 	return json.load(open(piScreenUtils.paths.manifest))
 
 def endAllModes():
-	if os.path.exists(piScreenUtils.paths.modeFirefox):
-		os.remove(piScreenUtils.paths.modeFirefox)
-		os.system("killall -q -SIGTERM firefox-esr")
-	if os.path.exists(piScreenUtils.paths.modeVLC):
-		os.remove(piScreenUtils.paths.modeVLC)
-		os.system("killall -q -SIGTERM vlc")
-	if os.path.exists(piScreenUtils.paths.modeImpress):
-		os.remove(piScreenUtils.paths.modeImpress)
-		os.system("killall -q -SIGTERM soffice.bin")
+	piScreenUtils.logging.debug("End all modes")
+	try:
+		if os.path.exists(piScreenUtils.paths.modeFirefox):
+			os.remove(piScreenUtils.paths.modeFirefox)
+			os.system("killall -q -SIGTERM firefox-esr")
+		if os.path.exists(piScreenUtils.paths.modeVLC):
+			os.remove(piScreenUtils.paths.modeVLC)
+			os.system("killall -q -SIGTERM vlc")
+		if os.path.exists(piScreenUtils.paths.modeImpress):
+			os.remove(piScreenUtils.paths.modeImpress)
+			os.system("killall -q -SIGTERM soffice.bin")
+	except:
+		piScreenUtils.logging.error("Unable to end mode")
 	
 
 def startBrowser(parameter):
+	piScreenUtils.logging.info("Start browser")
 	endAllModes()
 	f = open(piScreenUtils.paths.modeFirefox,"w")
 	f.write(parameter)
 	f.close()
 
 def stopBrowser():
+	piScreenUtils.logging.info("Stop browser")
 	endAllModes()
 
 def restartBrowser():
+	piScreenUtils.logging.info("Restart browser")
 	os.system("killall -q -SIGTERM firefox-esr")
 
 def startVLC(parameter,soft=False):
+	piScreenUtils.logging.info("Start VLC")
 	if not soft:
 		endAllModes()
 	f = open(piScreenUtils.paths.modeVLC,"w")
@@ -164,32 +172,40 @@ def startVLC(parameter,soft=False):
 	f.close()
 
 def stopVLC():
+	piScreenUtils.logging.info("Stop VLC")
 	endAllModes()
 
 def restartVLC():
+	piScreenUtils.logging.info("Restart VLC")
 	os.system("killall -q -SIGTERM vlc")
 
 def startImpress(parameter):
+	piScreenUtils.logging.info("Start impress")
 	endAllModes()
 	f = open(piScreenUtils.paths.modeImpress,"w")
 	f.write(parameter)
 	f.close()
 
 def stopImpress():
+	piScreenUtils.logging.info("Stop impress")
 	endAllModes()
 
 def restartImpress():
+	piScreenUtils.logging.info("Restart impress")
 	os.system("killall -q -SIGTERM soffice.bin")
 
 def reboot():
+	piScreenUtils.logging.info("Reboot system")
 	verbose and print("Reboot system")
 	os.system("reboot")
 
 def shutdown():
+	piScreenUtils.logging.info("Shutdown system")
 	verbose and print("Shutdown system")
 	os.system("poweroff")
 
 def configureDesktop():
+	piScreenUtils.logging.debug("Configure desktop")
 	try:
 		os.environ["DISPLAY"] = ":0"
 		os.environ["XAUTHORITY"] = "{userHomePath}.Xauthority"
@@ -197,28 +213,36 @@ def configureDesktop():
 		if f"--mode" in sys.argv:
 			indexOfElement = sys.argv.index(f"--mode") + 1
 			if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+				piScreenUtils.logging.warning("No parameter given")
 				verbose and print("No parameter given")
 			else:
 				if sys.argv[indexOfElement].lower() in ["color", "stretch", "fit", "crop", "center", "tile", "screen"]:
+					piScreenUtils.logging.info(f"Set wallpaper mode to {os.path.abspath(sys.argv[indexOfElement])}")
 					os.system(f"pcmanfm --wallpaper-mode={sys.argv[indexOfElement].lower()}")
 				else:
+					piScreenUtils.logging.warning("No possible mode selected")
 					verbose and print("No possible mode selected")
 		if f"--wallpaper" in sys.argv:
 			indexOfElement = sys.argv.index(f"--wallpaper") + 1
 			if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+				piScreenUtils.logging.warning("No parameter given")
 				verbose and print("No parameter given")
 			else:
 				if os.path.exists(sys.argv[indexOfElement]):
+					piScreenUtils.logging.info(f"Set wallpaper to {os.path.abspath(sys.argv[indexOfElement])}")
 					os.system(f'pcmanfm "--set-wallpaper={os.path.abspath(sys.argv[indexOfElement])}"')
 				else:
+					piScreenUtils.logging.warning("Wallpaper File dose't exist")
 					verbose and print("Wallpaper File dose't exist")
 		if f"--bg-color" in sys.argv:
 			indexOfElement = sys.argv.index(f"--bg-color") + 1
 			if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+				piScreenUtils.logging.warning("No parameter given")
 				verbose and print("No parameter given")
 			else:
 				import re
 				if re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', sys.argv[indexOfElement]):
+					piScreenUtils.logging.info(f"Set backgroudcolor to {os.path.abspath(sys.argv[indexOfElement])}")
 					desktopConfig = open("/home/pi/.config/pcmanfm/LXDE-pi/desktop-items-0.conf","r").readlines()
 					count = 0
 					found = False
@@ -232,9 +256,11 @@ def configureDesktop():
 					open("/home/pi/.config/pcmanfm/LXDE-pi/desktop-items-0.conf","w").writelines(desktopConfig)
 					os.system("pcmanfm --reconfigure")
 				else:
+					piScreenUtils.logging.warning("Given color is no valid hex string")
 					verbose and print("Given color is no valid hex string")
 
 	except:
+		piScreenUtils.logging.warning("Error while access desktop configuration")
 		verbose and print("Error while access desktop configuration")
 		exit(1)
 
@@ -279,6 +305,7 @@ def getStatus():
 		try:
 			if os.path.exists(piScreenUtils.paths.modeFirefox): jsonData["modeInfo"]["url"] = open(piScreenUtils.paths.modeFirefox,"r").read()
 		except:
+			piScreenUtils.logging.error("Error while reading firefox data")
 			verbose and print("Error while reading Firefox data")
 	elif jsonData["modeInfo"]["mode"] == "vlc":
 		try:
@@ -313,11 +340,13 @@ def getStatus():
 			jsonData["modeInfo"]["length"] = int(result[:result.index("\r")])
 
 		except:
+			piScreenUtils.logging.error("Error while reading VLC data")
 			verbose and print("Error while reading VLC data")
 	elif jsonData["modeInfo"]["mode"] == "impress":
 		try:
 			if os.path.exists(piScreenUtils.paths.modeImpress): jsonData["modeInfo"]["file"] = open(piScreenUtils.paths.modeImpress,"r").read()
 		except:
+			piScreenUtils.logging.error("Error while reading impress data")
 			verbose and print("Error while reading Impress data")
 	return json.dumps(jsonData)
 
@@ -334,18 +363,22 @@ def getMode():
 	return "none"
 
 def screenOn():
+	piScreenUtils.logging.info("Create file for turning on the screen")
 	verbose and print("Create file for turning on the screen")
 	open(piScreenUtils.paths.displayOn,"w").close()
 
 def screenStandby():
+	piScreenUtils.logging.info("Create file for turning screen to standby")
 	verbose and print("Create file for turning screen to standby")
 	open(piScreenUtils.paths.displayStandby,"w").close()
 
 def screenOff():
-	verbose and print("Create file for turning of the screen")
+	piScreenUtils.logging.info("Create file for turning off the screen")
+	verbose and print("Create file for turning off the screen")
 	open(piScreenUtils.paths.displayOff,"w").close()
 
 def screenSwitchInput():
+	piScreenUtils.logging.info("Create file for switching display input")
 	verbose and print("Create file for switching display input")
 	open(piScreenUtils.paths.displaySwitchChannel,"w").close()
 
@@ -433,6 +466,7 @@ def downloadUpdate(draft,prerelease):
 			updateProcess.wait()
 			updateProcess.returncode != 0 and verbose and print("Something went wrong during installation")
 		else:
+			piScreenUtils.logging.error("Something went wrong while downloading Updatefile")
 			verbose and print("Something went wrong while downloading Updatefile")
 		verbose and print("Cleanup installation")
 		rmDir(downloadDir)
@@ -448,6 +482,7 @@ def rmDir(path):
 	os.rmdir(path)
 
 def setDisplayProtocol(protocol):
+	piScreenUtils.logging.info(f"Set displayprotocol to {protocol}")
 	protocol = protocol.lower()
 	if protocol == "cec" or protocol == "ddc" or protocol == "manually":
 		verbose and print(f"Write {protocol} as display protocol in settings.json")
@@ -469,6 +504,7 @@ def setDisplayProtocol(protocol):
 		elif protocol == "manually":
 			open(piScreenUtils.paths.displayMANUALLY,"w").close()
 	else:
+		piScreenUtils.logging.warning(f"{protocol} is no permitted protocol")
 		verbose and print(f"{protocol} is no permitted protocol")
 
 def getDisplayProtocol():
@@ -507,12 +543,14 @@ def modifySchedule(element,typ,scheduleJson):
 					scheduleJson[element] = False
 					changed = True
 				else:
+					piScreenUtils.logging.warning(f"{element} is not true or false")
 					verbose and print(f"{element} is not true or false")
 			elif typ == int:
 				if piScreenUtils.isInt(sys.argv[indexOfElement]):
 					scheduleJson[element] = int(sys.argv[indexOfElement])
 					changed = True
 				else:
+					piScreenUtils.logging.warning(f"{element} is no number")
 					verbose and print(f"{element} is no number")
 			elif typ == datetime.datetime:
 				try:
@@ -520,18 +558,19 @@ def modifySchedule(element,typ,scheduleJson):
 					scheduleJson[element] = sys.argv[indexOfElement]
 					changed = True
 				except:
+					piScreenUtils.logging.warning(f"{element} is no valid date")
 					verbose and print(f"{element} is no valid date")
 			elif typ == "pattern":
 				if all(ch in "0123456789/-*, " for ch in sys.argv[indexOfElement]) and len(sys.argv[indexOfElement].split(" ")) == 5:
 					scheduleJson[element] = sys.argv[indexOfElement]
 					changed = True
 				else:
+					piScreenUtils.logging.warning(f"{element} is no valid pattern")
 					verbose and print(f"{element} is no valid pattern")
 			else:
 				#Normal String without validation
 				scheduleJson[element] = sys.argv[indexOfElement]
 				changed = True
-				pass
 	return changed
 
 def addCron():
@@ -555,20 +594,26 @@ def addCron():
 						scheduleFile = open(piScreenUtils.paths.schedule, "w")
 						scheduleFile.write(json.dumps(scheduleJson,indent=4))
 						scheduleFile.close()
+						piScreenUtils.logging.info("Changed schedule.json")
 						verbose and print("Changed schedule.json")
 					except:
+						piScreenUtils.logging.error("Error with schedule.json")
 						verbose and print("Error with schedule.json")
 						exit(1)
 				else:
+					piScreenUtils.logging.warning("Empty cron element")
 					verbose and print("Empty cron element")
 					exit(1)
 			else:
+				piScreenUtils.logging.warning("No pattern value")
 				verbose and print("No pattern value")
 				exit(1)
 		else:
+			piScreenUtils.logging.warning("Argument --pattern expected")
 			verbose and print("Argument --pattern expected")
 			exit(1)
 	else:
+		piScreenUtils.logging.warning("Not enough arguments")
 		verbose and print("Not enough arguments")
 		exit(1)
 
@@ -594,23 +639,30 @@ def updateCron():
 								scheduleFile = open(piScreenUtils.paths.schedule, "w")
 								scheduleFile.write(json.dumps(scheduleJson,indent=4))
 								scheduleFile.close()
+								piScreenUtils.logging.info("Changed schedule.json")
 								verbose and print("Changed schedule.json")
 						else:
+							piScreenUtils.logging.warning("Index is bigger than count of cron entries")
 							verbose and print("Index is bigger than count of cron entries")
 							exit(1)
 					except:
+						piScreenUtils.logging.error("Error with schedule.json")
 						verbose and print("Error with schedule.json")
 						exit(1)
 				else:
+					piScreenUtils.logging.warning("Index is no number")
 					verbose and print("Index is no number")
 					exit(1)
 			else:
+				piScreenUtils.logging.warning("No index value")
 				verbose and print("No index value")
 				exit(1)
 		else:
+			piScreenUtils.logging.warning("Argument --index expected")
 			verbose and print("Argument --index expected")
 			exit(1)
 	else:
+		piScreenUtils.logging.warning("Not enough arguments")
 		verbose and print("Not enough arguments")
 		exit(1)
 
@@ -632,20 +684,26 @@ def addTrigger():
 						scheduleFile = open(piScreenUtils.paths.schedule, "w")
 						scheduleFile.write(json.dumps(scheduleJson,indent=4))
 						scheduleFile.close()
+						piScreenUtils.logging.info("Changed schedule.json")
 						verbose and print("Changed schedule.json")
 					except:
+						piScreenUtils.logging.error("Error with schedule.json")
 						verbose and print("Error with schedule.json")
 						exit(1)
 				else:
+					piScreenUtils.logging.warning("Empty trigger element")
 					verbose and print("Empty trigger element")
 					exit(1)
 			else:
+				piScreenUtils.logging.warning("No pattern value")
 				verbose and print("No pattern value")
 				exit(1)
 		else:
+			piScreenUtils.logging.warning("Argument --trigger expected")
 			verbose and print("Argument --trigger expected")
 			exit(1)
 	else:
+		piScreenUtils.logging.warning("Not enough arguments")
 		verbose and print("Not enough arguments")
 		exit(1)
 
@@ -669,23 +727,30 @@ def updateTrigger():
 								scheduleFile = open(piScreenUtils.paths.schedule, "w")
 								scheduleFile.write(json.dumps(scheduleJson,indent=4))
 								scheduleFile.close()
+								piScreenUtils.logging.info("Changed schedule.json")
 								verbose and print("Changed schedule.json")
 						else:
+							piScreenUtils.logging.warning("Index is bigger than count of trigger entries")
 							verbose and print("Index is bigger than count of trigger entries")
 							exit(1)
 					except:
+						piScreenUtils.logging.error("Error with schedule.json")
 						verbose and print("Error with schedule.json")
 						exit(1)
 				else:
+					piScreenUtils.logging.warning("Index is no number")
 					verbose and print("Index is no number")
 					exit(1)
 			else:
+				piScreenUtils.logging.warning("No index value")
 				verbose and print("No index value")
 				exit(1)
 		else:
+			piScreenUtils.logging.warning("Argument --index expected")
 			verbose and print("Argument --index expected")
 			exit(1)
 	else:
+		piScreenUtils.logging.warning("Not enough arguments")
 		verbose and print("Not enough arguments")
 		exit(1)
 
@@ -722,15 +787,19 @@ def addCommandset(update):
 				scheduleFile = open(piScreenUtils.paths.schedule, "w")
 				scheduleFile.write(json.dumps(scheduleJson,indent=4))
 				scheduleFile.close()
+				piScreenUtils.logging.info("Changed schedule.json")
 				verbose and print("Changed schedule.json")
 				print(item["id"])
 			except:
+				piScreenUtils.logging.error("Error with schedule.json")
 				verbose and print("Error with schedule.json")
 				exit(1)
 		else:
+			piScreenUtils.logging.warning("Argument --name expected")
 			verbose and print("Argument --name expected")
 			exit(1)
 	else:
+		piScreenUtils.logging.warning("Not enough arguments")
 		verbose and print("Not enough arguments")
 		exit(1)
 
@@ -739,9 +808,11 @@ def updateCommandset():
 		if "--id" in sys.argv:
 			addCommandset(True)
 		else:
+			piScreenUtils.logging.warning("Argument --id expected")
 			verbose and print("Argument --id expected")
 			exit(1)
 	else:
+		piScreenUtils.logging.warning("Not enough arguments")
 		verbose and print("Not enough arguments")
 		exit(1)
 
@@ -764,17 +835,22 @@ def deleteCommandset():
 						scheduleFile = open(piScreenUtils.paths.schedule, "w")
 						scheduleFile.write(json.dumps(scheduleJson,indent=4))
 						scheduleFile.close()
+						piScreenUtils.logging.info("Changed schedule.json")
 						verbose and print("Changed schedule.json")
 				except:
+					piScreenUtils.logging.error("Error with schedule.json")
 					verbose and print("Error with schedule.json")
 					exit(1)
 			else:
+				piScreenUtils.logging.warning("Index is no number")
 				verbose and print("Index is no number")
 				exit(1)
 		else:
+			piScreenUtils.logging.warning("Argument --id expected")
 			verbose and print("Argument --id expected")
 			exit(1)
 	else:
+		piScreenUtils.logging.warning("Not enough arguments")
 		verbose and print("Not enough arguments")
 		exit(1)
 
@@ -799,7 +875,8 @@ for i, origItem in enumerate(sys.argv):
 		if i + 1 < len(sys.argv):
 			startBrowser(sys.argv[i + 1])
 		else:
-			print("Not enough arguments")
+			piScreenUtils.logging.warning("Not enough arguments")
+			verbose and print("Not enough arguments")
 	elif item == "--restart-browser":
 		restartBrowser()
 	elif item == "--stop-browser":
@@ -809,16 +886,20 @@ for i, origItem in enumerate(sys.argv):
 			if getMode() == "vlc":
 				try:
 					import telnetlib
+					piScreenUtils.logging.info("Change VLC source")
 					telnetClient = telnetlib.Telnet("127.0.0.1",9999)
 					telnetClient.write(bytes(f"clear\nadd {sys.argv[i + 1]}\n","utf-8"))
 					startVLC(sys.argv[i + 1],True)
 				except:
-					print("Not able to control VLC by telnet")
+					piScreenUtils.logging.error("Not able to control VLC by telnet")
+					verbose and print("Not able to control VLC by telnet")
 					startVLC(sys.argv[i + 1])
 			else:
+				piScreenUtils.logging.info("Start VLC")
 				startVLC(sys.argv[i + 1])
 		else:
-			print("Not enough arguments")
+			piScreenUtils.logging.warning("Not enough arguments")
+			verbose and print("Not enough arguments")
 	elif item == "--restart-vlc":
 		restartVLC()
 	elif item == "--stop-vlc":
@@ -829,6 +910,7 @@ for i, origItem in enumerate(sys.argv):
 			telnetClient = telnetlib.Telnet("127.0.0.1",9999)
 			telnetClient.write(b'pause\n')
 		else:
+			piScreenUtils.logging.warning("Mode is not VLC")
 			verbose and print("Mode is not VLC")
 	elif item == "--play-vlc":
 		if getMode() == "vlc":
@@ -836,12 +918,14 @@ for i, origItem in enumerate(sys.argv):
 			telnetClient = telnetlib.Telnet("127.0.0.1",9999)
 			telnetClient.write(b'play\n')
 		else:
+			piScreenUtils.logging.warning("Mode is not VLC")
 			verbose and print("Mode is not VLC")
 	elif item == "--start-impress":
 		if i + 1 < len(sys.argv):
 			startImpress(sys.argv[i + 1])
 		else:
-			print("Not enough arguments")
+			piScreenUtils.logging.warning("Not enough arguments")
+			verbose and print("Not enough arguments")
 	elif item == "--restart-impress":
 		restartImpress()
 	elif item == "--stop-impress":
@@ -877,13 +961,16 @@ for i, origItem in enumerate(sys.argv):
 						os.system(f"head -1 {sys.argv[i + 3]} | tr -d '\n' | sudo xargs -0 htpasswd -c -b /etc/apache2/.piScreen_htpasswd '{sys.argv[i + 1]}'")
 						os.remove(sys.argv[i + 3])
 					else:
+						piScreenUtils.logging.error("Passwortfile dosn't exist")
 						verbose and print("Passwordfile doesn't exist")
 				else:
-					verbose and print("No Passwordfile specified")
+					piScreenUtils.logging.error("No passwordfile specified")
+					verbose and print("No passwordfile specified")
 			else: #Check direct mode
 				verbose and print("Set weblogin password with next parameter")
 				os.system(f"sudo htpasswd -c -b /etc/apache2/.piScreen_htpasswd '{sys.argv[i + 1]}' '{sys.argv[i + 2]}'")
 		else:
+			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 	elif item == "--check-update":
 		prerelease = False
@@ -919,6 +1006,7 @@ for i, origItem in enumerate(sys.argv):
 		if i + 1 < len(sys.argv):
 			setDisplayProtocol(sys.argv[i + 1])
 		else:
+			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 	elif item == "--get-display-protocol":
 		getDisplayProtocol()
@@ -932,18 +1020,22 @@ for i, origItem in enumerate(sys.argv):
 			if sys.argv[i + 1] == "0":
 				found = True
 				os.system("DISPLAY=:0 xrandr -o normal")
+				piScreenUtils.logging.info("Change displayorientation to normal")
 				verbose and print("Change displayorientation to normal")
 			elif sys.argv[i + 1] == "1":
 				found = True
 				os.system("DISPLAY=:0 xrandr -o right")
+				piScreenUtils.logging.info("Change displayorientation to right")
 				verbose and print("Change displayorientation to right")
 			elif sys.argv[i + 1] == "2":
 				found = True
 				os.system("DISPLAY=:0 xrandr -o inverted")
+				piScreenUtils.logging.info("Change displayorientation to inverted")
 				verbose and print("Change displayorientation to inverted")
 			elif sys.argv[i + 1] == "3":
 				found = True
 				os.system("DISPLAY=:0 xrandr -o left")
+				piScreenUtils.logging.info("Change displayorientation to left")
 				verbose and print("Change displayorientation to left")
 			if found and saveSettings:
 				settingsJson = loadSettings()
@@ -951,20 +1043,25 @@ for i, origItem in enumerate(sys.argv):
 				settingsFile = open(piScreenUtils.paths.settings, "w")
 				settingsFile.write(json.dumps(settingsJson,indent=4))
 				settingsFile.close()
+				piScreenUtils.logging.info("Write orientation in settings")
 				verbose and print("Write orientation in settings")
 		else:
+			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 	elif item == "--get-display-orientation-settings":
 		settingsJson = loadSettings()
 		try:
 			print(settingsJson["settings"]["display"]["orientation"])
 		except:
+			piScreenUtils.logging.error("Can not read displayorientation from settings")
 			print(0)
 	elif item == "--get-display-orientation":
 		print(getDisplayOrientation())
 	elif item == "--schedule-firstrun":
+		piScreenUtils.logging.info("Write file for schedule firstrun")
 		open(piScreenUtils.paths.scheduleDoFirstRun,"w").close()
 	elif item == "--schedule-lastcron":
+		piScreenUtils.logging.info("Write file for schedule last cron")
 		open(piScreenUtils.paths.scheduleDoLastCron,"w").close()
 	elif item == "--schedule-manually-command":
 		if i + 2 < len(sys.argv):
@@ -977,66 +1074,83 @@ for i, origItem in enumerate(sys.argv):
 						if sys.argv[i + 3] == "--parameter":
 							command["parameter"] = sys.argv[i + 4]
 						else:
+							piScreenUtils.logging.warning("Missing parameter flag")
 							verbose and print("Missing parameter flag")
 							exit(1)
+					piScreenUtils.logging.info("Create file for manually command run")
 					manualFile = open(piScreenUtils.paths.scheduleDoManually, "w")
 					manualFile.write(json.dumps(command))
 					manualFile.close()
 				else:
+					piScreenUtils.logging.warning("Command is no number")
 					verbose and print("Command is no number")
 					exit(1)
 			else:
+				piScreenUtils.logging.warning("Argument --command expected")
 				verbose and print("Argument --command expected")
 				exit(1)
 		else:
+			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 			exit(1)
 	elif item == "--schedule-manually-commandset":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--id":
 				if piScreenUtils.isInt(sys.argv[i + 2]):
+					piScreenUtils.logging.info("Create file for manually commandset run")
 					manualFile = open(piScreenUtils.paths.scheduleDoManually, "w")
 					manualFile.write(json.dumps({"type":"commandset","id":int(sys.argv[i + 2])},indent=4))
 					manualFile.close()
 				else:
+					piScreenUtils.logging.warning("Index is no number")
 					verbose and print("Index is no number")
 					exit(1)
 			else:
+				piScreenUtils.logging.warning("Argument --index expected")
 				verbose and print("Argument --index expected")
 				exit(1)
 		else:
+			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 			exit(1)
 	elif item == "--schedule-manually-cron":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--index":
 				if piScreenUtils.isInt(sys.argv[i + 2]):
+					piScreenUtils.logging.info("Create file for manually cron run")
 					manualFile = open(piScreenUtils.paths.scheduleDoManually, "w")
 					manualFile.write(json.dumps({"type":"cron","index":int(sys.argv[i + 2])},indent=4))
 					manualFile.close()
 				else:
+					piScreenUtils.logging.warning("Index is no number")
 					verbose and print("Index is no number")
 					exit(1)
 			else:
+				piScreenUtils.logging.warning("Argument --index expected")
 				verbose and print("Argument --index expected")
 				exit(1)
 		else:
+			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 			exit(1)
 	elif item == "--schedule-manually-trigger":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--index":
 				if piScreenUtils.isInt(sys.argv[i + 2]):
+					piScreenUtils.logging.info("Create file for manually trigger run")
 					manualFile = open(piScreenUtils.paths.scheduleDoManually, "w")
 					manualFile.write(json.dumps({"type":"trigger","index":int(sys.argv[i + 2])},indent=4))
 					manualFile.close()
 				else:
+					piScreenUtils.logging.warning("Index is no number")
 					verbose and print("Index is no number")
 					exit(1)
 			else:
+				piScreenUtils.logging.warning("Argument --index expected")
 				verbose and print("Argument --index expected")
 				exit(1)
 		else:
+			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 			exit(1)
 	elif item == "--add-cron":
@@ -1055,20 +1169,26 @@ for i, origItem in enumerate(sys.argv):
 							scheduleFile = open(piScreenUtils.paths.schedule, "w")
 							scheduleFile.write(json.dumps(scheduleJson,indent=4))
 							scheduleFile.close()
+							piScreenUtils.logging.info("Changed schedule.json")
 							verbose and print("Changed schedule.json")
 						else:
+							piScreenUtils.logging.warning("Index is bigger than count of cron entries")
 							verbose and print("Index is bigger than count of cron entries")
 							exit(1)
 					except:
+						piScreenUtils.logging.error("Error with schedule.json")
 						verbose and print("Error with schedule.json")
 						exit(1)
 				else:
+					piScreenUtils.logging.warning("Index is no number")
 					verbose and print("Index is no number")
 					exit(1)
 			else:
+				piScreenUtils.logging.warning("Argument --index expected")
 				verbose and print("Argument --index expected")
 				exit(1)
 		else:
+			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 			exit(1)
 	elif item == "--add-commandset":
@@ -1093,19 +1213,25 @@ for i, origItem in enumerate(sys.argv):
 							scheduleFile = open(piScreenUtils.paths.schedule, "w")
 							scheduleFile.write(json.dumps(scheduleJson,indent=4))
 							scheduleFile.close()
+							piScreenUtils.logging.info("Changed schedule.json")
 							verbose and print("Changed schedule.json")
 						else:
+							piScreenUtils.logging.warning("Index is bigger than count of tigger entries")
 							verbose and print("Index is bigger than count of trigger entries")
 							exit(1)
 					except:
+						piScreenUtils.logging.error("Error with schedule.json")
 						verbose and print("Error with schedule.json")
 						exit(1)
 				else:
+					piScreenUtils.logging.warning("Index is no number")
 					verbose and print("Index is no number")
 					exit(1)
 			else:
+				piScreenUtils.logging.warning("Argument --index expected")
 				verbose and print("Argument --index expected")
 				exit(1)
 		else:
+			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 			exit(1)

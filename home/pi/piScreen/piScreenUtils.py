@@ -1,4 +1,5 @@
 #!/usr/bin/python3
+import logging, __main__, os
 
 class paths:
 	ramdisk = "/media/ramdisk/"
@@ -22,6 +23,7 @@ class paths:
 	scheduleDoFirstRun = f"{ramdisk}piScreenScheduleFirstRun"
 	scheduleDoLastCron = f"{ramdisk}piScreenScheduleLastCron"
 	scheduleDoManually = f"{ramdisk}piScreenScheduleManually"
+	log = f"{ramdisk}piScreen.log"
 
 def isInt(s):
 	if s == None: return False
@@ -38,3 +40,10 @@ def isFloat(s):
 		return True
 	except ValueError:
 		return False
+
+os.umask(0) #Needed for execut with www-data
+if "__file__" in __main__.__dir__():
+	mainFileName = __main__.__file__[-(len(__main__.__file__)-__main__.__file__.rindex("/"))+1:]
+else:
+	mainFileName = "NoScript"
+logging.basicConfig(filename=paths.log, format=f"%(asctime)s [%(levelname)s] ({mainFileName}) %(funcName)s(%(lineno)d) | %(message)s", level="INFO")

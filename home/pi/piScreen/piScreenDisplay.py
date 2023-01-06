@@ -16,11 +16,13 @@ class cecElement:
 			self._isOn = value
 			try:
 				if value:
+					piScreenUtils.logging.info("Display status changed to on")
 					open(piScreenUtils.paths.displayStatus,"w").write("on")
 				else:
+					piScreenUtils.logging.info("Display status changed to standby")
 					open(piScreenUtils.paths.displayStatus,"w").write("standby")
 			except:
-				pass
+				piScreenUtils.logging.error("Unable to update displaystatus in file")
 
 	@property
 	def isActiveSource(self):
@@ -56,10 +58,13 @@ class cecElement:
 		if cmd == "exit":
 			pass
 		elif cmd == "setOn":
+			piScreenUtils.logging.info("Set display on")
 			self.device.power_on()
 		elif cmd == "setStandby":
+			piScreenUtils.logging.info("Set display standby")
 			self.device.transmit(cec.CEC_OPCODE_STANDBY)
 		elif cmd == "setActiveSource":
+			piScreenUtils.logging.info("Set display active source")
 			cec.set_active_source()
 
 
@@ -73,25 +78,25 @@ def doCEC():
 				try:
 					os.remove(piScreenUtils.paths.displayOff)
 				except: 
-					pass
+					piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayOff}")
 			elif os.path.exists(piScreenUtils.paths.displayOn):
 				cecObj.cmdSelector("setOn")
 				try:
 					os.remove(piScreenUtils.paths.displayOn)
 				except: 
-					pass
+					piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayOn}")
 			elif os.path.exists(piScreenUtils.paths.displayStandby):
 				cecObj.cmdSelector("setStandby")
 				try:
 					os.remove(piScreenUtils.paths.displayStandby)
 				except: 
-					pass
+					piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayStandby}")
 			elif os.path.exists(piScreenUtils.paths.displaySwitchChannel):
 				cecObj.cmdSelector("setActiveSource")
 				try:
 					os.remove(piScreenUtils.paths.displaySwitchChannel)
 				except: 
-					pass
+					piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displaySwitchChannel}")
 			time.sleep(1)
 		cecObj.updateStatus()
 
@@ -104,41 +109,48 @@ def doDDC():
 				try:
 					mode = monitors[0].get_power_mode()
 					if os.path.exists(piScreenUtils.paths.displayOff):
+						piScreenUtils.logging.info("Set display off")
 						try:
 							monitors[0].set_power_mode(mode.off_hard)
 							os.remove(piScreenUtils.paths.displayOff)
 						except: 
-							pass
+							piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayOff}")
 					elif os.path.exists(piScreenUtils.paths.displayOn):
+						piScreenUtils.logging.info("Set display on")
 						try:
 							monitors[0].set_power_mode(mode.on)
 							os.remove(piScreenUtils.paths.displayOn)
 						except: 
-							pass
+							piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayOn}")
 					elif os.path.exists(piScreenUtils.paths.displayStandby):
+						piScreenUtils.logging.info("Set display standby")
 						try:
 							#Code 04 is for standby, but not every system supports it, so we decided to use 05 instead
 							monitors[0].set_power_mode(mode.off_hard)
 							os.remove(piScreenUtils.paths.displayStandby)
 						except: 
-							pass
+							piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayStandby}")
 					elif os.path.exists(piScreenUtils.paths.displaySwitchChannel):
 							#Not implemented yet
 							#monitors[0].set_input_source()
+						piScreenUtils.logging.info("Set display input source")
 						try:
 							os.remove(piScreenUtils.paths.displaySwitchChannel)
 						except: 
-							pass
-
-					if mode == mode.on:
-						if lastValue != "on": lastValue = "on" ; open(piScreenUtils.paths.displayStatus,"w").write("on")
-					elif mode == mode.off_hard or mode == mode.off_soft:
-						if lastValue != "off": lastValue = "off" ; open(piScreenUtils.paths.displayStatus,"w").write("off")
-					elif mode == mode.standby or mode == mode.suspend:
-						if lastValue != "standby": lastValue = "standby" ; open(piScreenUtils.paths.displayStatus,"w").write("standby")
+							piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displaySwitchChannel}")
+					try:
+						if mode == mode.on:
+							if lastValue != "on": lastValue = "on" ; piScreenUtils.logging.info("Display status changed to on") ; open(piScreenUtils.paths.displayStatus,"w").write("on")
+						elif mode == mode.off_hard or mode == mode.off_soft:
+							if lastValue != "off": lastValue = "off" ; piScreenUtils.logging.info("Display status changed to off") ; open(piScreenUtils.paths.displayStatus,"w").write("off")
+						elif mode == mode.standby or mode == mode.suspend:
+							if lastValue != "standby": lastValue = "standby" ; piScreenUtils.logging.info("Display status changed to standby") ; open(piScreenUtils.paths.displayStatus,"w").write("standby")
+					except:
+						piScreenUtils.logging.error("Unable to update display ind file")
 				except:
-					#Trouble with reading DDC/CI power mode
-					pass
+					piScreenUtils.logging.error("Trouble with reading DDC/CI power mode")
+		else:
+			piScreenUtils.logging.warning("Unable to find display")
 		time.sleep(1)
 
 
@@ -150,49 +162,57 @@ def doMANUALLY():
 	while os.path.exists(piScreenUtils.paths.displayMANUALLY):
 		status = str(subprocess.check_output(["xset", "-q"]))
 		if "Monitor is Off" in status:
-			if lastValue != "off": lastValue = "off" ; open(piScreenUtils.paths.displayStatus,"w").write("off")
+			if lastValue != "off": lastValue = "off" ; piScreenUtils.logging.info("Display status changed to off") ; open(piScreenUtils.paths.displayStatus,"w").write("off")
 		elif "Monitor is On" in status:
-			if lastValue != "on": lastValue = "on" ; open(piScreenUtils.paths.displayStatus,"w").write("on")
+			if lastValue != "on": lastValue = "on" ; piScreenUtils.logging.info("Display status changed to on") ; open(piScreenUtils.paths.displayStatus,"w").write("on")
 		elif "Monitor is in Standby" in status or "Monitor is in Suspend" in status:
-			if lastValue != "standby": lastValue = "standby" ; open(piScreenUtils.paths.displayStatus,"w").write("standby")
+			if lastValue != "standby": lastValue = "standby" ; piScreenUtils.logging.info("Display status changed to standby") ; open(piScreenUtils.paths.displayStatus,"w").write("standby")
 		
 		if os.path.exists(piScreenUtils.paths.displayOff):
+			piScreenUtils.logging.info("Set display off")
 			os.system("xset dpms force off")
 			try:
 				os.remove(piScreenUtils.paths.displayOff)
 			except: 
-				pass
+				piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayOff}")
 		elif os.path.exists(piScreenUtils.paths.displayOn):
+			piScreenUtils.logging.info("Set display on")
 			os.system("xset dpms force on")
 			try:
 				os.remove(piScreenUtils.paths.displayOn)
 			except: 
-				pass
+				piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayOn}")
 		elif os.path.exists(piScreenUtils.paths.displayStandby):
+			piScreenUtils.logging.info("Set display standby")
 			os.system("xset dpms force off")
 			try:
 				os.remove(piScreenUtils.paths.displayStandby)
 			except: 
-				pass
+				piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayStandby}")
 		elif os.path.exists(piScreenUtils.paths.displaySwitchChannel):
 			#Not possible in this mode
+			piScreenUtils.logging.info("Can not switch channel in manually mode")
 			try:
 				os.remove(piScreenUtils.paths.displaySwitchChannel)
 			except: 
-				pass
+				piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displaySwitchChannel}")
 		time.sleep(1)
 	os.system("xset -dpms")
 
 		
 
 if __name__ == "__main__":
+	piScreenUtils.logging.info("Startup")
 	cec.init("/dev/cec0") #Can be run only once
 	os.environ["DISPLAY"] = ":0"
 	while True:
-		if os.path.exists(piScreenUtils.paths.displayCEC):	
+		if os.path.exists(piScreenUtils.paths.displayCEC):
+			piScreenUtils.logging.info("Switch to CEC mode")	
 			doCEC()
 		elif os.path.exists(piScreenUtils.paths.displayDDC):
+			piScreenUtils.logging.info("Switch to DDC mode")
 			doDDC()
 		elif os.path.exists(piScreenUtils.paths.displayMANUALLY):
+			piScreenUtils.logging.info("Switch to MANUALLY mode")
 			doMANUALLY()
 		time.sleep(1)
