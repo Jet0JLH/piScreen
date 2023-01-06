@@ -1151,6 +1151,11 @@ window.onload = function() {
 }
 
 // language functions
+function changeLanguage(lang) {
+	sendHTTPRequest('GET', 'cmd.php?id=13&lang=' + lang, true, () => {});//sets lang in settings.json on server
+	fetchLanguage(lang);
+}
+
 function getDefaultLanguage() { //gets language from server settings.json
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onload = function() {
@@ -1166,7 +1171,6 @@ function getDefaultLanguage() { //gets language from server settings.json
 
 function fetchLanguage(lang) { //Sets language to server and gets language.json
 	currentLanguage = lang;
-	sendHTTPRequest('GET', 'cmd.php?id=13&lang=' + lang, true, () => {});
 	document.getElementById(lang).selected = true;
 	var xmlhttp = new XMLHttpRequest();
 	xmlhttp.onloadend = function() {

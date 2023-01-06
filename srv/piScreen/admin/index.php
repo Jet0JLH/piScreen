@@ -12,7 +12,7 @@
 	<main class='container'>
 		<div class='px-4 py-5 my-2 text-center'>
 			<button class='btn btn-outline-secondary' id='darkmodeButton' onclick='toggleDarkmode();'><i class='bi bi-moon'></i></button>
-			<select id='languageSelect' onchange='fetchLanguage(value)' class='disableOnDisconnect form-select border-secondary'>
+			<select id='languageSelect' onchange='changeLanguage(value)' class='disableOnDisconnect form-select border-secondary'>
 				<option id='de' value='de'>🇩🇪 Deutsch</option>
 				<option id='en' value='en'>🇬🇧 English</option>
 			</select>
@@ -130,7 +130,7 @@
 											<td>
 												<div class="input-group mb-3">
 													<button id='importScheduleButton' class='disableOnDisconnect btn btn-outline-primary border-secondary border-end-0' ondragover='event.preventDefault();' ondrop='dropScheduleJson(event);' onclick='selectScheduleToImport();'><i class='bi bi-upload pe-2'></i><span lang-data='import'>Import</span></button>
-													<input id='importScheduleInputTextfield' type="text" class="form-control border-secondary border-start-0" style='float: right;' ondragover='event.preventDefault();' ondrop='dropScheduleJson(event);' onclick='this.blur(); selectScheduleToImport();' value=''>
+													<input id='importScheduleInputTextfield' type="text" class=" disableOnDisconnect form-control border-secondary border-start-0" style='float: right;' ondragover='event.preventDefault();' ondrop='dropScheduleJson(event);' onclick='this.blur(); selectScheduleToImport();' value=''>
 												</div>
 											</td>
 											<td style='width: 8%;'>
