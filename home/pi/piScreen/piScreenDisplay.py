@@ -73,24 +73,12 @@ def doCEC():
 	while True:
 		for i in range(60):
 			if not os.path.exists(piScreenUtils.paths.displayCEC): return
-			if os.path.exists(piScreenUtils.paths.displayOff):
+			if controlFileHandeling(piScreenUtils.paths.displayOff,not cecObj.isOn):
 				cecObj.cmdSelector("setStandby")
-				try:
-					os.remove(piScreenUtils.paths.displayOff)
-				except: 
-					piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayOff}")
-			elif os.path.exists(piScreenUtils.paths.displayOn):
+			elif controlFileHandeling(piScreenUtils.paths.displayOn,cecObj.isOn):
 				cecObj.cmdSelector("setOn")
-				try:
-					os.remove(piScreenUtils.paths.displayOn)
-				except: 
-					piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayOn}")
-			elif os.path.exists(piScreenUtils.paths.displayStandby):
+			elif controlFileHandeling(piScreenUtils.paths.displayStandby,not cecObj.isOn):
 				cecObj.cmdSelector("setStandby")
-				try:
-					os.remove(piScreenUtils.paths.displayStandby)
-				except: 
-					piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayStandby}")
 			elif os.path.exists(piScreenUtils.paths.displaySwitchChannel):
 				cecObj.cmdSelector("setActiveSource")
 				try:
@@ -108,36 +96,6 @@ def doDDC():
 			with monitors[0]:
 				try:
 					mode = monitors[0].get_power_mode()
-					if os.path.exists(piScreenUtils.paths.displayOff):
-						piScreenUtils.logging.info("Set display off")
-						try:
-							monitors[0].set_power_mode(mode.off_hard)
-							os.remove(piScreenUtils.paths.displayOff)
-						except: 
-							piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayOff}")
-					elif os.path.exists(piScreenUtils.paths.displayOn):
-						piScreenUtils.logging.info("Set display on")
-						try:
-							monitors[0].set_power_mode(mode.on)
-							os.remove(piScreenUtils.paths.displayOn)
-						except: 
-							piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayOn}")
-					elif os.path.exists(piScreenUtils.paths.displayStandby):
-						piScreenUtils.logging.info("Set display standby")
-						try:
-							#Code 04 is for standby, but not every system supports it, so we decided to use 05 instead
-							monitors[0].set_power_mode(mode.off_hard)
-							os.remove(piScreenUtils.paths.displayStandby)
-						except: 
-							piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayStandby}")
-					elif os.path.exists(piScreenUtils.paths.displaySwitchChannel):
-							#Not implemented yet
-							#monitors[0].set_input_source()
-						piScreenUtils.logging.info("Set display input source")
-						try:
-							os.remove(piScreenUtils.paths.displaySwitchChannel)
-						except: 
-							piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displaySwitchChannel}")
 					try:
 						if mode == mode.on:
 							if lastValue != "on": lastValue = "on" ; piScreenUtils.logging.info("Display status changed to on") ; open(piScreenUtils.paths.displayStatus,"w").write("on")
@@ -147,6 +105,33 @@ def doDDC():
 							if lastValue != "standby": lastValue = "standby" ; piScreenUtils.logging.info("Display status changed to standby") ; open(piScreenUtils.paths.displayStatus,"w").write("standby")
 					except:
 						piScreenUtils.logging.error("Unable to update display ind file")
+					if controlFileHandeling(piScreenUtils.paths.displayOff,lastValue=="off" or lastValue=="standby"):
+						piScreenUtils.logging.info("Set display off")
+						try:
+							monitors[0].set_power_mode(mode.off_hard)
+						except: 
+							piScreenUtils.logging.error("Unable to set mode to off")
+					elif controlFileHandeling(piScreenUtils.paths.displayOn,lastValue=="on"):
+						piScreenUtils.logging.info("Set display on")
+						try:
+							monitors[0].set_power_mode(mode.on)
+						except: 
+							piScreenUtils.logging.error("Unable to set mode to on")
+					elif controlFileHandeling(piScreenUtils.paths.displayStandby,lastValue=="off" or lastValue=="standby"):
+						piScreenUtils.logging.info("Set display standby")
+						try:
+							#Code 04 is for standby, but not every system supports it, so we decided to use 05 instead
+							monitors[0].set_power_mode(mode.off_hard)
+						except: 
+							piScreenUtils.logging.error("Unable to set mode to off")
+					elif os.path.exists(piScreenUtils.paths.displaySwitchChannel):
+							#Not implemented yet
+							#monitors[0].set_input_source()
+						piScreenUtils.logging.info("Set display input source")
+						try:
+							os.remove(piScreenUtils.paths.displaySwitchChannel)
+						except: 
+							piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displaySwitchChannel}")
 				except:
 					piScreenUtils.logging.error("Trouble with reading DDC/CI power mode")
 		else:
@@ -168,27 +153,15 @@ def doMANUALLY():
 		elif "Monitor is in Standby" in status or "Monitor is in Suspend" in status:
 			if lastValue != "standby": lastValue = "standby" ; piScreenUtils.logging.info("Display status changed to standby") ; open(piScreenUtils.paths.displayStatus,"w").write("standby")
 		
-		if os.path.exists(piScreenUtils.paths.displayOff):
+		if controlFileHandeling(piScreenUtils.paths.displayOff,lastValue=="off" or lastValue=="standby"): 
 			piScreenUtils.logging.info("Set display off")
 			os.system("xset dpms force off")
-			try:
-				os.remove(piScreenUtils.paths.displayOff)
-			except: 
-				piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayOff}")
-		elif os.path.exists(piScreenUtils.paths.displayOn):
+		elif controlFileHandeling(piScreenUtils.paths.displayOn,lastValue=="on"):
 			piScreenUtils.logging.info("Set display on")
 			os.system("xset dpms force on")
-			try:
-				os.remove(piScreenUtils.paths.displayOn)
-			except: 
-				piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayOn}")
-		elif os.path.exists(piScreenUtils.paths.displayStandby):
+		elif controlFileHandeling(piScreenUtils.paths.displayStandby,lastValue=="off" or lastValue=="standby"):
 			piScreenUtils.logging.info("Set display standby")
 			os.system("xset dpms force off")
-			try:
-				os.remove(piScreenUtils.paths.displayStandby)
-			except: 
-				piScreenUtils.logging.error(f"Unable to remove {piScreenUtils.paths.displayStandby}")
 		elif os.path.exists(piScreenUtils.paths.displaySwitchChannel):
 			#Not possible in this mode
 			piScreenUtils.logging.info("Can not switch channel in manually mode")
@@ -199,7 +172,30 @@ def doMANUALLY():
 		time.sleep(1)
 	os.system("xset -dpms")
 
-		
+def controlFileHandeling(file:str,ready:bool) -> bool:
+	if os.path.exists(file):
+		if ready:
+			try:
+				os.remove(file)
+			except:
+				piScreenUtils.logging.error(f"Unable to remove {file}")
+			return False
+		value = open(file,"r").read().strip()
+		if piScreenUtils.isInt(value):
+			value = int(value)
+		else:
+			value = 0
+		if value > 60: #Amount of trys
+			piScreenUtils.logging.error("Unable to change screen status")
+			try:
+				os.remove(file)
+			except:
+				piScreenUtils.logging.error(f"Unable to remove {file}")
+			return False
+		value = value + 1
+		open(file,"w").write(str(value))
+		return True
+	return False
 
 if __name__ == "__main__":
 	piScreenUtils.logging.info("Startup")

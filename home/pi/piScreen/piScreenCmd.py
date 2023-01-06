@@ -72,7 +72,7 @@ def printHelp():
 	Check for updates, download install files if release is available and do upgrade.
 	Sudo rights are requiered!
 --set-display-protocol <protocol>
-	Set the display protocol to CEC or DDC.
+	Set the display protocol to CEC, DDC or MANUALLY.
 --get-display-protocol
 	Retuns the current activ display protocol. CEC or DDC
 --set-display-orientation [--no-save] <orientation ID>
