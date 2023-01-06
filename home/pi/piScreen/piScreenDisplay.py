@@ -1,15 +1,5 @@
 #!/usr/bin/python3
-import cec, time, os, subprocess, monitorcontrol
-
-ramdisk="/media/ramdisk/"
-displayStatus=f"{ramdisk}piScreenDisplay.txt"
-displayOff=f"{ramdisk}piScreenDisplayOff"
-displayOn=f"{ramdisk}piScreenDisplayOn"
-displayStandby=f"{ramdisk}piScreenDisplayStandby"
-displaySwitchChannel=f"{ramdisk}piScreenDisplaySwitch"
-displayCEC=f"{ramdisk}piScreenDisplayCEC"
-displayDDC=f"{ramdisk}piScreenDisplayDDC"
-displayMANUALLY=f"{ramdisk}piScreenDisplayMANUALLY"
+import cec, time, os, subprocess, monitorcontrol, piScreenUtils
 
 class cecElement:
 	device:cec.Device = None
@@ -26,9 +16,9 @@ class cecElement:
 			self._isOn = value
 			try:
 				if value:
-					open(displayStatus,"w").write("on")
+					open(piScreenUtils.paths.displayStatus,"w").write("on")
 				else:
-					open(displayStatus,"w").write("standby")
+					open(piScreenUtils.paths.displayStatus,"w").write("standby")
 			except:
 				pass
 
@@ -77,29 +67,29 @@ def doCEC():
 	cecObj = cecElement(cec.CECDEVICE_TV)
 	while True:
 		for i in range(60):
-			if not os.path.exists(displayCEC): return
-			if os.path.exists(displayOff):
+			if not os.path.exists(piScreenUtils.paths.displayCEC): return
+			if os.path.exists(piScreenUtils.paths.displayOff):
 				cecObj.cmdSelector("setStandby")
 				try:
-					os.remove(displayOff)
+					os.remove(piScreenUtils.paths.displayOff)
 				except: 
 					pass
-			elif os.path.exists(displayOn):
+			elif os.path.exists(piScreenUtils.paths.displayOn):
 				cecObj.cmdSelector("setOn")
 				try:
-					os.remove(displayOn)
+					os.remove(piScreenUtils.paths.displayOn)
 				except: 
 					pass
-			elif os.path.exists(displayStandby):
+			elif os.path.exists(piScreenUtils.paths.displayStandby):
 				cecObj.cmdSelector("setStandby")
 				try:
-					os.remove(displayStandby)
+					os.remove(piScreenUtils.paths.displayStandby)
 				except: 
 					pass
-			elif os.path.exists(displaySwitchChannel):
+			elif os.path.exists(piScreenUtils.paths.displaySwitchChannel):
 				cecObj.cmdSelector("setActiveSource")
 				try:
-					os.remove(displaySwitchChannel)
+					os.remove(piScreenUtils.paths.displaySwitchChannel)
 				except: 
 					pass
 			time.sleep(1)
@@ -107,45 +97,45 @@ def doCEC():
 
 def doDDC():
 	lastValue = None
-	while os.path.exists(displayDDC):
+	while os.path.exists(piScreenUtils.paths.displayDDC):
 		monitors = monitorcontrol.get_monitors()
 		if len(monitors) > 0:
 			with monitors[0]:
 				try:
 					mode = monitors[0].get_power_mode()
-					if os.path.exists(displayOff):
+					if os.path.exists(piScreenUtils.paths.displayOff):
 						try:
 							monitors[0].set_power_mode(mode.off_hard)
-							os.remove(displayOff)
+							os.remove(piScreenUtils.paths.displayOff)
 						except: 
 							pass
-					elif os.path.exists(displayOn):
+					elif os.path.exists(piScreenUtils.paths.displayOn):
 						try:
 							monitors[0].set_power_mode(mode.on)
-							os.remove(displayOn)
+							os.remove(piScreenUtils.paths.displayOn)
 						except: 
 							pass
-					elif os.path.exists(displayStandby):
+					elif os.path.exists(piScreenUtils.paths.displayStandby):
 						try:
 							#Code 04 is for standby, but not every system supports it, so we decided to use 05 instead
 							monitors[0].set_power_mode(mode.off_hard)
-							os.remove(displayStandby)
+							os.remove(piScreenUtils.paths.displayStandby)
 						except: 
 							pass
-					elif os.path.exists(displaySwitchChannel):
+					elif os.path.exists(piScreenUtils.paths.displaySwitchChannel):
 							#Not implemented yet
 							#monitors[0].set_input_source()
 						try:
-							os.remove(displaySwitchChannel)
+							os.remove(piScreenUtils.paths.displaySwitchChannel)
 						except: 
 							pass
 
 					if mode == mode.on:
-						if lastValue != "on": lastValue = "on" ; open(displayStatus,"w").write("on")
+						if lastValue != "on": lastValue = "on" ; open(piScreenUtils.paths.displayStatus,"w").write("on")
 					elif mode == mode.off_hard or mode == mode.off_soft:
-						if lastValue != "off": lastValue = "off" ; open(displayStatus,"w").write("off")
+						if lastValue != "off": lastValue = "off" ; open(piScreenUtils.paths.displayStatus,"w").write("off")
 					elif mode == mode.standby or mode == mode.suspend:
-						if lastValue != "standby": lastValue = "standby" ; open(displayStatus,"w").write("standby")
+						if lastValue != "standby": lastValue = "standby" ; open(piScreenUtils.paths.displayStatus,"w").write("standby")
 				except:
 					#Trouble with reading DDC/CI power mode
 					pass
@@ -157,37 +147,37 @@ def doMANUALLY():
 	os.system("xset +dpms")
 	os.system("xset s 0")
 	os.system("xset dpms 0 0 0")
-	while os.path.exists(displayMANUALLY):
+	while os.path.exists(piScreenUtils.paths.displayMANUALLY):
 		status = str(subprocess.check_output(["xset", "-q"]))
 		if "Monitor is Off" in status:
-			if lastValue != "off": lastValue = "off" ; open(displayStatus,"w").write("off")
+			if lastValue != "off": lastValue = "off" ; open(piScreenUtils.paths.displayStatus,"w").write("off")
 		elif "Monitor is On" in status:
-			if lastValue != "on": lastValue = "on" ; open(displayStatus,"w").write("on")
+			if lastValue != "on": lastValue = "on" ; open(piScreenUtils.paths.displayStatus,"w").write("on")
 		elif "Monitor is in Standby" in status or "Monitor is in Suspend" in status:
-			if lastValue != "standby": lastValue = "standby" ; open(displayStatus,"w").write("standby")
+			if lastValue != "standby": lastValue = "standby" ; open(piScreenUtils.paths.displayStatus,"w").write("standby")
 		
-		if os.path.exists(displayOff):
+		if os.path.exists(piScreenUtils.paths.displayOff):
 			os.system("xset dpms force off")
 			try:
-				os.remove(displayOff)
+				os.remove(piScreenUtils.paths.displayOff)
 			except: 
 				pass
-		elif os.path.exists(displayOn):
+		elif os.path.exists(piScreenUtils.paths.displayOn):
 			os.system("xset dpms force on")
 			try:
-				os.remove(displayOn)
+				os.remove(piScreenUtils.paths.displayOn)
 			except: 
 				pass
-		elif os.path.exists(displayStandby):
+		elif os.path.exists(piScreenUtils.paths.displayStandby):
 			os.system("xset dpms force off")
 			try:
-				os.remove(displayStandby)
+				os.remove(piScreenUtils.paths.displayStandby)
 			except: 
 				pass
-		elif os.path.exists(displaySwitchChannel):
+		elif os.path.exists(piScreenUtils.paths.displaySwitchChannel):
 			#Not possible in this mode
 			try:
-				os.remove(displaySwitchChannel)
+				os.remove(piScreenUtils.paths.displaySwitchChannel)
 			except: 
 				pass
 		time.sleep(1)
@@ -199,10 +189,10 @@ if __name__ == "__main__":
 	cec.init("/dev/cec0") #Can be run only once
 	os.environ["DISPLAY"] = ":0"
 	while True:
-		if os.path.exists(displayCEC):	
+		if os.path.exists(piScreenUtils.paths.displayCEC):	
 			doCEC()
-		elif os.path.exists(displayDDC):
+		elif os.path.exists(piScreenUtils.paths.displayDDC):
 			doDDC()
-		elif os.path.exists(displayMANUALLY):
+		elif os.path.exists(piScreenUtils.paths.displayMANUALLY):
 			doMANUALLY()
 		time.sleep(1)

@@ -1,31 +1,11 @@
 #!/usr/bin/python3
-import json, datetime, os, threading, time
+import json, datetime, os, threading, time, piScreenUtils
 
 skriptPath = os.path.dirname(os.path.abspath(__file__))
 os.chdir(skriptPath)
-syscall = "./piScreenCmd.py"
-configFile = "./schedule.json"
-activePath = "/media/ramdisk/piScreenScheduleActive"
-doFirstRunPath = "/media/ramdisk/piScreenScheduleFirstRun"
-doLastCronPath = "/media/ramdisk/piScreenScheduleLastCron"
-doManuallyPath = "/media/ramdisk/piScreenScheduleManually"
-active = os.path.exists(activePath)
+active = os.path.exists(piScreenUtils.paths.scheduleActive)
 allTrigger = []
 threadLock = threading.Lock()
-
-def isInt(s):
-	try: 
-		int(s)
-		return True
-	except ValueError:
-		return False
-
-def isFloat(s):
-	try:
-		float(s)
-		return True
-	except ValueError:
-		return False
 
 def firstRun(noTrigger):
 	global saveMode
@@ -166,7 +146,7 @@ class cronEntry():
 	def checkPattern(self, pattern, check):
 		if pattern == "*":
 			return True
-		elif isInt(pattern):
+		elif piScreenUtils.isInt(pattern):
 			#x
 			if int(pattern) == check:
 				return True
@@ -183,7 +163,7 @@ class cronEntry():
 				if len(splited1) > 1:
 					splited2 = splited1[1].split("/")
 					if len(splited2) > 1:
-						if isInt(splited1[0]) and isInt(splited2[0]) and isInt(splited2[1]):
+						if piScreenUtils.isInt(splited1[0]) and piScreenUtils.isInt(splited2[0]) and piScreenUtils.isInt(splited2[1]):
 							for item in range(int(splited1[0]), int(splited2[0])+1, int(splited2[1])):
 								if item == check:
 									return True
@@ -194,13 +174,13 @@ class cronEntry():
 			#x,x-x
 			elif pattern.find("-") != -1 and pattern.find(",") != -1:
 				for item in pattern.split(","):
-					if isInt(item):
+					if piScreenUtils.isInt(item):
 						if int(item) == check:
 							return True
 					else:
 						splited = item.split("-")
 						if len(splited) > 1:
-							if isInt(splited[0]) and isInt(splited[1]):
+							if piScreenUtils.isInt(splited[0]) and piScreenUtils.isInt(splited[1]):
 								for item in range(int(splited[0]), int(splited[1])+1):
 									if item == check:
 										return True
@@ -208,7 +188,7 @@ class cronEntry():
 			elif pattern.find("/") != -1:
 				splited = pattern.split("/")
 				if len(splited) > 1:
-					if (isInt(splited[0]) or splited[0] == "*") and isInt(splited[1]):
+					if (piScreenUtils.isInt(splited[0]) or splited[0] == "*") and piScreenUtils.isInt(splited[1]):
 						if splited[0] == "*":
 							if check % int(splited[1]) == 0:
 								return True
@@ -219,14 +199,14 @@ class cronEntry():
 			elif pattern.find("-") != -1:
 				splited = pattern.split("-")
 				if len(splited) > 1:
-					if isInt(splited[0]) and isInt(splited[1]):
+					if piScreenUtils.isInt(splited[0]) and piScreenUtils.isInt(splited[1]):
 						for item in range(int(splited[0]), int(splited[1])+1):
 							if item == check:
 								return True
 			#x,x
 			elif pattern.find(",") != -1:
 				for item in pattern.split(","):
-					if isInt(item):
+					if piScreenUtils.isInt(item):
 						if int(item) == check:
 							return True
 						
@@ -266,7 +246,7 @@ class config():
 	def loadConfig(self):
 		try:
 			threadLock.acquire()
-			self.conf = json.load(open(configFile))
+			self.conf = json.load(open(piScreenUtils.paths.schedule))
 			threadLock.release()
 		except ValueError as err:
 			threadLock.release()
@@ -324,7 +304,7 @@ class trigger(threading.Thread):
 				while self.active:
 					time.sleep(1)
 			elif self.mode == 21: #TCP connection [change,true,false]
-				if "host" in self.config and "port" in self.config and isInt(self.config["port"]) and "timeout" in self.config and isInt(self.config["timeout"]) and "runs" in self.config and isInt(self.config["runs"]):
+				if "host" in self.config and "port" in self.config and piScreenUtils.isInt(self.config["port"]) and "timeout" in self.config and piScreenUtils.isInt(self.config["timeout"]) and "runs" in self.config and piScreenUtils.isInt(self.config["runs"]):
 					import socket
 					host = self.config["host"]
 					port = int(self.config["port"])
@@ -347,7 +327,7 @@ class trigger(threading.Thread):
 			elif self.mode == 30: #Display state on [change,true,false]
 				while self.active:
 					try:
-						state = open("/media/ramdisk/piScreenDisplay.txt","r").read().strip()
+						state = open(piScreenUtils.paths.displayStatus,"r").read().strip()
 						if self.lastState != state:
 							if state == "on":
 								self.execute("change")
@@ -364,7 +344,7 @@ class trigger(threading.Thread):
 				import subprocess
 				while self.active:
 					try:
-						state = subprocess.check_output(f"{syscall} --get-mode",shell=True).decode("utf-8").strip()
+						state = subprocess.check_output(f"{piScreenUtils.paths.syscall} --get-mode",shell=True).decode("utf-8").strip()
 						if self.lastState != state:
 							self.lastState = state
 							self.execute("true")
@@ -389,7 +369,7 @@ class trigger(threading.Thread):
 			runCommandset(self.config["cases"][state]["commandset"])
 
 def runCommandset(commandsetID):
-	if not isInt(commandsetID):
+	if not piScreenUtils.isInt(commandsetID):
 		return False
 	commandsetID = int(commandsetID)
 	if "commandsets" not in globalConf.conf:
@@ -428,10 +408,10 @@ def runTrigger(mode:int,state:str="true"):
 
 def commandInterpreter(cmd:int, parameter:str):
 	if not cmd: return False
-	if not isInt(cmd): return False
+	if not piScreenUtils.isInt(cmd): return False
 	cmd = int(cmd)
 	if cmd == 1: #Sleep
-		if isFloat(parameter):
+		if piScreenUtils.isFloat(parameter):
 			time.sleep(float(parameter))
 	elif cmd == 2: #LastCron
 		firstRun(True)
@@ -450,47 +430,47 @@ def commandInterpreter(cmd:int, parameter:str):
 	elif cmd == 13: #Call commandset
 		runCommandset(parameter)
 	elif cmd == 30: #Control display [0 = Standby, 1 = On]
-		if isInt(parameter):
+		if piScreenUtils.isInt(parameter):
 			if int(parameter) == 0:
-				os.system(syscall + " --screen-standby")
+				os.system(piScreenUtils.paths.syscall + " --screen-standby")
 			else:
-				os.system(syscall + " --screen-on")
+				os.system(piScreenUtils.paths.syscall + " --screen-on")
 		pass
 	elif cmd == 31: #Switch display input
-		os.system(syscall + " --screen-switch-input")
+		os.system(piScreenUtils.paths.syscall + " --screen-switch-input")
 	elif cmd == 32: #Change display protocol [0 = CEC, 1 = DDC]
-		if isInt(parameter):
+		if piScreenUtils.isInt(parameter):
 			if int(parameter):
-				os.system(syscall + " --set-display-protocol cec")
+				os.system(piScreenUtils.paths.syscall + " --set-display-protocol cec")
 			else:
-				os.system(syscall + " --set-display-protocol ddc")
+				os.system(piScreenUtils.paths.syscall + " --set-display-protocol ddc")
 	elif cmd == 40: #StartBrowser
 		if parameter:
-			os.system(f'{syscall} --start-browser "{parameter}"')
+			os.system(f'{piScreenUtils.paths.syscall} --start-browser "{parameter}"')
 	elif cmd == 41: #RestartBrowser
-		os.system(f'{syscall} --restart-browser')
+		os.system(f'{piScreenUtils.paths.syscall} --restart-browser')
 	elif cmd == 42: #ReloadBrowser
 		pass
 	elif cmd == 43: #CloseBrowser
-		os.system(f"{syscall} --stop-browser")
+		os.system(f"{piScreenUtils.paths.syscall} --stop-browser")
 	elif cmd == 50: #StartVLC
 		if parameter:
-			os.system(f'{syscall} --start-vlc "{parameter}"')
+			os.system(f'{piScreenUtils.paths.syscall} --start-vlc "{parameter}"')
 	elif cmd == 51: #RestartVLC
-		os.system(f"{syscall} --restart-vlc")
+		os.system(f"{piScreenUtils.paths.syscall} --restart-vlc")
 	elif cmd == 52: #StopVLC
-		os.system(f"{syscall} --stop-vlc")
+		os.system(f"{piScreenUtils.paths.syscall} --stop-vlc")
 	elif cmd == 53: #Pause/PlayVLC
-		os.system(f"{syscall} --pause-vlc")
+		os.system(f"{piScreenUtils.paths.syscall} --pause-vlc")
 	elif cmd == 54: #PlayVLC
-		os.system(f"{syscall} --play-vlc")
+		os.system(f"{piScreenUtils.paths.syscall} --play-vlc")
 	elif cmd == 60: #StartImpress
 		if parameter:
-			os.system(f'{syscall} --start-impress "{parameter}"')
+			os.system(f'{piScreenUtils.paths.syscall} --start-impress "{parameter}"')
 	elif cmd == 61: #RestartImpress
-		os.system(f"{syscall} --restart-impress")
+		os.system(f"{piScreenUtils.paths.syscall} --restart-impress")
 	elif cmd == 62: #StopImpress
-		os.system(f"{syscall} --stop-impress")
+		os.system(f"{piScreenUtils.paths.syscall} --stop-impress")
 	
 
 	
@@ -502,32 +482,32 @@ if not globalConf.loadConfig():
 	exit(1)
 loadTrigger()
 loadCrons()
-configModify = os.path.getmtime(configFile)
+configModify = os.path.getmtime(piScreenUtils.paths.schedule)
 while active:
 	try:
-		if configModify != os.path.getmtime(configFile):
+		if configModify != os.path.getmtime(piScreenUtils.paths.schedule):
 			#Config changed
 			if not globalConf.loadConfig():
 				print("Json File seems to be damaged")
 			else:
 				loadTrigger()
-		configModify = os.path.getmtime(configFile)
-		active = os.path.exists(activePath)
-		if os.path.exists(doFirstRunPath):
+		configModify = os.path.getmtime(piScreenUtils.paths.schedule)
+		active = os.path.exists(piScreenUtils.paths.scheduleActive)
+		if os.path.exists(piScreenUtils.paths.scheduleDoFirstRun):
 			firstRun(False)
 			try:
-				os.remove(doFirstRunPath)
+				os.remove(piScreenUtils.paths.scheduleDoFirstRun)
 			except:
 				print("Unable to remove firstrun file in ramdisk")
-		if os.path.exists(doLastCronPath):
+		if os.path.exists(piScreenUtils.paths.scheduleDoLastCron):
 			firstRun(True)
 			try:
-				os.remove(doLastCronPath)
+				os.remove(piScreenUtils.paths.scheduleDoLastCron)
 			except:
 				print("Unable to remove lastCron file in ramdisk")
-		if os.path.exists(doManuallyPath):
+		if os.path.exists(piScreenUtils.paths.scheduleDoManually):
 			try:
-				manually = json.load(open(doManuallyPath))
+				manually = json.load(open(piScreenUtils.paths.scheduleDoManually))
 				if "type" in manually:
 					if manually["type"] == "command":
 						if "command" in manually and "parameter" in manually:
@@ -539,11 +519,11 @@ while active:
 							runCommandset(manually["id"])
 					elif manually["type"] == "cron":
 						if "index" in manually:
-							if isInt(manually["index"]) and len(globalConf.conf["cron"]) > int(manually["index"]):
+							if piScreenUtils.isInt(manually["index"]) and len(globalConf.conf["cron"]) > int(manually["index"]):
 								cronEntry(globalConf.conf["cron"][int(manually["index"])]).run(None,True)
 					elif manually["type"] == "trigger":
 						if "index" in manually:
-							if isInt(manually["index"]) and len(globalConf.conf["trigger"]) > int(manually["index"]):
+							if piScreenUtils.isInt(manually["index"]) and len(globalConf.conf["trigger"]) > int(manually["index"]):
 								item = globalConf.conf["trigger"][int(manually["index"])]
 								if "command" in item:
 									if "parameter" in item:
@@ -555,7 +535,7 @@ while active:
 			except:
 				print("Error with 'manually' json file in ramdisk")
 			try:
-				os.remove(doManuallyPath)
+				os.remove(piScreenUtils.paths.scheduleDoManually)
 			except:
 				print("Unable to remove 'manually' file in ramdisk")
 		time.sleep(1)

@@ -1,10 +1,9 @@
 #!/usr/bin/python3 -u
-import json, sys, os, time, datetime
+import json, sys, os, time, datetime, piScreenUtils
 
-ramdisk = "/media/ramdisk/"
-piScreenModeFirefox = ramdisk + "piScreenModeFirefox"
-piScreenModeVLC = ramdisk + "piScreenModeVLC"
-piScreenModeImpress = ramdisk + "piScreenModeImpress"
+skriptPath = os.path.dirname(os.path.abspath(__file__))
+os.chdir(skriptPath)
+
 
 def printHelp():
 	print("This tool is desigend for syscalls.\nSo you have one script, which controlls everything and get every info about.")
@@ -118,13 +117,6 @@ def printHelp():
 	Delete a commandset by id from schedule.json.
 	""")
 
-def isInt(s):
-	try: 
-		int(s)
-		return True
-	except ValueError:
-		return False
-
 def checkForRootPrivileges():
 	if os.geteuid() != 0:
 		verbose and print("Please run this function with root privileges.")
@@ -132,29 +124,29 @@ def checkForRootPrivileges():
 	return True
 
 def loadSettings():
-	return json.load(open(f"{os.path.dirname(__file__)}/settings.json"))
+	return json.load(open(piScreenUtils.paths.settings))
 
 def loadSchedule():
-	return json.load(open(f"{os.path.dirname(__file__)}/schedule.json"))
+	return json.load(open(piScreenUtils.paths.schedule))
 
 def loadManifest():
-	return json.load(open(f"{os.path.dirname(__file__)}/manifest.json"))
+	return json.load(open(piScreenUtils.paths.manifest))
 
 def endAllModes():
-	if os.path.exists(piScreenModeFirefox):
-		os.remove(piScreenModeFirefox)
+	if os.path.exists(piScreenUtils.paths.modeFirefox):
+		os.remove(piScreenUtils.paths.modeFirefox)
 		os.system("killall -q -SIGTERM firefox-esr")
-	if os.path.exists(piScreenModeVLC):
-		os.remove(piScreenModeVLC)
+	if os.path.exists(piScreenUtils.paths.modeVLC):
+		os.remove(piScreenUtils.paths.modeVLC)
 		os.system("killall -q -SIGTERM vlc")
-	if os.path.exists(piScreenModeImpress):
-		os.remove(piScreenModeImpress)
+	if os.path.exists(piScreenUtils.paths.modeImpress):
+		os.remove(piScreenUtils.paths.modeImpress)
 		os.system("killall -q -SIGTERM soffice.bin")
 	
 
 def startBrowser(parameter):
 	endAllModes()
-	f = open(piScreenModeFirefox,"w")
+	f = open(piScreenUtils.paths.modeFirefox,"w")
 	f.write(parameter)
 	f.close()
 
@@ -167,7 +159,7 @@ def restartBrowser():
 def startVLC(parameter,soft=False):
 	if not soft:
 		endAllModes()
-	f = open(piScreenModeVLC,"w")
+	f = open(piScreenUtils.paths.modeVLC,"w")
 	f.write(parameter)
 	f.close()
 
@@ -179,7 +171,7 @@ def restartVLC():
 
 def startImpress(parameter):
 	endAllModes()
-	f = open(piScreenModeImpress,"w")
+	f = open(piScreenUtils.paths.modeImpress,"w")
 	f.write(parameter)
 	f.close()
 
@@ -264,28 +256,28 @@ def getStatus():
 	upTime = time.time() - psutil.boot_time()
 	cpuTemp = round(psutil.sensors_temperatures()["cpu_thermal"][0].current * 1000)
 	screenshotTime = 0
-	if os.path.isfile("/media/ramdisk/piScreenScreenshot.png"):
-		screenshotTime = os.path.getctime("/media/ramdisk/piScreenScreenshot.png")
+	if os.path.isfile(piScreenUtils.paths.screenshot):
+		screenshotTime = os.path.getctime(piScreenUtils.paths.screenshot)
 	jsonData = {}
 	jsonData["uptime"] = {}
 	jsonData["uptime"]["secs"] = int(upTime % 60)
 	jsonData["uptime"]["mins"] = int((upTime / 60) % 60)
 	jsonData["uptime"]["hours"] = int((upTime / 60 / 60) % 24)
 	jsonData["uptime"]["days"] = int(upTime / 60 / 60 / 24)
-	jsonData["displayState"] = open("/media/ramdisk/piScreenDisplay.txt","r").read().strip()
+	jsonData["displayState"] = open(piScreenUtils.paths.displayStatus,"r").read().strip()
 	jsonData["cpuTemp"] = cpuTemp
 	jsonData["cpuLoad"] = cpuLoad
 	jsonData["ramTotal"] = ramTotal
 	jsonData["ramUsed"] = ramUsed
 	jsonData["display"] = {}
-	jsonData["display"]["standbySet"] = os.path.isfile("/media/ramdisk/piScreenDisplayStandby")
-	jsonData["display"]["onSet"] = os.path.isfile("/media/ramdisk/piScreenDisplayOn")
+	jsonData["display"]["standbySet"] = os.path.isfile(piScreenUtils.paths.displayStandby)
+	jsonData["display"]["onSet"] = os.path.isfile(piScreenUtils.paths.displayOn)
 	jsonData["screenshotTime"] = screenshotTime
 	jsonData["modeInfo"] = {}
 	jsonData["modeInfo"]["mode"] = getMode()
 	if jsonData["modeInfo"]["mode"] == "firefox":
 		try:
-			if os.path.exists(piScreenModeFirefox): jsonData["modeInfo"]["url"] = open(piScreenModeFirefox,"r").read()
+			if os.path.exists(piScreenUtils.paths.modeFirefox): jsonData["modeInfo"]["url"] = open(piScreenUtils.paths.modeFirefox,"r").read()
 		except:
 			verbose and print("Error while reading Firefox data")
 	elif jsonData["modeInfo"]["mode"] == "vlc":
@@ -324,38 +316,38 @@ def getStatus():
 			verbose and print("Error while reading VLC data")
 	elif jsonData["modeInfo"]["mode"] == "impress":
 		try:
-			if os.path.exists(piScreenModeImpress): jsonData["modeInfo"]["file"] = open(piScreenModeImpress,"r").read()
+			if os.path.exists(piScreenUtils.paths.modeImpress): jsonData["modeInfo"]["file"] = open(piScreenUtils.paths.modeImpress,"r").read()
 		except:
 			verbose and print("Error while reading Impress data")
 	return json.dumps(jsonData)
 
 def getWebsite():
-	if os.path.exists(piScreenModeFirefox): print(open(piScreenModeFirefox,"r").read())
+	if os.path.exists(piScreenUtils.paths.modeFirefox): print(open(piScreenUtils.paths.modeFirefox,"r").read())
 
 def getMode():
-	if os.path.exists(piScreenModeFirefox):
+	if os.path.exists(piScreenUtils.paths.modeFirefox):
 		return "firefox"
-	elif os.path.exists(piScreenModeVLC):
+	elif os.path.exists(piScreenUtils.paths.modeVLC):
 		return "vlc"
-	elif os.path.exists(piScreenModeImpress):
+	elif os.path.exists(piScreenUtils.paths.modeImpress):
 		return "impress"
 	return "none"
 
 def screenOn():
 	verbose and print("Create file for turning on the screen")
-	open("/media/ramdisk/piScreenDisplayOn","w").close()
+	open(piScreenUtils.paths.displayOn,"w").close()
 
 def screenStandby():
 	verbose and print("Create file for turning screen to standby")
-	open("/media/ramdisk/piScreenDisplayStandby","w").close()
+	open(piScreenUtils.paths.displayStandby,"w").close()
 
 def screenOff():
 	verbose and print("Create file for turning of the screen")
-	open("/media/ramdisk/piScreenDisplayOff","w").close()
+	open(piScreenUtils.paths.displayOff,"w").close()
 
 def screenSwitchInput():
 	verbose and print("Create file for switching display input")
-	open("/media/ramdisk/piScreenDisplaySwitch","w").close()
+	open(piScreenUtils.paths.displaySwitchChannel,"w").close()
 
 def checkUpdate(draft,prerelease,silent):
 	manifest = loadManifest()
@@ -444,10 +436,6 @@ def downloadUpdate(draft,prerelease):
 			verbose and print("Something went wrong while downloading Updatefile")
 		verbose and print("Cleanup installation")
 		rmDir(downloadDir)
-		try:
-			os.remove("/media/ramdisk/piScreenUpdateStatus.txt")
-		except:
-			print("Could not remove Updatestatus File")
 	else:
 		verbose and print("Update not possible")
 
@@ -465,21 +453,21 @@ def setDisplayProtocol(protocol):
 		verbose and print(f"Write {protocol} as display protocol in settings.json")
 		settingsJson = loadSettings()
 		settingsJson["settings"]["display"]["protocol"] = protocol
-		settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
+		settingsFile = open(piScreenUtils.paths.settings, "w")
 		settingsFile.write(json.dumps(settingsJson,indent=4))
 		settingsFile.close()
-		if os.path.exists("/media/ramdisk/piScreenDisplayCEC"):
-			os.remove("/media/ramdisk/piScreenDisplayCEC")
-		if os.path.exists("/media/ramdisk/piScreenDisplayDDC"):
-			os.remove("/media/ramdisk/piScreenDisplayDDC")
-		if os.path.exists("/media/ramdisk/piScreenDisplayMANUALLY"):
-			os.remove("/media/ramdisk/piScreenDisplayMANUALLY")
+		if os.path.exists(piScreenUtils.paths.displayCEC):
+			os.remove(piScreenUtils.paths.displayCEC)
+		if os.path.exists(piScreenUtils.paths.displayDDC):
+			os.remove(piScreenUtils.paths.displayDDC)
+		if os.path.exists(piScreenUtils.paths.displayMANUALLY):
+			os.remove(piScreenUtils.paths.displayMANUALLY)
 		if protocol == "cec":
-			open("/media/ramdisk/piScreenDisplayCEC","w").close()
+			open(piScreenUtils.paths.displayCEC,"w").close()
 		elif protocol == "ddc":
-			open("/media/ramdisk/piScreenDisplayDDC","w").close()
+			open(piScreenUtils.paths.displayDDC,"w").close()
 		elif protocol == "manually":
-			open("/media/ramdisk/piScreenDisplayMANUALLY","w").close()
+			open(piScreenUtils.paths.displayMANUALLY,"w").close()
 	else:
 		verbose and print(f"{protocol} is no permitted protocol")
 
@@ -521,7 +509,7 @@ def modifySchedule(element,typ,scheduleJson):
 				else:
 					verbose and print(f"{element} is not true or false")
 			elif typ == int:
-				if isInt(sys.argv[indexOfElement]):
+				if piScreenUtils.isInt(sys.argv[indexOfElement]):
 					scheduleJson[element] = int(sys.argv[indexOfElement])
 					changed = True
 				else:
@@ -564,7 +552,7 @@ def addCron():
 					try:
 						scheduleJson = loadSchedule()
 						scheduleJson["cron"].append(item)
-						scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+						scheduleFile = open(piScreenUtils.paths.schedule, "w")
 						scheduleFile.write(json.dumps(scheduleJson,indent=4))
 						scheduleFile.close()
 						verbose and print("Changed schedule.json")
@@ -589,7 +577,7 @@ def updateCron():
 		if "--index" in sys.argv:
 			index = sys.argv.index("--index") + 1
 			if index < len(sys.argv):
-				if isInt(sys.argv[index]):
+				if piScreenUtils.isInt(sys.argv[index]):
 					index = int(sys.argv[index])
 					try:
 						scheduleJson = loadSchedule()
@@ -603,7 +591,7 @@ def updateCron():
 							changed = modifySchedule("command",int,scheduleJson["cron"][index]) or changed
 							changed = modifySchedule("parameter",None,scheduleJson["cron"][index]) or changed
 							if changed:
-								scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+								scheduleFile = open(piScreenUtils.paths.schedule, "w")
 								scheduleFile.write(json.dumps(scheduleJson,indent=4))
 								scheduleFile.close()
 								verbose and print("Changed schedule.json")
@@ -629,7 +617,7 @@ def updateCron():
 def addTrigger():
 	if i + 2 < len(sys.argv):
 		if "--trigger" in sys.argv:
-			if isInt(sys.argv.index("--trigger") + 1):
+			if piScreenUtils.isInt(sys.argv.index("--trigger") + 1):
 				changed = False
 				item = {}
 				changed = modifySchedule("enabled",bool,item) or changed
@@ -641,7 +629,7 @@ def addTrigger():
 					try:
 						scheduleJson = loadSchedule()
 						scheduleJson["trigger"].append(item)
-						scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+						scheduleFile = open(piScreenUtils.paths.schedule, "w")
 						scheduleFile.write(json.dumps(scheduleJson,indent=4))
 						scheduleFile.close()
 						verbose and print("Changed schedule.json")
@@ -666,7 +654,7 @@ def updateTrigger():
 		if "--index" in sys.argv:
 			index = sys.argv.index("--index") + 1
 			if index < len(sys.argv):
-				if isInt(sys.argv[index]):
+				if piScreenUtils.isInt(sys.argv[index]):
 					index = int(sys.argv[index])
 					try:
 						scheduleJson = loadSchedule()
@@ -678,7 +666,7 @@ def updateTrigger():
 							changed = modifySchedule("parameter",None,scheduleJson["trigger"][index]) or changed
 							changed = modifySchedule("commandset",int,scheduleJson["trigger"][index]) or changed
 							if changed:
-								scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+								scheduleFile = open(piScreenUtils.paths.schedule, "w")
 								scheduleFile.write(json.dumps(scheduleJson,indent=4))
 								scheduleFile.close()
 								verbose and print("Changed schedule.json")
@@ -716,7 +704,7 @@ def addCommandset(update):
 				if sys.argv[x] == "--command":
 					if len(sys.argv) > x + 2:
 						if not sys.argv[x + 1].startswith("--"):
-							if isInt(sys.argv[x + 1]):
+							if piScreenUtils.isInt(sys.argv[x + 1]):
 								subitem = {}
 								subitem["command"] = int(sys.argv[x + 1])
 								if not sys.argv[x + 2].startswith("--"):
@@ -724,14 +712,14 @@ def addCommandset(update):
 								item["commands"].append(subitem)
 					elif len(sys.argv) > x + 1:
 						if not sys.argv[x + 1].startswith("--"):
-							if isInt(sys.argv[x + 1]):
+							if piScreenUtils.isInt(sys.argv[x + 1]):
 								subitem = {}
 								subitem["command"] = int(sys.argv[x + 1])
 								item["commands"].append(subitem)
 			try:
 				scheduleJson = loadSchedule()
 				scheduleJson["commandsets"].append(item)
-				scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+				scheduleFile = open(piScreenUtils.paths.schedule, "w")
 				scheduleFile.write(json.dumps(scheduleJson,indent=4))
 				scheduleFile.close()
 				verbose and print("Changed schedule.json")
@@ -760,7 +748,7 @@ def updateCommandset():
 def deleteCommandset():
 	if i + 2 < len(sys.argv):
 		if "--id" in sys.argv:
-			if len(sys.argv) > sys.argv.index("--id") + 1 and isInt(sys.argv[sys.argv.index("--id") + 1]):
+			if len(sys.argv) > sys.argv.index("--id") + 1 and piScreenUtils.isInt(sys.argv[sys.argv.index("--id") + 1]):
 				try:
 					found = False
 					scheduleJson = loadSchedule()
@@ -773,7 +761,7 @@ def deleteCommandset():
 								max = max - 1
 								break
 					if found:
-						scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+						scheduleFile = open(piScreenUtils.paths.schedule, "w")
 						scheduleFile.write(json.dumps(scheduleJson,indent=4))
 						scheduleFile.close()
 						verbose and print("Changed schedule.json")
@@ -960,7 +948,7 @@ for i, origItem in enumerate(sys.argv):
 			if found and saveSettings:
 				settingsJson = loadSettings()
 				settingsJson["settings"]["display"]["orientation"] = int(sys.argv[i + 1])
-				settingsFile = open(f"{os.path.dirname(__file__)}/settings.json", "w")
+				settingsFile = open(piScreenUtils.paths.settings, "w")
 				settingsFile.write(json.dumps(settingsJson,indent=4))
 				settingsFile.close()
 				verbose and print("Write orientation in settings")
@@ -975,13 +963,13 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--get-display-orientation":
 		print(getDisplayOrientation())
 	elif item == "--schedule-firstrun":
-		open("/media/ramdisk/piScreenScheduleFirstRun","w").close()
+		open(piScreenUtils.paths.scheduleDoFirstRun,"w").close()
 	elif item == "--schedule-lastcron":
-		open("/media/ramdisk/piScreenScheduleLastCron","w").close()
+		open(piScreenUtils.paths.scheduleDoLastCron,"w").close()
 	elif item == "--schedule-manually-command":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--command":
-				if isInt(sys.argv[i + 2]):
+				if piScreenUtils.isInt(sys.argv[i + 2]):
 					command = {}
 					command["type"] = "command"
 					command["command"] = int(sys.argv[i + 2])
@@ -991,7 +979,7 @@ for i, origItem in enumerate(sys.argv):
 						else:
 							verbose and print("Missing parameter flag")
 							exit(1)
-					manualFile = open(f"{ramdisk}/piScreenScheduleManually", "w")
+					manualFile = open(piScreenUtils.paths.scheduleDoManually, "w")
 					manualFile.write(json.dumps(command))
 					manualFile.close()
 				else:
@@ -1006,8 +994,8 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--schedule-manually-commandset":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--id":
-				if isInt(sys.argv[i + 2]):
-					manualFile = open(f"{ramdisk}/piScreenScheduleManually", "w")
+				if piScreenUtils.isInt(sys.argv[i + 2]):
+					manualFile = open(piScreenUtils.paths.scheduleDoManually, "w")
 					manualFile.write(json.dumps({"type":"commandset","id":int(sys.argv[i + 2])},indent=4))
 					manualFile.close()
 				else:
@@ -1022,8 +1010,8 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--schedule-manually-cron":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--index":
-				if isInt(sys.argv[i + 2]):
-					manualFile = open(f"{ramdisk}/piScreenScheduleManually", "w")
+				if piScreenUtils.isInt(sys.argv[i + 2]):
+					manualFile = open(piScreenUtils.paths.scheduleDoManually, "w")
 					manualFile.write(json.dumps({"type":"cron","index":int(sys.argv[i + 2])},indent=4))
 					manualFile.close()
 				else:
@@ -1038,8 +1026,8 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--schedule-manually-trigger":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--index":
-				if isInt(sys.argv[i + 2]):
-					manualFile = open(f"{ramdisk}/piScreenScheduleManually", "w")
+				if piScreenUtils.isInt(sys.argv[i + 2]):
+					manualFile = open(piScreenUtils.paths.scheduleDoManually, "w")
 					manualFile.write(json.dumps({"type":"trigger","index":int(sys.argv[i + 2])},indent=4))
 					manualFile.close()
 				else:
@@ -1058,13 +1046,13 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--delete-cron":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--index":
-				if isInt(sys.argv[i + 2]):
+				if piScreenUtils.isInt(sys.argv[i + 2]):
 					try:
 						scheduleJson = loadSchedule()
 						index = int(sys.argv[i + 2])
 						if index < len(scheduleJson["cron"]) and index >= 0:
 							del scheduleJson["cron"][index]
-							scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+							scheduleFile = open(piScreenUtils.paths.schedule, "w")
 							scheduleFile.write(json.dumps(scheduleJson,indent=4))
 							scheduleFile.close()
 							verbose and print("Changed schedule.json")
@@ -1096,13 +1084,13 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--delete-trigger":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--index":
-				if isInt(sys.argv[i + 2]):
+				if piScreenUtils.isInt(sys.argv[i + 2]):
 					try:
 						scheduleJson = loadSchedule()
 						index = int(sys.argv[i + 2])
 						if index < len(scheduleJson["trigger"]) and index >= 0:
 							del scheduleJson["trigger"][index]
-							scheduleFile = open(f"{os.path.dirname(__file__)}/schedule.json", "w")
+							scheduleFile = open(piScreenUtils.paths.schedule, "w")
 							scheduleFile.write(json.dumps(scheduleJson,indent=4))
 							scheduleFile.close()
 							verbose and print("Changed schedule.json")
