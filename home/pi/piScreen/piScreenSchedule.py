@@ -236,10 +236,8 @@ class cron(threading.Thread):
 			now = datetime.datetime.today()
 			if lastMinute is not now.minute:
 				lastMinute = now.minute
-				piScreenUtils.logging.debug("Start thread lock")
 				threadLock.acquire()
 				self.doCron()
-				piScreenUtils.logging.debug("Stop thread lock")
 				threadLock.release()
 			time.sleep(1)
 
@@ -250,15 +248,12 @@ class config():
 
 	def loadConfig(self):
 		try:
-			piScreenUtils.logging.debug("Start thread lock")
 			threadLock.acquire()
 			piScreenUtils.logging.info("Load configuration")
 			self.conf = json.load(open(piScreenUtils.paths.schedule))
-			piScreenUtils.logging.debug("Stop thread lock")
 			threadLock.release()
 		except ValueError as err:
 			piScreenUtils.logging.error("Problem while loading configuration")
-			piScreenUtils.logging.debug("Stop thread lock")
 			threadLock.release()
 			return False
 		return True
@@ -268,6 +263,10 @@ class trigger(threading.Thread):
 	config = {}
 	mode = 0
 	lastState = None
+	runOnce = False
+	firstStateDontTrigger = False
+	isInFirstrun = True
+
 	def __init__(self):
 		threading.Thread.__init__(self)
 		self.config = json.dumps({})
@@ -284,9 +283,12 @@ class trigger(threading.Thread):
 	def run(self):
 		if "trigger" in self.config:
 			self.mode = self.config["trigger"]
+			if "runOnce" in self.config: self.runOnce = self.config["runOnce"]
+			if "firstStateDontTrigger" in self.config: self.firstStateDontTrigger = self.config["firstStateDontTrigger"]
 			piScreenUtils.logging.info(f"Trigger {self.mode} is starting")
 			if self.mode == 1: #Firstrun
 				self.active = False
+				self.isInFirstrun = False
 			elif self.mode == 10: #File exists [change,true,false]
 				if "file" in self.config:
 					while self.active:
@@ -298,6 +300,7 @@ class trigger(threading.Thread):
 								self.execute("true")
 							else:
 								self.execute("false")
+						self.isInFirstrun = False
 						time.sleep(1)
 			elif self.mode == 11: #File changed [true]
 				if "file" in self.config:
@@ -313,6 +316,7 @@ class trigger(threading.Thread):
 						time.sleep(1)
 			elif self.mode == 20: #Ping [change,true,false]
 				while self.active:
+					self.isInFirstrun = False
 					time.sleep(1)
 			elif self.mode == 21: #TCP connection [change,true,false]
 				if "host" in self.config and "port" in self.config and piScreenUtils.isInt(self.config["port"]) and "timeout" in self.config and piScreenUtils.isInt(self.config["timeout"]) and "runs" in self.config and piScreenUtils.isInt(self.config["runs"]):
@@ -335,6 +339,7 @@ class trigger(threading.Thread):
 							if trueCounter > 0: trueCounter = 0 ; self.execute("change")
 							falseCounter = falseCounter + 1
 							if falseCounter == runs: self.execute("false")
+						self.isInFirstrun = False
 			elif self.mode == 30: #Display state on [change,true,false]
 				while self.active:
 					try:
@@ -350,6 +355,7 @@ class trigger(threading.Thread):
 							
 					except:
 						pass #Error
+					self.isInFirstrun = False
 					time.sleep(1)
 			elif self.mode == 40: #Mode changed [true,<mode>]
 				import subprocess
@@ -362,15 +368,18 @@ class trigger(threading.Thread):
 							self.execute(state)
 					except:
 						pass #Error
+					self.isInFirstrun = False
 					time.sleep(1)
 			elif self.mode == 50: #GPiO pin high [change,true,false]
 				while self.active:
+					self.isInFirstrun = False
 					time.sleep(1)
 			piScreenUtils.logging.info(f"Trigger {self.mode} has been stopped")
 		else:
 			piScreenUtils.logging.warning("Trigger is not right defined")
 			
 	def execute(self,state:str):
+		if self.isInFirstrun and self.firstStateDontTrigger: return #should not execute in firstrun
 		piScreenUtils.logging.info(f"Run trigger {self.mode}")
 		if "cases" not in self.config: return
 		if state not in self.config["cases"]: return
@@ -381,6 +390,7 @@ class trigger(threading.Thread):
 				commandInterpreter(self.config["cases"][state]["command"],None)
 		if "commandset" in self.config["cases"][state]:
 			runCommandset(self.config["cases"][state]["commandset"])
+		if self.runOnce: self.active = False
 
 def runCommandset(commandsetID):
 	if not piScreenUtils.isInt(commandsetID):
@@ -550,36 +560,49 @@ while active:
 				manually = json.load(open(piScreenUtils.paths.scheduleDoManually))
 				if "type" in manually:
 					if manually["type"] == "command":
+						piScreenUtils.logging.info("Running command manually")
 						if "command" in manually and "parameter" in manually:
 							commandInterpreter(manually["command"],manually["parameter"])
 						elif "command" in manually:
 							commandInterpreter(manually["command"])
+						else:
+							piScreenUtils.logging.warning("There is no command attribut in manually file")
 					elif manually["type"] == "commandset":
+						piScreenUtils.logging.info("Running commandset manually")
 						if "id" in manually:
 							runCommandset(manually["id"])
+						else:
+							piScreenUtils.logging.warning("There is no id attribut in manually file")
 					elif manually["type"] == "cron":
+						piScreenUtils.logging.info("Running cron manually")
 						if "index" in manually:
 							if piScreenUtils.isInt(manually["index"]) and len(globalConf.conf["cron"]) > int(manually["index"]):
 								cronEntry(globalConf.conf["cron"][int(manually["index"])]).run(None,True)
+							piScreenUtils.logging.warning("There is something wrong in manually file")
+						else:
+							piScreenUtils.logging.warning("There is no index attribut in manually file")
 					elif manually["type"] == "trigger":
+						piScreenUtils.logging.info("Running trigger manually")
 						if "index" in manually:
 							if piScreenUtils.isInt(manually["index"]) and len(globalConf.conf["trigger"]) > int(manually["index"]):
 								item = globalConf.conf["trigger"][int(manually["index"])]
-								if "command" in item:
-									if "parameter" in item:
-										commandInterpreter(item["command"],item["parameter"])
-									else:
-										commandInterpreter(item["command"],None)
-									if "commandset" in item:
-										runCommandset(item["commandset"])
+								tmpTrigger = trigger()
+								#Ignore enabled flag
+								tmpTrigger.config = item
+								tmpTrigger.runOnce = True
+								tmpTrigger.start()
+							else:
+								piScreenUtils.logging.warning("There is something wrong in manually file")
+						else:
+							piScreenUtils.logging.warning("There is no index attribut in manually file")
+				else:
+					piScreenUtils.logging.warning("Manually file has no type attribut")
 			except:
 				piScreenUtils.logging.error("Error with manually json file in ramdisk")
-				print("Error with 'manually' json file in ramdisk")
 			try:
 				os.remove(piScreenUtils.paths.scheduleDoManually)
 			except:
 				piScreenUtils.logging.error("Unable to remove manually file in ramdisk")
-				print("Unable to remove 'manually' file in ramdisk")
 		time.sleep(1)
 	except KeyboardInterrupt:
 		active = False

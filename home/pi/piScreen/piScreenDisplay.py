@@ -42,6 +42,10 @@ class cecElement:
 		self.device.transmit(cec.CEC_OPCODE_GIVE_DEVICE_POWER_STATUS)
 
 	def cecEvent(self,event, cmd):
+		opcodeName = "Unknown"
+		for key, value in cec.__dict__.items():
+			if value == cmd["opcode"]: opcodeName = key
+		piScreenUtils.logging.debug(f"{opcodeName} -> {cmd}")
 		if cmd["opcode"] == cec.CEC_OPCODE_STANDBY:
 			self.isOn = False
 		elif cmd["opcode"] == cec.CEC_OPCODE_ROUTING_CHANGE: #https://community.openhab.org/t/hdmi-cec-binding/21246/112?page=6
@@ -69,9 +73,8 @@ class cecElement:
 
 
 def doCEC():
-	cecObj = cecElement(cec.CECDEVICE_TV)
 	while True:
-		for i in range(60):
+		for i in range(5):
 			if not os.path.exists(piScreenUtils.paths.displayCEC): return
 			if controlFileHandeling(piScreenUtils.paths.displayOff,not cecObj.isOn):
 				cecObj.cmdSelector("setStandby")
@@ -200,6 +203,7 @@ def controlFileHandeling(file:str,ready:bool) -> bool:
 if __name__ == "__main__":
 	piScreenUtils.logging.info("Startup")
 	cec.init("/dev/cec0") #Can be run only once
+	cecObj = cecElement(cec.CECDEVICE_TV)
 	os.environ["DISPLAY"] = ":0"
 	while True:
 		if os.path.exists(piScreenUtils.paths.displayCEC):
