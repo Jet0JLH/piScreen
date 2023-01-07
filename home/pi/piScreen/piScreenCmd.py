@@ -333,11 +333,13 @@ def getStatus():
 			telnetClient.write(b'get_time\n')
 			time.sleep(0.05)
 			result = telnetClient.read_very_eager().decode("utf-8")
-			jsonData["modeInfo"]["time"] = int(result[:result.index("\r")])
+			result = result[:result.index("\r")]
+			if piScreenUtils.isInt(result): jsonData["modeInfo"]["time"] = int(result)
 			telnetClient.write(b'get_length\n')
 			time.sleep(0.05)
 			result = telnetClient.read_very_eager().decode("utf-8")
-			jsonData["modeInfo"]["length"] = int(result[:result.index("\r")])
+			result = result[:result.index("\r")]
+			if piScreenUtils.isInt(result): jsonData["modeInfo"]["length"] = int(result)
 
 		except:
 			piScreenUtils.logging.error("Error while reading VLC data")
