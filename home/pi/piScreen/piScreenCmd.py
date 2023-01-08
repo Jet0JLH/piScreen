@@ -103,10 +103,10 @@ def printHelp():
 	Update a cronentry by index in schedule.json.
 --delete-cron <--index <cronIndex>>
 	Delete a cronentry by index from schedule.json.
---add-trigger <--trigger <triggerID>> [--enabled <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>]
+--add-trigger <--trigger <triggerID>> [--enabled <true/false>] [--first-state-dont-trigger <true/false>] [--run-once <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>]
 	Add a trigger to schedule.json.
 	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
---update-trigger <--index <triggerIndex>> [--trigger <triggerID>] [--enabled <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>]
+--update-trigger <--index <triggerIndex>> [--trigger <triggerID>] [--enabled <true/false>] [--first-state-dont-trigger <true/false>] [--run-once <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>]
 	Update a trigger by index in schedule.json.
 	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
 --delete-trigger <--index <triggerIndex>>
@@ -681,6 +681,8 @@ def addTrigger():
 				item["cases"] = {}
 				changed = modifySchedule("enabled",bool,item) or changed
 				changed = modifySchedule("trigger",int,item) or changed
+				changed = modifySchedule("first-state-dont-trigger",bool,item,"firstStateDontTrigger") or changed
+				changed = modifySchedule("run-once",bool,item,"runOnce") or changed
 				for i2 in sys.argv:
 					if i2.startswith("--command:") and len(i2) > 10:
 						if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
@@ -691,7 +693,7 @@ def addTrigger():
 					elif i2.startswith("--commandset:") and len(i2) > 13:
 						if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
 						changed = modifySchedule(i2[2:],int,item["cases"][i2[i2.index(":")+1:]],i2[2:i2.index(":")+1]) or changed
-					elif i2.startswith("--") and i2 not in {"--enabled","--trigger","--"}:
+					elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--first-state-dont-trigger","--firstStateDontTrigger","--run-once","--runOnce","--"}:
 						changed = modifySchedule(i2[2:],None,item) or changed
 				if changed:
 					try:
@@ -738,6 +740,8 @@ def updateTrigger():
 							changed = False
 							changed = modifySchedule("enabled",bool,item) or changed
 							changed = modifySchedule("trigger",int,item) or changed
+							changed = modifySchedule("first-state-dont-trigger",bool,item,"firstStateDontTrigger") or changed
+							changed = modifySchedule("run-once",bool,item,"runOnce") or changed
 							for i2 in sys.argv:
 								if i2.startswith("--command:") and len(i2) > 10:
 									if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
@@ -748,7 +752,7 @@ def updateTrigger():
 								elif i2.startswith("--commandset:") and len(i2) > 13:
 									if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
 									changed = modifySchedule(i2[2:],int,item["cases"][i2[i2.index(":")+1:]],i2[2:i2.index(":")+1]) or changed
-								elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--"}:
+								elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--first-state-dont-trigger","--firstStateDontTrigger","--run-once","--runOnce","--"}:
 									changed = modifySchedule(i2[2:],None,item) or changed
 							if changed:
 								scheduleFile = open(piScreenUtils.paths.schedule, "w")
