@@ -106,8 +106,9 @@ def printHelp():
 --add-trigger <--trigger <triggerID>> [--enabled <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>]
 	Add a trigger to schedule.json.
 	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
---update-trigger <--index <triggerIndex>> [--enabled <false/true>] [--trigger <triggerID>] [--command [commandID]] [--parameter [parameter]] [--commandset [commandsetID]]
+--update-trigger <--index <triggerIndex>> [--trigger <triggerID>] [--enabled <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>]
 	Update a trigger by index in schedule.json.
+	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
 --delete-trigger <--index <triggerIndex>>
 	Delete a trigger by index from schedule.json.
 --add-commandset <--name <name>> [--command <commandID> [parameter]]
@@ -575,8 +576,6 @@ def modifySchedule(element,typ,scheduleJson,elementName:str=""):
 				#Normal String without validation
 				scheduleJson[elementName] = sys.argv[indexOfElement]
 				changed = True
-	elif element in sys.argv and element.startswith("--") and element.find(":") != -1:
-		pass
 	return changed
 
 def addCron():
@@ -726,6 +725,7 @@ def addTrigger():
 
 def updateTrigger():
 	if i + 2 < len(sys.argv):
+		sys.argv.remove("--update-trigger")
 		if "--index" in sys.argv:
 			index = sys.argv.index("--index") + 1
 			if index < len(sys.argv):
@@ -734,12 +734,22 @@ def updateTrigger():
 					try:
 						scheduleJson = loadSchedule()
 						if index < len(scheduleJson["trigger"]) and index >= 0:
+							item = scheduleJson["trigger"][index]
 							changed = False
-							changed = modifySchedule("enabled",bool,scheduleJson["trigger"][index]) or changed
-							changed = modifySchedule("trigger",int,scheduleJson["trigger"][index]) or changed
-							changed = modifySchedule("command",int,scheduleJson["trigger"][index]) or changed
-							changed = modifySchedule("parameter",None,scheduleJson["trigger"][index]) or changed
-							changed = modifySchedule("commandset",int,scheduleJson["trigger"][index]) or changed
+							changed = modifySchedule("enabled",bool,item) or changed
+							changed = modifySchedule("trigger",int,item) or changed
+							for i2 in sys.argv:
+								if i2.startswith("--command:") and len(i2) > 10:
+									if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
+									changed = modifySchedule(i2[2:],int,item["cases"][i2[i2.index(":")+1:]],i2[2:i2.index(":")+1]) or changed
+								elif i2.startswith("--parameter:") and len(i2) > 12:
+									if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
+									changed = modifySchedule(i2[2:],None,item["cases"][i2[i2.index(":")+1:]],i2[2:i2.index(":")+1]) or changed
+								elif i2.startswith("--commandset:") and len(i2) > 13:
+									if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
+									changed = modifySchedule(i2[2:],int,item["cases"][i2[i2.index(":")+1:]],i2[2:i2.index(":")+1]) or changed
+								elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--"}:
+									changed = modifySchedule(i2[2:],None,item) or changed
 							if changed:
 								scheduleFile = open(piScreenUtils.paths.schedule, "w")
 								scheduleFile.write(json.dumps(scheduleJson,indent=4))
