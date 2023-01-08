@@ -103,8 +103,9 @@ def printHelp():
 	Update a cronentry by index in schedule.json.
 --delete-cron <--index <cronIndex>>
 	Delete a cronentry by index from schedule.json.
---add-trigger <--trigger <triggerID>> [--enabled <false/true>] [--command [commandID]] [--parameter [parameter]] [--commandset [commandsetID]]
+--add-trigger <--trigger <triggerID>> [--enabled <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>]
 	Add a trigger to schedule.json.
+	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
 --update-trigger <--index <triggerIndex>> [--enabled <false/true>] [--trigger <triggerID>] [--command [commandID]] [--parameter [parameter]] [--commandset [commandsetID]]
 	Update a trigger by index in schedule.json.
 --delete-trigger <--index <triggerIndex>>
@@ -526,30 +527,31 @@ def getDisplayOrientation():
 		return 3
 	return None
 
-def modifySchedule(element,typ,scheduleJson):
+def modifySchedule(element,typ,scheduleJson,elementName:str=""):
+	if elementName == "": elementName = element
 	changed = False
 	if f"--{element}" in sys.argv:
 		indexOfElement = sys.argv.index(f"--{element}") + 1
 		if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
 			try:
-				del scheduleJson[element]
+				del scheduleJson[elementName]
 				changed = True
 			except:
 				pass
 		else:
 			if typ == bool:
 				if sys.argv[indexOfElement].lower() == "true":
-					scheduleJson[element] = True
+					scheduleJson[elementName] = True
 					changed = True
 				elif sys.argv[indexOfElement].lower() == "false":
-					scheduleJson[element] = False
+					scheduleJson[elementName] = False
 					changed = True
 				else:
 					piScreenUtils.logging.warning(f"{element} is not true or false")
 					verbose and print(f"{element} is not true or false")
 			elif typ == int:
 				if piScreenUtils.isInt(sys.argv[indexOfElement]):
-					scheduleJson[element] = int(sys.argv[indexOfElement])
+					scheduleJson[elementName] = int(sys.argv[indexOfElement])
 					changed = True
 				else:
 					piScreenUtils.logging.warning(f"{element} is no number")
@@ -557,22 +559,24 @@ def modifySchedule(element,typ,scheduleJson):
 			elif typ == datetime.datetime:
 				try:
 					datetime.datetime.strptime(sys.argv[indexOfElement], "%Y-%m-%d %H:%M")
-					scheduleJson[element] = sys.argv[indexOfElement]
+					scheduleJson[elementName] = sys.argv[indexOfElement]
 					changed = True
 				except:
 					piScreenUtils.logging.warning(f"{element} is no valid date")
 					verbose and print(f"{element} is no valid date")
 			elif typ == "pattern":
 				if all(ch in "0123456789/-*, " for ch in sys.argv[indexOfElement]) and len(sys.argv[indexOfElement].split(" ")) == 5:
-					scheduleJson[element] = sys.argv[indexOfElement]
+					scheduleJson[elementName] = sys.argv[indexOfElement]
 					changed = True
 				else:
 					piScreenUtils.logging.warning(f"{element} is no valid pattern")
 					verbose and print(f"{element} is no valid pattern")
 			else:
 				#Normal String without validation
-				scheduleJson[element] = sys.argv[indexOfElement]
+				scheduleJson[elementName] = sys.argv[indexOfElement]
 				changed = True
+	elif element in sys.argv and element.startswith("--") and element.find(":") != -1:
+		pass
 	return changed
 
 def addCron():
@@ -670,15 +674,26 @@ def updateCron():
 
 def addTrigger():
 	if i + 2 < len(sys.argv):
+		sys.argv.remove("--add-trigger")
 		if "--trigger" in sys.argv:
 			if piScreenUtils.isInt(sys.argv.index("--trigger") + 1):
 				changed = False
 				item = {}
+				item["cases"] = {}
 				changed = modifySchedule("enabled",bool,item) or changed
 				changed = modifySchedule("trigger",int,item) or changed
-				changed = modifySchedule("command",int,item) or changed
-				changed = modifySchedule("parameter",None,item) or changed
-				changed = modifySchedule("commandset",int,item) or changed
+				for i2 in sys.argv:
+					if i2.startswith("--command:") and len(i2) > 10:
+						if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
+						changed = modifySchedule(i2[2:],int,item["cases"][i2[i2.index(":")+1:]],i2[2:i2.index(":")+1]) or changed
+					elif i2.startswith("--parameter:") and len(i2) > 12:
+						if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
+						changed = modifySchedule(i2[2:],None,item["cases"][i2[i2.index(":")+1:]],i2[2:i2.index(":")+1]) or changed
+					elif i2.startswith("--commandset:") and len(i2) > 13:
+						if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
+						changed = modifySchedule(i2[2:],int,item["cases"][i2[i2.index(":")+1:]],i2[2:i2.index(":")+1]) or changed
+					elif i2.startswith("--") and i2 not in {"--enabled","--trigger","--"}:
+						changed = modifySchedule(i2[2:],None,item) or changed
 				if changed:
 					try:
 						scheduleJson = loadSchedule()
