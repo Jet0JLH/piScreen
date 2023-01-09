@@ -105,4 +105,10 @@ while True:
 		os.system(f"mv {piScreenUtils.paths.screenshot}.png {piScreenUtils.paths.screenshot}")
 	except:
 		piScreenUtils.logging.error("Error while creating screenshot")
+	if not checkIfProcessRunning("piScreenDisplay"):
+		piScreenUtils.logging.warning("piScreenDisplay.py skript is not running")
+		os.system("./piScreenDisplay.py &")
+	if not checkIfProcessRunning("piScreenSchedul"):
+		piScreenUtils.logging.warning("piScreenSchedule.py skript is not running")
+		os.system("./piScreenSchedule.py &")
 	time.sleep(5)
