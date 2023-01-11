@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import logging, __main__, os
+import logging, logging.handlers, __main__, os
 
 class paths:
 	ramdisk = "/media/ramdisk/"
@@ -46,4 +46,8 @@ if "__file__" in __main__.__dir__():
 	mainFileName = __main__.__file__[-(len(__main__.__file__)-__main__.__file__.rindex("/"))+1:]
 else:
 	mainFileName = "NoScript"
-logging.basicConfig(filename=paths.log, format=f"%(asctime)s [%(levelname)s] ({mainFileName}) %(funcName)s(%(lineno)d) | %(message)s", level="INFO")
+logging.basicConfig(
+	format=f"%(asctime)s [%(levelname)s] ({mainFileName}) %(funcName)s(%(lineno)d) | %(message)s",
+	level="INFO",
+	encoding="utf-8",
+	handlers=[logging.handlers.RotatingFileHandler(filename=paths.log,mode="a",maxBytes=5242880,backupCount=2,encoding="utf-8",delay=0)])
