@@ -1,25 +1,26 @@
 //necessary html elements
-darkmodeButton = document.getElementById("darkmodeButton");
-theme = document.getElementById("theme");
-languageSelect = document.getElementById("languageSelect");
-idleBadge = document.getElementById("idle");
+var darkmodeButton = document.getElementById("darkmodeButton");
+var theme = document.getElementById("theme");
+var languageSelect = document.getElementById("languageSelect");
+var idleBadge = document.getElementById("idle");
 //status
-active = document.getElementById("active");
-displayState = document.getElementById("displayState");
-uptime = document.getElementById("uptime");
-cpuLoad = document.getElementById("cpuLoad");
-cpuTemp = document.getElementById("cpuTemp");
-ramUsed = document.getElementById("ramUsed");
-ramTotal = document.getElementById("ramTotal");
-ramUsage = document.getElementById("ramUsage");
+var active = document.getElementById("active");
+var displayState = document.getElementById("displayState");
+var uptime = document.getElementById("uptime");
+var cpuLoad = document.getElementById("cpuLoad");
+var cpuTemp = document.getElementById("cpuTemp");
+var ramUsed = document.getElementById("ramUsed");
+var ramTotal = document.getElementById("ramTotal");
+var ramUsage = document.getElementById("ramUsage");
+var timeoutTime = 1994;
 //control
-displayOnBtn = document.getElementById("displayOnButton");
-displayStandbyBtn = document.getElementById("displayStandbyButton");
-spinnerDisplayOn = document.getElementById("spinnerDisplayOn");
-spinnerDisplayStandby = document.getElementById("spinnerDisplayStandby");
+var displayOnBtn = document.getElementById("displayOnButton");
+var displayStandbyBtn = document.getElementById("displayStandbyButton");
+var spinnerDisplayOn = document.getElementById("spinnerDisplayOn");
+var spinnerDisplayStandby = document.getElementById("spinnerDisplayStandby");
 //info
-screenshot = document.getElementById("screenshot");
-screenshotTime = document.getElementById("screenshotTime");
+var screenshot = document.getElementById("screenshot");
+var screenshotTime = document.getElementById("screenshotTime");
 //schedule
 var scheduleEntryCount = 0;
 var commandsetEntryCount = 0;
@@ -43,12 +44,12 @@ var scheduleToImport = null;
 //trigger
 var startupTriggerIndex = -1;
 //modal
-modal = new bootstrap.Modal(document.getElementById("modal"));
-modalCloseBtn = modal._element.getElementsByClassName('btn-close')[0];
-modalTitle = modal._element.getElementsByClassName('modal-title')[0];
-modalBody = modal._element.getElementsByClassName('modal-body')[0];
-modalCancelBtn = document.getElementById("modal-cancelBtn");
-modalActionBtn = document.getElementById("modal-actionBtn");
+var modal = new bootstrap.Modal(document.getElementById("modal"));
+var modalCloseBtn = modal._element.getElementsByClassName('btn-close')[0];
+var modalTitle = modal._element.getElementsByClassName('modal-title')[0];
+var modalBody = modal._element.getElementsByClassName('modal-body')[0];
+var modalCancelBtn = document.getElementById("modal-cancelBtn");
+var modalActionBtn = document.getElementById("modal-actionBtn");
 //tooltip
 var tooltipTriggerList;
 var tooltipList;
@@ -154,7 +155,7 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 						<tr>
 							<td colspan="2">
 								<div class='form-floating'>
-									<select id='scheduleEntry${eId}CommandsetSelect' class='disableOnDisconnect form-select border border-secondary' onchange='showScheduleEntryHeader(${eId}); displayScheduleEntrySaved(false, ${eId});' value='${commandset}'>
+									<select id='scheduleEntry${eId}CommandsetSelect' class='disableOnDisconnect commandsetDropdown form-select border border-secondary' onchange='showScheduleEntryHeader(${eId}); displayScheduleEntrySaved(false, ${eId});' value='${commandset}'>
 									</select>
 									<label for="scheduleEntry${eId}CommandsetSelect" lang-data="choose-commandset">Befehlssatz auswählen</label>
 								</div>
@@ -324,11 +325,19 @@ function addParameterToTrigger(triggerId, commandId, parameter) {
 }
 
 function getScheduleFromServer() {
+	let requestedUrl = "cmd.php?id=10";
 	let xmlhttp = new XMLHttpRequest();
-	xmlhttp.onloadend = function() {
-		loadScheduleJson(xmlhttp.responseText)
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
+	xmlhttp.onloadend = () => {
+		if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
+			console.log(xmlhttp.responseText);
+			showServerError("Server error while requesting time schedule", requestedUrl);
+			return;
+		}
+		loadScheduleJson(parseReturnValuesFromServer(xmlhttp.responseText)[0]);
 	}
-	xmlhttp.open('GET', 'cmd.php?id=10', true);
+	xmlhttp.open('GET', requestedUrl, true);
 	xmlhttp.send();
 }
 
@@ -361,12 +370,13 @@ function loadScheduleJson(jsonString) {
 		if (triggerObj.trigger == 1) {
 			startupTriggerIndex = i;
 			getElement("trigger0EnabledSwitch").checked = triggerObj.enabled;
-			getElement("trigger0CommandSelect").value = triggerObj.command;
-			getElement("trigger0CommandsetSelect").value = triggerObj.commandset;
-			addParameterToTrigger(0, triggerObj.command, triggerObj.parameter);
+			getElement("trigger0CommandSelect").value = triggerObj.cases.true.command;
+			getElement("trigger0CommandsetSelect").value = triggerObj.cases.true.commandset;
+			addParameterToTrigger(0, triggerObj.cases.true.command, triggerObj.cases.true.parameter);
 			break;
 		}
-	}}
+	}
+}
 
 function showModal(title="Titel", body="---", showClose=true, showCancel=true, cancelText=getLanguageAsText('cancel'), actionType=0, actionText=getLanguageAsText('ok'), actionFunction=function(){alert("Kein Befehl gesetzt")}) {
 	modalTitle.innerText = title;
@@ -431,10 +441,18 @@ function setDarkMode(dark) {
 }
 
 function checkForUpdate() {
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.onload = function() {
-		if (xmlhttp.responseText != 'no-update') {
-			let nextVersion = xmlhttp.responseText;
+	let requestedUrl = "cmd.php?id=6";
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
+	xmlhttp.onload = () => {
+		if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
+			console.log(xmlhttp.responseText);
+			showServerError("Error while requesting if update is available", requestedUrl);
+			return;
+		}
+		if (parseReturnValuesFromServer(xmlhttp.responseText)[0] != "") {
+			let nextVersion = parseReturnValuesFromServer(xmlhttp.responseText);
 			let updateButton = document.createElement('button');
 			updateButton.id = 'updateAvaiableBtn';
 			updateButton.href = '#';
@@ -452,10 +470,10 @@ function checkForUpdate() {
 			updateButton.onclick = function() {
 				showModal(getLanguageAsText('update-info-header'), getLanguageAsText('update-info-text'), false, true, getLanguageAsText('ok'));
 			}
-			document.getElementById('info-footer').appendChild(updateButton);
+			getElement('info-footer').appendChild(updateButton);
 		}
 	}
-	xmlhttp.open('GET', 'cmd.php?id=6', true);
+	xmlhttp.open('GET', requestedUrl, true);
 	xmlhttp.send();
 }
 
@@ -525,15 +543,33 @@ function importSchedule(scheduleAsJson) {
 }
 
 function saveEntireSchedule(jsonString) {
+	let requestedUrl = "cmd.php?id=18";
 	let xmlhttp = new XMLHttpRequest();
-	xmlhttp.open('POST', 'cmd.php?id=18', true);
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
+	xmlhttp.onloadend = () => {
+		console.log(xmlhttp.responseText);
+		if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
+			showServerError("Error while importing time schedule", requestedUrl);
+			return;
+		}
+	}
+	xmlhttp.open('POST', requestedUrl, true);
 	xmlhttp.setRequestHeader('Content-Type', 'application/json;charset=UTF-8');
 	xmlhttp.send(jsonString);
 }
 
+function updateCommandsetDropdowns() {
+	let commandsetDropdowns = document.getElementsByClassName("commandsetDropdown");
+	for (let i = 0; i < commandsetDropdowns.length; i++) {
+		console.log(commandsetDropdowns[i]);
+	}
+}
+
 //click events
 function reloadBrowser() {
-	sendHTTPRequest('GET', 'cmd.php?id=1', true, () => {});
+	getElement("restartBrowserSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=1', true, () => {getElement("restartBrowserSpinner").hidden = true;});
 }
 
 function restartHost() {
@@ -553,12 +589,19 @@ function setDisplayStandby() {
 }
 
 function showPiscreenInfo() {
+	let requestedUrl = "cmd.php?id=11";
 	let xmlhttp = new XMLHttpRequest();
-	xmlhttp.onload = function() {
-		let jsonData = JSON.parse(xmlhttp.responseText);
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
+	xmlhttp.onload = () => {
+		if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
+			showServerError("Error while getting display protocol");
+			return;
+		}
+		let jsonData = JSON.parse(parseReturnValuesFromServer(xmlhttp.responseText));
 		showModal(getLanguageAsText('about-info'), getLanguageAsText('info-text') + ' ' + jsonData.version.major + '.' + jsonData.version.minor + '.' + jsonData.version.patch, false, true, getLanguageAsText('alright'));
 	}
-	xmlhttp.open('GET', 'cmd.php?id=11', true);
+	xmlhttp.open('GET', requestedUrl, true);
 	xmlhttp.send();
 }
 
@@ -585,17 +628,39 @@ getElement("showTimeschedule").addEventListener("shown.bs.collapse", event => {
 	rearrangeGui();
 });
 
+function showServerError(text, request) {
+	showModal(getLanguageAsText("error"), text + "<br><br><code>" + request + "</code>", true, true, getLanguageAsText("ok"), 4, "Reload adminsite", () => location.reload());
+}
+
+function serverExecutedSuccessfully(received) {//returns false if error occurs
+	let returncode = received.split(":-:")[1];
+	return (returncode == 0);
+}
+
+function parseReturnValuesFromServer(received) {
+	let returnvals = received.split(":-:")[0].split(":;:");
+	for (let i = 0; i < returnvals.length; i++) returnvals[i] = returnvals[i].trim(); // removes whitespace from every output line
+	return returnvals;
+}
+
 function setDisplayProtocol() {
 	let protocol = document.getElementById('displayProtocolSelect').value;
 	sendHTTPRequest('GET', 'cmd.php?id=14&protocol=' + protocol, true, () => settingSaved("settingsButtonSaveDisplayProtocol", true));
 }
 
 function setDisplayProtocolSelect() {
-	var xmlhttp = new XMLHttpRequest();
+	let requestedUrl = "cmd.php?id=15";
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
 	xmlhttp.onloadend = function() {
-		document.getElementById("displayProtocolSelect").value = xmlhttp.responseText.trim();
+		if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
+			showServerError("Error while getting display protocol", requestedUrl);
+			return;
+		}
+		getElement("displayProtocolSelect").value = parseReturnValuesFromServer(xmlhttp.responseText)[0];
 	}
-	xmlhttp.open('GET', 'cmd.php?id=15', true);
+	xmlhttp.open('GET', requestedUrl, true);
 	xmlhttp.send();
 }
 
@@ -606,32 +671,61 @@ function setDisplayOrientation() {
 }
 
 function setDisplayOrientationSelect() {
-	var xmlhttp = new XMLHttpRequest();
+	let requestedUrl = "cmd.php?id=17";
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
 	xmlhttp.onloadend = function() {
-		document.getElementById("displayOrientationSelect").value = xmlhttp.responseText.trim();
+		if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
+			console.log(xmlhttp.responseText);
+			showServerError("Error while setting display orientation select", requestedUrl);
+			return;
+		}
+		getElement("displayOrientationSelect").value = parseReturnValuesFromServer(xmlhttp.responseText)[0];
 	}
-	xmlhttp.open('GET', 'cmd.php?id=17', true);
+	xmlhttp.open('GET', requestedUrl, true);
 	xmlhttp.send();
 }
-
 function setHostname(elementId) {
+	let requestedUrl = "cmd.php?id=4";
 	let hostname = document.getElementById(elementId).value;
 	let xmlhttp = new XMLHttpRequest();
-	xmlhttp.open('POST', 'cmd.php?id=4', true);
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
+	xmlhttp.onloadend = () => {
+		if (serverExecutedSuccessfully(xmlhttp.responseText)) {
+			settingSaved("settingsButtonSaveHostname", true);
+		} else {
+			showServerError("An error occured on the server while setting hostname.", requestedUrl);
+			return;
+		}
+	};
+	xmlhttp.open('POST', requestedUrl, true);
 	xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 	xmlhttp.send("hostname=" + hostname);
-	settingSaved("settingsButtonSaveHostname", true);
 }
 
 function setWebLoginAndPassword() {
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.open('POST', 'cmd.php?id=7', true);
+	let requestedUrl = "cmd.php?id=7";
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
+	xmlhttp.onloadend = () => {
+		if (serverExecutedSuccessfully(xmlhttp.responseText)) {
+			showModal(getLanguageAsText("success"), "updated weblogin successfully", true, true, getLanguageAsText("ok"));
+			location.reload();
+		} else {
+			showServerError("An error occured on the server while setting weblogin user and password.", requestedUrl);
+		}
+		
+	};
+	xmlhttp.open('POST', requestedUrl, true);
 	xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
-	xmlhttp.send("user=" + document.getElementById("webUserInput").value + "&pwd=" + document.getElementById("webPasswordInput").value);
+	xmlhttp.send("user=" + getElement("webUserInput").value + "&pwd=" + getElement("webPasswordInput").value);
 }
 
 function settingSaved(elementId, saved) {
-	let element = document.getElementById(elementId);
+	let element = getElement(elementId);
 	if (saved) {
 		element.className = "disableOnDisconnect btn btn-success ms-3 mb-3";
 		element.innerHTML = "<i class='bi bi-check2'></i>";
@@ -647,18 +741,24 @@ function triggerSaved(saved, triggerId) {
 	if (saved) {
 		saveButtonElement.className = "disableOnDisconnect btn btn-success mt-2";
 		saveButtonElement.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='saved'>" + getLanguageAsText("saved") + "</span>";
-		executeButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2"
+		executeButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2";
 		executeButtonElement.disabled = false;
 	} else {
 		saveButtonElement.className = "disableOnDisconnect btn btn-outline-success mt-2";
 		saveButtonElement.innerHTML = "<i class='bi bi-save pe-2'></i><span lang-data='save'>" + getLanguageAsText("save") + "</span>";
-		executeButtonElement.className = "btn btn-outline-warning mt-2"
+		executeButtonElement.className = "btn btn-outline-warning mt-2";
 		executeButtonElement.disabled = true;
 	}
 }
 
 function executeStartupTrigger() {
-	sendHTTPRequest('GET', 'cmd.php?id=20&cmd=execute&index=' + startupTriggerIndex, true, () => {});
+	getElement("executeStartupTriggerSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=23', true, () => getElement("executeStartupTriggerSpinner").hidden = true);
+}
+
+function executeLastCron() {
+	getElement("executeLastCronSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=22', true, () => getElement("executeLastCronSpinner").hidden = true);
 }
 
 function showScheduleEntryHeader(scheduleEntryId) {
@@ -698,23 +798,26 @@ function saveTrigger(triggerId) {
 	if (triggerId != 0) return;//only startup trigger
 	if (startupTriggerIndex > -1) {
 		if (getElement("trigger" + triggerId + "CommandSelect").value == 0 && getElement("trigger" + triggerId + "CommandsetSelect").value == 0) {//if no command or commandset selected, delete
-			sendHTTPRequest('GET', 'cmd.php?id=20&cmd=delete&index=' + startupTriggerIndex, true, () => {});
+			sendHTTPRequest('GET', 'cmd.php?id=20&cmd=delete&index=' + startupTriggerIndex, true, () => {triggerSaved(true, 0);});
 			startupTriggerIndex--;
 			return;
 		}
-		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + startupTriggerIndex + '&' + prepareTriggerString(triggerId), true, () => {});
+		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + startupTriggerIndex + '&' + prepareTriggerString(triggerId), true, () => {triggerSaved(true, 0);});
 		return;
 	}
-	sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareTriggerString(triggerId), true, () => {});
+	sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareTriggerString(triggerId), true, () => {triggerSaved(true, 0);});
 	startupTriggerIndex++;
 }
 
-function prepareTriggerString(triggerId) {
+function prepareTriggerString(triggerId, triggerCase=["true"]) {
+	for (let i = 0; i < triggerCase.length; i++) {
+		
+	}
 	let enabled = getElement("trigger" + triggerId + "EnabledSwitch").checked;
 	let command = getElement("trigger" + triggerId + "CommandSelect").value;
 	let commandset = getElement("trigger" + triggerId + "CommandsetSelect").value;
 	let parameterElement = getElement("trigger" + triggerId + "ParameterInput");
-	let parameter = parameterElement != null ? parameterElement.value : null;
+	let parameter = parameterElement.value;
 
 	let msg = "enabled=" + enabled.toString().trim() + "&";
 	msg += "command=" + command + "&";
@@ -746,6 +849,7 @@ function deleteScheduleEntry(scheduleEntryId) {
 	} else {
 		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=delete&index=' + scheduleEntryId, true, () => getElement('scheduleEntry' + scheduleEntryId).remove());
 	}
+	if (scheduleEntryId == scheduleEntryCount + 1) scheduleEntryCount--;
 }
 
 function prepareScheduleString(scheduleEntryId) {
@@ -845,6 +949,7 @@ function generateCommandsetEntry(name=getLanguageAsText("new-commandset"), comma
 		commandsetId = Math.floor(Math.random() * 9999) + 1;
 		commandsetId -= commandsetId * 2;
 	}
+	commandEntryCounts[commandsetId] = 0;
 	let newCommandsetEntryObj = document.createElement('div');
 	newCommandsetEntryObj.id = "commandsetEntry" + cId;
 	newCommandsetEntryObj.className = "accordion-item border border-primary";
@@ -966,6 +1071,7 @@ function deleteCommandsetEntry(commandsetEntryId) {
 	} else {
 		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=delete&commandsetid=' + getCommandsetId(commandsetEntryId), true, () => getElement("commandsetEntry" + commandsetEntryId).remove());
 	}
+	if (commandsetEntryId == commandsetEntryCount + 1) commandsetEntryCount--;
 }
 
 function getCommandsetId(entryIndex) {
@@ -997,16 +1103,24 @@ function saveCommandsetEntry(commandsetEntryId) {
 
 	let sendString = prepareCommandsetString(commandsetEntryId, commandsetEntryNameElement.value);
 	if (getCommandsetId(commandsetEntryId) < 0) {//add
+		let requestedUrl = 'cmd.php?id=19&cmd=add&' + sendString;
 		let xmlhttp = new XMLHttpRequest();
-		xmlhttp.onloadend = function () {
+		xmlhttp.timeout = timeoutTime;
+		xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
+		xmlhttp.onloadend = () => {
+			if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
+				showServerError("Error while adding commandset", requestedUrl);
+				return;
+			}
 			commandsetEntrySaved(true, commandsetEntryId);
-			getElement("commandset" + commandsetEntryId + "Id").textContent = xmlhttp.responseText;
+			getElement("commandset" + commandsetEntryId + "Id").textContent = parseReturnValuesFromServer(xmlhttp.responseText);
 		}
-		xmlhttp.open('GET', 'cmd.php?id=19&cmd=add&' + sendString, true);
+		xmlhttp.open('GET', requestedUrl, true);
 		xmlhttp.send();
 	} else {//update
 		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=update&commandsetid=' + getCommandsetId(commandsetEntryId) + '&' + sendString, true, () => commandsetEntrySaved(true, commandsetEntryId));
 	}
+	updateCommandsetDropdowns();
 }
 
 function prepareCommandsetString(commandsetEntryId, commandsetName) {
@@ -1069,14 +1183,18 @@ window.onload = function() {
 	setDisplayProtocolSelect();
 	setDisplayOrientationSelect();
 	let st = null; //screenshotTime
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.timeout = 1000;
-	xmlhttp.open('GET', 'cmd.php?id=5', true);
+	let requestedUrl = 'cmd.php?id=5';
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.open('GET', requestedUrl, true);
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
 	//load periodical the current infos about the system
-	xmlhttp.onload = function() {
+	xmlhttp.onload = () => {
 		idleBadge.id = "notIdle";
-		setTimeout(function(){idleBadge.id = "idle"}, 100);
-		jsonData = JSON.parse(xmlhttp.responseText);
+		setTimeout(() => {
+			idleBadge.id = "idle"
+		}, 100);
+		jsonData = JSON.parse(parseReturnValuesFromServer(xmlhttp.responseText));
 		active.classList = "badge rounded-pill bg-success";
 		active.innerHTML = getLanguageAsText('online');
 		switch (jsonData.displayState) {
@@ -1118,23 +1236,27 @@ window.onload = function() {
 			screenshotTime.innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth() + 1)}.${1900 + st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
 			screenshot.src = "piScreenScreenshot.png?t=" + new Date().getTime();
 		}
-		var x = new XMLHttpRequest();
-		x.onloadend = function() {
-			getElement("screenContent").innerHTML = x.responseText.trim();
-			rearrangeGui();
+		switch (jsonData.modeInfo.mode) {
+			case "firefox":
+				getElement("screenContent").innerHTML = jsonData.modeInfo.url;
+				rearrangeGui();
+				break;
+			case "vlc":
+				
+				break;
+			case "impress":
+				
+				break;
 		}
-		x.open('GET', 'cmd.php?id=21', true);
-		x.send();
-
 		enableElements(true);
 
 		rearrangeGui();
 	}
-	xmlhttp.onerror = function() {
+	xmlhttp.onerror = () => {
 		setToUnknownValues();
 		enableElements(false);
 	}
-	xmlhttp.ontimeout = function() {
+	xmlhttp.ontimeout = () => {
 		setToUnknownValues();
 		enableElements(false);
 		//var today = new Date();
@@ -1143,7 +1265,7 @@ window.onload = function() {
 	xmlhttp.send();
 
 	//reload infos every 2 seconds
-	setInterval(function() {
+	setInterval(() => {
 		xmlhttp.open('GET', 'cmd.php?id=5', true);
 		xmlhttp.send();
 	}, 2000);
@@ -1157,28 +1279,36 @@ function changeLanguage(lang) {
 }
 
 function getDefaultLanguage() { //gets language from server settings.json
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.onload = function() {
-		let settingsJSON = JSON.parse(xmlhttp.responseText);
-		currentLanguage = settingsJSON.settings.language;
-	}
+	let requestedUrl = "cmd.php?id=12";
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
 	xmlhttp.onloadend = function () {
+		if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
+			showServerError("Error while getting default language", requestedUrl);
+			return;
+		}
+		let settingsJSON = JSON.parse(parseReturnValuesFromServer(xmlhttp.responseText));
+		currentLanguage = settingsJSON.settings.language;
 		fetchLanguage(currentLanguage);
 	}
-	xmlhttp.open('GET', 'cmd.php?id=12', true);
+	xmlhttp.open('GET', requestedUrl, true);
 	xmlhttp.send();
 }
 
 function fetchLanguage(lang) { //Sets language to server and gets language.json
 	currentLanguage = lang;
 	document.getElementById(lang).selected = true;
-	var xmlhttp = new XMLHttpRequest();
+	let requestedUrl = '../languages/' + currentLanguage + '.json';
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
 	xmlhttp.onloadend = function() {
 		languageStrings = JSON.parse(xmlhttp.responseText);
 		getScheduleFromServer();
 		setLanguageOnSite();
 	}
-	xmlhttp.open('GET', '../languages/' + currentLanguage + '.json', true);
+	xmlhttp.open('GET', requestedUrl, true);
     xmlhttp.setRequestHeader('Cache-Control', 'no-cache');
 	xmlhttp.send();
 }
@@ -1193,9 +1323,19 @@ function setLanguageOnSite() {
 	});
 }
 
-function sendHTTPRequest(method, url, async, loadend) {
-	var xmlhttp = new XMLHttpRequest();
-	xmlhttp.onloadend = loadend;
+function sendHTTPRequest(method, url, async, loadend=() => {}) {
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.onloadend = () => {
+		if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
+			console.log(xmlhttp.responseText);
+			showServerError("Error from server", url);
+			return;
+		}
+		loadend();
+	};
+	xmlhttp.onerror = () => {showServerError("", url);};
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", url);};
 	xmlhttp.open(method, url, async);
 	xmlhttp.send();
 }

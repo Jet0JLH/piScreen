@@ -1,59 +1,72 @@
 <?php
-	umask(0);
-	$syscall = '/home/pi/piScreen/piScreenCmd.py';
-	$error = "EXITCODE1";
+	umask(0); // to execute with www-data
+	$sudoSyscall = 'sudo /home/pi/piScreen/piScreenCmd.py';
+	$syscall = 'sudo -u pi /home/pi/piScreen/piScreenCmd.py';
+
+	function executeCommand($command, $sendResponse) {
+		exec($command, $returnval, $returncode);
+		if ($sendResponse) {
+			sendResponse($returnval, $returncode);
+		}
+	}
+
+	function sendResponse($returnval, $returncode) {
+		if (is_array($returnval)) {
+			echo implode(":;:", $returnval) . ":-:" . $returncode;
+		} else {
+			echo $returnval . ":-:" . $returncode;
+		}
+	}
+
 	if ($_GET['id'] == 1) { //Restart Browser
-		shell_exec("sudo $syscall --restart-browser");
-		header('Location: .');
+		executeCommand("$syscall --restart-browser", true);
 	}
 	elseif ($_GET['id'] == 2) { //reboot
-		header('Location: .');
-		shell_exec("sudo $syscall --reboot");
+		//header('Location: .');
+		executeCommand("$sudoSyscall --reboot", true);
 	}
-	elseif ($_GET['id'] == 3) { //Poweroff
-		header('Location: .');
-		shell_exec("sudo $syscall --shutdown");
+	elseif ($_GET['id'] == 3) { //Shutdown
+		//header('Location: .');
+		executeCommand("$sudoSyscall --shutdown", true);
 	}
 	elseif ($_GET['id'] == 4) {//Change hostname
 		$hostname = shell_exec('hostname');
 		if($hostname != $_POST['hostname']) {
-			//Hostname changed
-			shell_exec("sudo hostnamectl set-hostname '{$_POST['hostname']}'");
+			executeCommand("sudo hostnamectl set-hostname '{$_POST['hostname']}'", true);
+		} else {//already correct hostname set
+			sendResponse("", 0);
 		}
 	}
 	elseif ($_GET['id'] == 5) { //Get Infos
 		header("Content-Type: application/json; charset=UTF-8");
-		echo shell_exec("$syscall --get-Status");
+		executeCommand("$syscall --get-Status", true);
 	}
 	elseif ($_GET['id'] == 6) { //Check for update
-		$updateAvailable = shell_exec("$syscall --check-update");
+		executeCommand("$syscall --check-update", true);
+		/*$updateAvailable = shell_exec("$syscall --check-update");
 		if ($updateAvailable) {
 			echo $updateAvailable;
 		} else {
 			echo "no-update";
-		}
+		}*/
 	}
 	elseif ($_GET['id'] == 7) { //Set weblogin
 		if($_POST['user'] && $_POST['pwd']) {
-			echo "true";
-			$file = '/media/ramdisk/piScreenPwd.txt';
-			file_put_contents($file, $_POST['pwd']);
-			shell_exec("sudo $syscall --set-pw '" . $_POST['user'] . "' -f '$file'");
+			executeCommand("$syscall --set-pw '" . $_POST['user'] . "' '" . $_POST['pwd'] . "'", true);
 		}
-		header('Location: .');
 	}
 	elseif ($_GET['id'] == 8) { //Display Control
 		if ($_GET['cmd'] == 0) {
-			shell_exec("$syscall --screen-standby");
+			executeCommand("$syscall --screen-standby", true);
 		}
 		elseif ($_GET['cmd'] == 1) {
-			shell_exec("$syscall --screen-on");
+			executeCommand("$syscall --screen-on", true);
 		}
 		elseif ($_GET['cmd'] == 2) {
-			shell_exec("$syscall --screen-off");
+			executeCommand("$syscall --screen-off", true);
 		}
 		elseif ($_GET['cmd'] == 3) {
-			shell_exec("$syscall --screen-switch-input");
+			executeCommand("$syscall --screen-switch-input", true);
 		}
 	}
 	elseif ($_GET['id'] == 9) { //Set Schedule
@@ -81,13 +94,9 @@
 				$parameterString .= " --commandset " . $_GET['commandset'];
 			}
 			//echo "$syscall --add-cron$parameterString";
-			echo shell_exec("$syscall --add-cron $parameterString");
+			executeCommand("$syscall --add-cron $parameterString", true);
 
 		} elseif ($_GET['cmd'] == "update") {
-			if ($_GET['index'] == NULL) {
-				echo $error;
-				return;
-			}
 			$parameterString = " --index " . $_GET['index'];
 			if ($_GET['enabled'] != NULL) {
 				$parameterString .= " --enabled " . $_GET['enabled'];
@@ -115,68 +124,75 @@
 				$parameterString .= " --commandset " . $_GET['commandset'];
 			}
 			//echo "$syscall --update-cron$parameterString";
-			echo shell_exec("$syscall --update-cron$parameterString");
+			executeCommand("$syscall --update-cron $parameterString", true);
 
 		} elseif ($_GET['cmd'] == "delete") {
-			if ($_GET['index'] == NULL) {
-				echo $error;
-				return;
-			}
 			$parameterString = " --index " . $_GET['index'];
 			//echo "$syscall --delete-cron$parameterString";
-			echo shell_exec("$syscall --delete-cron$parameterString");
+			executeCommand("$syscall --delete-cron $parameterString", true);
 		}
 	}
-	elseif ($_GET['id'] == 10) { //Get Display Schedule
-		header("Content-Type: application/json; charset=UTF-8");
-		echo file_get_contents('/home/pi/piScreen/schedule.json');
+	elseif ($_GET['id'] == 10) { //Get time schedule
+		try {
+			header("Content-Type: application/json; charset=UTF-8");
+			sendResponse(file_get_contents('/home/pi/piScreen/schedule.json'), 0);//send directly because it is a json file
+		} catch (Exception $e) {
+			sendResponse("", 1);
+		}
 	}
-	elseif ($_GET['id'] == 11) { //Get Manifest
-		header("Content-Type: application/json; charset=UTF-8");
-		echo file_get_contents('/home/pi/piScreen/manifest.json');
+	elseif ($_GET['id'] == 11) { //Get manifest
+		try {
+			header("Content-Type: application/json; charset=UTF-8");
+			sendResponse(file_get_contents('/home/pi/piScreen/manifest.json'), 0);
+		} catch (Exception $e) {
+			sendResponse("", 1);
+		}
 	}
 	elseif ($_GET['id'] == 12) { //Get settings
-		header("Content-Type: application/json; charset=UTF-8");
-		echo file_get_contents('/home/pi/piScreen/settings.json');
+		try {
+			header("Content-Type: application/json; charset=UTF-8");
+			sendResponse(file_get_contents('/home/pi/piScreen/settings.json'), 0);
+		} catch (Exception $e) {
+			sendResponse("", 1);
+		}
 	}
 	elseif ($_GET['id'] == 13) { //Set language
 		$data = json_decode(file_get_contents('/home/pi/piScreen/settings.json'), true);
 		$data['settings']['language'] = $_GET['lang'];
 		file_put_contents('/home/pi/piScreen/settings.json', json_encode($data, JSON_PRETTY_PRINT));
+		//executeCommand("$syscall --set-language " . $_GET['lang'], true);
 	}
 	elseif ($_GET['id'] == 14) { //Set diplay control protocol
 		if ($_GET['protocol'] == 'cec') {
-			shell_exec("$syscall --set-display-protocol cec");
+			executeCommand("$syscall --set-display-protocol cec", true);
 		}
 		elseif ($_GET['protocol'] == 'ddc') {
-			shell_exec("$syscall --set-display-protocol ddc");
+			executeCommand("$syscall --set-display-protocol ddc", true);
 		}
 	}
-	elseif ($_GET['id'] == 15) { //Get diplay control protocol
-		echo shell_exec("$syscall --get-display-protocol");
+	elseif ($_GET['id'] == 15) { //Get display control protocol
+		executeCommand("$syscall --get-display-protocol", true);
 	}
 	elseif ($_GET['id'] == 16) { //Set diplay orientation
 		$orientation = $_GET['orientation'];
 		if ($orientation >= 0 && $orientation <= 3) {
-			shell_exec("sudo -u pi $syscall --set-display-orientation $orientation");
+			executeCommand("$syscall --set-display-orientation $orientation", true);
 		}
 	}
 	elseif ($_GET['id'] == 17) { //Get diplay orientation
-		echo shell_exec("$syscall --get-display-orientation-settings");
+		executeCommand("$syscall --get-display-orientation-settings", true);
 	}
 	elseif ($_GET['id'] == 18) { //Set entire schedule
-		file_put_contents('/home/pi/piScreen/schedule.json', file_get_contents('php://input'));
-		echo 'true';
+		try {
+			file_put_contents('/home/pi/piScreen/schedule.json', file_get_contents('php://input'));
+		} catch (Exception $e) {
+			sendResponse("", 1);
+		}
+		sendResponse("", 0);
 	}
 	elseif ($_GET['id'] == 19) { //commandset functions
 		if ($_GET['cmd'] == "add"){
-			$parameterString = "";
-			if ($_GET['name'] == NULL) {
-				echo $error;
-				return;
-			} else {
-				$parameterString .= " --name " . $_GET['name'];
-			}
+			$parameterString = " --name " . $_GET['name'];
 			for ($id = 0; true; $id++) {
 				if ($_GET['command' . $id] != NULL) {
 					$parameterString .= " --command " . $_GET['command' . $id];
@@ -188,14 +204,9 @@
 				}
 			}
 			//echo "$syscall --add-commandset$parameterString";
-			echo shell_exec("$syscall --add-commandset$parameterString");
+			executeCommand("$syscall --add-commandset$parameterString", true);
 		} elseif ($_GET['cmd'] == "update") {
-			if ($_GET['commandsetid'] == NULL) {
-				echo $error;
-				return;
-			} else {
-				$parameterString .= " --id " . $_GET['commandsetid'];
-			}
+			$parameterString .= " --id " . $_GET['commandsetid'];
 			if ($_GET['name'] != NULL) {
 				$parameterString .= " --name " . $_GET['name'];
 			}
@@ -210,15 +221,11 @@
 				}
 			}
 			//echo "$syscall --update-commandset$parameterString";
-			echo shell_exec("$syscall --update-commandset$parameterString");
+			executeCommand("$syscall --update-commandset$parameterString", true);
 		} elseif ($_GET['cmd'] == "delete") {
-			if ($_GET['commandsetid'] == NULL) {
-				echo $error;
-				return;
-			}
 			$parameterString = " --id " . $_GET['commandsetid'];
-			//echo "$syscall --delete-commandset$parameterString";
-			echo shell_exec("$syscall --delete-commandset$parameterString");
+			echo "$syscall --delete-commandset$parameterString";
+			executeCommand("$syscall --delete-commandset$parameterString", true);
 
 		}
 	}
@@ -241,13 +248,9 @@
 				$parameterString .= " --commandset " . $_GET['commandset'];
 			}
 			//echo "$syscall --add-trigger$parameterString";
-			echo shell_exec("$syscall --add-trigger$parameterString");
+			executeCommand("$syscall --add-trigger$parameterString", true);
 
 		} elseif ($_GET['cmd'] == "update") {
-			if ($_GET['index'] == NULL) {
-				echo $error;
-				return;
-			}
 			$parameterString = " --index " . $_GET['index'];
 			if ($_GET['enabled'] != NULL) {
 				$parameterString .= " --enabled " . $_GET['enabled'];
@@ -265,33 +268,27 @@
 				$parameterString .= " --commandset " . $_GET['commandset'];
 			}
 			//echo "$syscall --update-trigger$parameterString";
-			echo shell_exec("$syscall --update-trigger$parameterString");
+			executeCommand("$syscall --update-trigger$parameterString", true);
 
 		} elseif ($_GET['cmd'] == "delete") {
-			if ($_GET['index'] == NULL) {
-				echo $error;
-				return;
-			}
 			$parameterString = " --index " . $_GET['index'];
 			//echo "$syscall --delete-trigger$parameterString";
-			echo shell_exec("$syscall --delete-trigger$parameterString");
+			executeCommand("$syscall --delete-trigger$parameterString", true);
 
 		} elseif ($_GET['cmd'] == "execute") {
-			if ($_GET['index'] == NULL) {
-				echo $error;
-				return;
-			}
 			$parameterString = " --index " . $_GET['index'];
-			//echo "$syscall --—schedule-manually-trigger$parameterString";
-			echo shell_exec("$syscall --schedule-manually-trigger$parameterString");
+			//echo "$syscall --schedule-manually-trigger$parameterString";
+			executeCommand("$syscall --schedule-manually-trigger$parameterString", true);
 		}
 	}
-	elseif ($_GET['id'] == 21) { //Get current website
-		echo shell_exec("$syscall --get-website");
+	elseif ($_GET['id'] == 21) { //export schedule
+		header("Content-Type: application/json; charset=UTF-8");
+		echo file_get_contents('/home/pi/piScreen/schedule.json');
 	}
 	elseif ($_GET['id'] == 22) { //Run lastcron
-		echo shell_exec("$syscall --schedule-lastcron");
+		executeCommand("$syscall --schedule-lastcron", true);
 	}
-
-	
+	elseif ($_GET['id'] == 23) { //Run firstrun
+		executeCommand("$syscall --schedule-firstrun", true);
+	}
 ?>

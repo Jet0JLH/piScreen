@@ -39,7 +39,7 @@
 					<h1 class='pb-2'><i class='bi-layout-wtf bigIcon px-2'></i><span lang-data='control-tile-header'>Steuern</span></h1>
 					<div class='row'>
 						<div class='col-4'>
-							<button id='reloadBrowserButton' class='disableOnDisconnect btn btn-primary w-100 my-1' onclick='reloadBrowser()'><i class='bi bi-arrow-clockwise btn-icon-xxl'></i><br><span lang-data='restart-browser'>Browser neu starten</span></button>
+							<button id='reloadBrowserButton' class='disableOnDisconnect btn btn-primary w-100 my-1' onclick='reloadBrowser()'><span id='restartBrowserSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-clockwise btn-icon-xxl'></i><br><span lang-data='restart-browser'>Browser neu starten</span></button>
 						</div>
 						<div class='col-4'>
 							<button id='restartHostButton' class='disableOnDisconnect btn btn-warning w-100 my-1' onclick='restartHost()'><i class='bi bi-bootstrap-reboot btn-icon-xxl'></i><br><span lang-data='restart-device'>Neustarten</span></button>
@@ -124,7 +124,7 @@
 										<tr>
 											<td>
 												<div class="mb-3">
-													<button id='exportScheduleButton' class='disableOnDisconnect btn btn-outline-primary border-secondary' onclick='download("cmd.php?id=10", "schedule.json")'><i class='bi bi-download pe-2'></i><span lang-data='export'>Export</span></button>
+													<button id='exportScheduleButton' class='disableOnDisconnect btn btn-outline-primary border-secondary' onclick='download("cmd.php?id=21", "schedule.json")'><i class='bi bi-download pe-2'></i><span lang-data='export'>Export</span></button>
 												</div>
 											</td>
 											<td>
@@ -170,7 +170,7 @@
 						<i class='bi-question-octagon p-2' style='cursor: pointer;' id='triggerHelp' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="??" onclick='showModal(getLanguageAsText("help"), getLanguageAsText("triggerHelpText"), false, true, getLanguageAsText("ok"));'></i>
 					</div>
 					<div class='form-floating mb-4'>
-						<select id='trigger0CommandsetSelect' class='disableOnDisconnect form-select border-secondary' onchange='triggerSaved(false, 0);'>
+						<select id='trigger0CommandsetSelect' class='disableOnDisconnect commandsetDropdown form-select border-secondary' onchange='triggerSaved(false, 0);'>
 						</select>
 						<label for="trigger0CommandsetSelect" lang-data='choose-commandset'>Commandset auswählen</label>
 					</div>
@@ -183,8 +183,8 @@
 					<div id="trigger0ParameterCell" style='width: 100%;'>
 					</div>
 					<div>
-						<button id="trigger0SaveButton" class="disableOnDisconnect btn btn-success mt-2" onclick='triggerSaved(true, 0); saveTrigger(0);'><i class='bi bi-check2 pe-2'></i><span lang-data="saved">Speichern</span></button>
-						<button id="trigger0ExecuteButton" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeStartupTrigger();'><i class='bi bi-play pe-2'></i><span lang-data="execute">Ausführen</span></button>
+						<button id="trigger0SaveButton" class="disableOnDisconnect btn btn-success mt-2" onclick='saveTrigger(0);'><i class='bi bi-check2 pe-2'></i><span lang-data="saved">Speichern</span></button>
+						<button id="trigger0ExecuteButton" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeStartupTrigger();'><i class='bi bi-play pe-2'></i><span id='executeStartupTriggerSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
 					</div>
 				</div>
 			</div>
@@ -209,7 +209,7 @@
 
 									</div>
 									<button id='newScheduleEntry' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='generateNewScheduleEntry()'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-entry'>Neuer Eintrag</span></button>
-									<button id='lastCronButton' class='disableOnDisconnect btn btn-outline-warning mt-2 px-2' onclick="sendHTTPRequest('GET', 'cmd.php?id=22', true);"><i class='bi bi-play pe-2'></i><span lang-data='lastcron'>Letzter Eintrag ausführen</span></button>
+									<button id='lastCronButton' class='disableOnDisconnect btn btn-outline-warning mt-2 px-2' onclick="executeLastCron();"><i class='bi bi-play pe-2'></i><span id='executeLastCronSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data='lastcron'>Letzter Eintrag ausführen</span></button>
 									<hr>
 									<button id='showCommandsets' class='disableOnDisconnect btn btn-outline-primary' onclick='getScheduleFromServer(); rearrangeGui();' data-bs-toggle="collapse" data-bs-target="#collapseTimeSchedule"><i class='bi bi-pencil-square pe-2'></i><span lang-data="edit-commandsets">Commandsets bearbeiten</span></button>
 								</div>
