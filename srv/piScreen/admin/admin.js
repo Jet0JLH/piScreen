@@ -138,7 +138,7 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 								</div>
 							</td>
 							<td style='width: 50%;'>
-								<button id="scheduleEntry${eId}ButtonExecute" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeScheduleEntry();' style='float: right;'><i class='bi bi-play pe-2'></i><span lang-data="execute">Ausführen</span></button>
+								<button id="scheduleEntry${eId}ButtonExecute" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeScheduleEntry(${eId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='scheduleEntry${eId}ButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
 							</td>
 						</tr>
 						<tr>
@@ -573,11 +573,11 @@ function reloadBrowser() {
 }
 
 function restartHost() {
-	showModal(getLanguageAsText('attention'), getLanguageAsText('reboot-really'), undefined, undefined, undefined, 4, getLanguageAsText('restart-device'), () => {sendHTTPRequest('GET', 'cmd.php?id=2', true, () => {}); modal.hide();});
+	showModal(getLanguageAsText('attention'), getLanguageAsText('reboot-really'), undefined, undefined, undefined, 4, getLanguageAsText('restart-device'), () => {sendHTTPRequest('GET', 'cmd.php?id=2', false, () => {}); modal.hide();});
 }
 
 function shutdownHost() {
-	showModal(getLanguageAsText('attention'), getLanguageAsText('shutdown-really'), undefined, undefined, undefined, 4, getLanguageAsText('shutdown-device'), () => {sendHTTPRequest('GET', 'cmd.php?id=3', true, () => {}); modal.hide();});
+	showModal(getLanguageAsText('attention'), getLanguageAsText('shutdown-really'), undefined, undefined, undefined, 4, getLanguageAsText('shutdown-device'), () => {sendHTTPRequest('GET', 'cmd.php?id=3', false, () => {}); modal.hide();});
 }
 
 function setDisplayOn() {
@@ -628,8 +628,20 @@ getElement("showTimeschedule").addEventListener("shown.bs.collapse", event => {
 	rearrangeGui();
 });
 
-function showServerError(text, request) {
-	showModal(getLanguageAsText("error"), text + "<br><br><code>" + request + "</code>", true, true, getLanguageAsText("ok"), 4, "Reload adminsite", () => location.reload());
+function showServerError(text, request, details=null) {
+	if (details == null || details == undefined) {
+		details = "";
+	} else {
+		details = `<br><a data-bs-toggle="collapse" href="#collapseDetails" role="button">
+		Details
+	  </a>
+	  <div class="collapse" id="collapseDetails">
+  <div class="card card-body">
+    ${details}
+  </div>
+</div>`
+	}
+	showModal(getLanguageAsText("error"), text + "<br><br><code>" + request + "</code>" + details, true, true, getLanguageAsText("ok"), 4, "Reload adminsite", () => location.reload());
 }
 
 function serverExecutedSuccessfully(received) {//returns false if error occurs
@@ -835,7 +847,7 @@ function prepareTriggerString(triggerId, triggerCase=["true"]) {
 
 function saveScheduleEntry(scheduleEntryId) {
 	//send to server
-	if (document.getElementById("scheduleEntryInfo" + scheduleEntryId).getAttribute("data") == "true") {//add
+	if (getElement("scheduleEntryInfo" + scheduleEntryId).getAttribute("data") == "true") {//add
 		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=add&' + prepareScheduleString(scheduleEntryId), true, () => displayScheduleEntrySaved(true, scheduleEntryId));
 		getElement("scheduleEntryInfo" + scheduleEntryId).setAttribute("data", "false");
 	} else {//update
@@ -939,8 +951,13 @@ function enabledChanged(check, scheduleEntryId) {
 }
 
 function executeScheduleEntry(scheduleEntryId) {
-	console.log("not implemented yet");
-	//sendHTTPRequest('GET', 'cmd.php?id=19&cmd=delete&commandsetid=' + getCommandsetId(commandsetEntryId), true, () => getElement("commandsetEntry" + commandsetEntryId).remove());
+	getElement("scheduleEntry" + scheduleEntryId + "ButtonExecuteSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=9&cmd=execute&index=' + scheduleEntryId, true, () => getElement("scheduleEntry" + scheduleEntryId + "ButtonExecuteSpinner").hidden = true);
+}
+
+function executeCommandsetEntry(commandsetEntryId) {
+	getElement("commandsetEntry" + commandsetEntryId + "ButtonExecuteSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=19&cmd=execute&commandsetid=' + getCommandsetId(commandsetEntryId), true, () => getElement("commandsetEntry" + commandsetEntryId + "ButtonExecuteSpinner").hidden = true);
 }
 
 function generateCommandsetEntry(name=getLanguageAsText("new-commandset"), commands=[], commandsetId=0, saved=false) {
@@ -970,8 +987,9 @@ function generateCommandsetEntry(name=getLanguageAsText("new-commandset"), comma
 						<label for='commandsetEntry${cId}Name' lang-data='description'>${getLanguageAsText("description")}</label>
 					</div>
 				</td>
-				<td colspan="2" style='width: 50%; text-align: right;'>
-					<label id='commandset${cId}Id'>${commandsetId}</label>
+				<td colspan="2" style='width: 50%;'>
+					<label id='commandset${cId}Id' class='m-2'>${commandsetId}</label>
+					<button id="commandsetEntry${cId}ButtonExecute" class="disableOnDisconnect btn btn-outline-warning mb-3" onclick='executeCommandsetEntry(${cId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='commandsetEntry${cId}ButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
 				</td>
 			</tr>
 		</table>
@@ -1323,20 +1341,22 @@ function setLanguageOnSite() {
 	});
 }
 
-function sendHTTPRequest(method, url, async, loadend=() => {}) {
+function sendHTTPRequest(method, url, wantResponse, loadend=() => {}) {
 	let xmlhttp = new XMLHttpRequest();
-	xmlhttp.onloadend = () => {
-		if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
-			console.log(xmlhttp.responseText);
-			showServerError("Error from server", url);
-			return;
-		}
-		loadend();
-	};
-	xmlhttp.onerror = () => {showServerError("", url);};
+	if (wantResponse) {
+		xmlhttp.onloadend = () => {
+			if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
+				console.log(xmlhttp.responseText);
+				showServerError("Error from server", url, parseReturnValuesFromServer(xmlhttp.responseText));
+				return;
+			}
+			loadend();
+		};
+	}
+	xmlhttp.onerror = (e) => {showServerError(e, url);};
 	xmlhttp.timeout = timeoutTime;
 	xmlhttp.ontimeout = () => {showServerError("Timeout error", url);};
-	xmlhttp.open(method, url, async);
+	xmlhttp.open(method, url, true);
 	xmlhttp.send();
 }
 
