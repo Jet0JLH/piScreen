@@ -1,31 +1,9 @@
-//necessary html elements
-var darkmodeButton = document.getElementById("darkmodeButton");
-var theme = document.getElementById("theme");
-var languageSelect = document.getElementById("languageSelect");
-var idleBadge = document.getElementById("idle");
-//status
-var active = document.getElementById("active");
-var displayState = document.getElementById("displayState");
-var uptime = document.getElementById("uptime");
-var cpuLoad = document.getElementById("cpuLoad");
-var cpuTemp = document.getElementById("cpuTemp");
-var ramUsed = document.getElementById("ramUsed");
-var ramTotal = document.getElementById("ramTotal");
-var ramUsage = document.getElementById("ramUsage");
+//genereal variables
 var timeoutTime = 1994;
-//control
-var displayOnBtn = document.getElementById("displayOnButton");
-var displayStandbyBtn = document.getElementById("displayStandbyButton");
-var spinnerDisplayOn = document.getElementById("spinnerDisplayOn");
-var spinnerDisplayStandby = document.getElementById("spinnerDisplayStandby");
-//info
-var screenshot = document.getElementById("screenshot");
-var screenshotTime = document.getElementById("screenshotTime");
 //schedule
 var scheduleEntryCount = 0;
 var commandsetEntryCount = 0;
 var commandEntryCounts = {};
-var unsavedCommandsets = 0;
 const commandCollection = [//text, parameter
 		["---", false], ["sleep", "text"], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["universal", "text"], ["restart-device", false], ["shutdown-device", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
@@ -44,16 +22,16 @@ var scheduleToImport = null;
 //trigger
 var startupTriggerIndex = -1;
 //modal
-var modal = new bootstrap.Modal(document.getElementById("modal"));
+var modal = new bootstrap.Modal(getElement("modal"));
 var modalCloseBtn = modal._element.getElementsByClassName('btn-close')[0];
 var modalTitle = modal._element.getElementsByClassName('modal-title')[0];
 var modalBody = modal._element.getElementsByClassName('modal-body')[0];
-var modalCancelBtn = document.getElementById("modal-cancelBtn");
-var modalActionBtn = document.getElementById("modal-actionBtn");
+var modalCancelBtn = getElement("modal-cancelBtn");
+var modalActionBtn = getElement("modal-actionBtn");
 //tooltip
 var tooltipTriggerList;
 var tooltipList;
-//language stuff
+//language
 var currentLanguage = null;
 var availableLanguages = [];
 var languageStrings = null;
@@ -68,23 +46,23 @@ function addLeadingZero (input) {
 	}
 }
 function setToUnknownValues() {
-	active.classList = "badge rounded-pill bg-danger";
-	active.innerHTML = getLanguageAsText('offline');
+	getElement("active").classList = "badge rounded-pill bg-danger";
+	getElement("active").innerHTML = getLanguageAsText('offline');
 
-	displayState.classList = "badge rounded-pill bg-secondary";
-	displayState.innerHTML = getLanguageAsText('unknown');
-	displayOnBtn.hidden = false;
-	displayStandbyBtn.hidden = false;
-	spinnerDisplayOn.hidden = true;
-	spinnerDisplayStandby.hidden = true;
+	getElement("displayState").classList = "badge rounded-pill bg-secondary";
+	getElement("displayState").innerHTML = getLanguageAsText('unknown');
 
-	uptime.innerHTML = "???";
+	getElement("displayOnButton").hidden = false;
+	getElement("displayStandbyButton").hidden = false;
+	getElement("spinnerDisplayOn").hidden = true;
+	getElement("spinnerDisplayStandby").hidden = true;
 
-	cpuTemp.innerHTML = "???";
-	cpuLoad.innerHTML = "???";
-	ramUsed.innerHTML = "???";
-	ramTotal.innerHTML = "???";
-	ramUsage.innerHTML = "???";
+	getElement("uptime").innerHTML = "???";
+	getElement("cpuLoad").innerHTML = "???";
+	getElement("cpuTemp").innerHTML = "???";
+	getElement("ramUsed").innerHTML = "???";
+	getElement("ramTotal").innerHTML = "???";
+	getElement("ramUsage").innerHTML = "???";
 }
 
 function enableElements(enable) {
@@ -227,8 +205,8 @@ function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", e
 
 	displayScheduleEntrySaved(saved, eId);
 
-	toggleValidityFrom(eId, document.getElementById("scheduleEntry" + eId + "ValiditySwitchCheckFrom").checked);
-	toggleValidityTo(eId, document.getElementById("scheduleEntry" + eId + "ValiditySwitchCheckTo").checked);
+	toggleValidityFrom(eId, getElement("scheduleEntry" + eId + "ValiditySwitchCheckFrom").checked);
+	toggleValidityTo(eId, getElement("scheduleEntry" + eId + "ValiditySwitchCheckTo").checked);
 
 	addCommandsetsToDropdown("scheduleEntry" + eId + "CommandsetSelect", commandset);
 
@@ -388,30 +366,14 @@ function showModal(title="Titel", body="---", showClose=true, showCancel=true, c
 		modalActionBtn.innerText = actionText;
 		modalActionBtn.hidden = false;
 		switch (actionType) {
-			case 1:
-				modalActionBtn.className = "btn btn-primary";
-				break;
-			case 2:
-				modalActionBtn.className = "btn btn-secondary";
-				break;
-			case 3:
-				modalActionBtn.className = "btn btn-success";
-				break;
-			case 4:
-				modalActionBtn.className = "btn btn-danger";
-				break;
-			case 5:
-				modalActionBtn.className = "btn btn-warning";
-				break;
-			case 6:
-				modalActionBtn.className = "btn btn-info";
-				break;
-			case 7:
-				modalActionBtn.className = "btn btn-light";
-				break;
-			case 8:
-				modalActionBtn.className = "btn btn-dark";
-				break;
+			case 1: modalActionBtn.className = "btn btn-primary"; break;
+			case 2: modalActionBtn.className = "btn btn-secondary"; break;
+			case 3: modalActionBtn.className = "btn btn-success"; break;
+			case 4: modalActionBtn.className = "btn btn-danger"; break;
+			case 5: modalActionBtn.className = "btn btn-warning"; break;
+			case 6: modalActionBtn.className = "btn btn-info"; break;
+			case 7: modalActionBtn.className = "btn btn-light"; break;
+			case 8: modalActionBtn.className = "btn btn-dark"; break;
 		}
 		modalActionBtn.onclick = actionFunction;
 	} else {
@@ -421,7 +383,7 @@ function showModal(title="Titel", body="---", showClose=true, showCancel=true, c
 }
 
 function isInDarkmode() {
-	return !theme.href.includes("/bootstrap/css/bootstrap.min.css");
+	return !getElement("theme").href.includes("/bootstrap/css/bootstrap.min.css");
 }
 
 function toggleDarkmode() {
@@ -429,6 +391,9 @@ function toggleDarkmode() {
 }
 
 function setDarkMode(dark) {
+	let darkmodeButton = getElement("darkmodeButton");
+	let theme = getElement("theme");
+	let languageSelect = getElement("languageSelect");
 	if (dark) {
 		theme.href = "/bootstrap/darkpan-1.0.0/css/bootstrap.min.css";
 		darkmodeButton.classList.replace("btn-outline-secondary", "btn-outline-light");
@@ -606,7 +571,7 @@ function showPiscreenInfo() {
 }
 
 function rearrangeGui() {
-	new Masonry(document.getElementById("masonry"));
+	new Masonry(getElement("masonry"));
 }
 function showTimeSchedule() {
 	rearrangeGui();
@@ -632,13 +597,13 @@ function showServerError(text, request, details=null) {
 	if (details == null || details == undefined) {
 		details = "";
 	} else {
-		details = `<br><a data-bs-toggle="collapse" href="#collapseDetails" role="button">
-		Details
-	  </a>
-	  <div class="collapse" id="collapseDetails">
-  <div class="card card-body">
-    ${details}
-  </div>
+		details = `<br><br><a data-bs-toggle="collapse" href="#collapseDetails" role="button">
+Details
+</a>
+<div class="collapse" id="collapseDetails">
+	<div class="card card-body">
+		${details}
+	</div>
 </div>`
 	}
 	showModal(getLanguageAsText("error"), text + "<br><br><code>" + request + "</code>" + details, true, true, getLanguageAsText("ok"), 4, "Reload adminsite", () => location.reload());
@@ -656,7 +621,7 @@ function parseReturnValuesFromServer(received) {
 }
 
 function setDisplayProtocol() {
-	let protocol = document.getElementById('displayProtocolSelect').value;
+	let protocol = getElement('displayProtocolSelect').value;
 	sendHTTPRequest('GET', 'cmd.php?id=14&protocol=' + protocol, true, () => settingSaved("settingsButtonSaveDisplayProtocol", true));
 }
 
@@ -678,7 +643,7 @@ function setDisplayProtocolSelect() {
 
 function setDisplayOrientation() {
 	// 0 - horizontal, 1 - vertical, 2 - horizontal inverted, 3 - vertical inverted
-	let orientation = document.getElementById('displayOrientationSelect').value;
+	let orientation = getElement('displayOrientationSelect').value;
 	sendHTTPRequest('GET', 'cmd.php?id=16&orientation=' + orientation, true, () => settingSaved("settingsButtonSaveDisplayOrientation", true));
 }
 
@@ -698,9 +663,10 @@ function setDisplayOrientationSelect() {
 	xmlhttp.open('GET', requestedUrl, true);
 	xmlhttp.send();
 }
+
 function setHostname(elementId) {
 	let requestedUrl = "cmd.php?id=4";
-	let hostname = document.getElementById(elementId).value;
+	let hostname = getElement(elementId).value;
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.timeout = timeoutTime;
 	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
@@ -729,7 +695,6 @@ function setWebLoginAndPassword() {
 		} else {
 			showServerError("An error occured on the server while setting weblogin user and password.", requestedUrl);
 		}
-		
 	};
 	xmlhttp.open('POST', requestedUrl, true);
 	xmlhttp.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
@@ -783,8 +748,8 @@ function showScheduleEntryHeader(scheduleEntryId) {
 }
 
 function toggleValidityFrom(scheduleEntryId, checked){
-	scheduleEntry1 = document.getElementById('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanFrom1');
-	scheduleEntry2 = document.getElementById('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanFrom2');
+	let scheduleEntry1 = getElement('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanFrom1');
+	let scheduleEntry2 = getElement('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanFrom2');
 	if (checked) {
 		scheduleEntry1.style.visibility = "";
 		scheduleEntry2.style.visibility = "";
@@ -795,8 +760,8 @@ function toggleValidityFrom(scheduleEntryId, checked){
 }
 
 function toggleValidityTo(scheduleEntryId, checked){
-	scheduleEntry1 = document.getElementById('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanTo1');
-	scheduleEntry2 = document.getElementById('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanTo2');
+	let scheduleEntry1 = getElement('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanTo1');
+	let scheduleEntry2 = getElement('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanTo2');
 	if (checked) {
 		scheduleEntry1.style.visibility = "";
 		scheduleEntry2.style.visibility = "";
@@ -866,18 +831,18 @@ function deleteScheduleEntry(scheduleEntryId) {
 
 function prepareScheduleString(scheduleEntryId) {
 	//get elements
-	let enabled = document.getElementById("scheduleEntry" + scheduleEntryId + "EnabledSwitchCheck").checked;
-	let cronentry = document.getElementById("cronentry" + scheduleEntryId).value;
-	let command = document.getElementById("scheduleEntry" + scheduleEntryId + "CommandSelect").value;
-	let commandset = document.getElementById("scheduleEntry" + scheduleEntryId + "CommandsetSelect").value;
-	let parameterElement = document.getElementById("scheduleEntry" + scheduleEntryId + "ParameterInput");
+	let enabled = getElement("scheduleEntry" + scheduleEntryId + "EnabledSwitchCheck").checked;
+	let cronentry = getElement("cronentry" + scheduleEntryId).value;
+	let command = getElement("scheduleEntry" + scheduleEntryId + "CommandSelect").value;
+	let commandset = getElement("scheduleEntry" + scheduleEntryId + "CommandsetSelect").value;
+	let parameterElement = getElement("scheduleEntry" + scheduleEntryId + "ParameterInput");
 	let parameter = parameterElement != null ? parameterElement.value : null;
-	let startTime = document.getElementById("scheduleEntry" + scheduleEntryId + "StartTime").value;
-	let endTime = document.getElementById("scheduleEntry" + scheduleEntryId + "EndTime").value;
-	let startDate = document.getElementById("scheduleEntry" + scheduleEntryId + "StartDate").value;
-	let endDate = document.getElementById("scheduleEntry" + scheduleEntryId + "EndDate").value;
-	let startDateTime = document.getElementById("scheduleEntry" + scheduleEntryId + "ValiditySwitchCheckFrom").checked;
-	let endDateTime = document.getElementById("scheduleEntry" + scheduleEntryId + "ValiditySwitchCheckTo").checked;
+	let startTime = getElement("scheduleEntry" + scheduleEntryId + "StartTime").value;
+	let endTime = getElement("scheduleEntry" + scheduleEntryId + "EndTime").value;
+	let startDate = getElement("scheduleEntry" + scheduleEntryId + "StartDate").value;
+	let endDate = getElement("scheduleEntry" + scheduleEntryId + "EndDate").value;
+	let startDateTime = getElement("scheduleEntry" + scheduleEntryId + "ValiditySwitchCheckFrom").checked;
+	let endDateTime = getElement("scheduleEntry" + scheduleEntryId + "ValiditySwitchCheckTo").checked;
 
 	let msg = "enabled=" + enabled.toString().trim() + "&";
 	while (cronentry.includes("  ")) cronentry = cronentry.replaceAll("  ", " ");
@@ -936,17 +901,17 @@ function checkCronEntryValidity(scheduleCronEntry, scheduleEntryId) {
 
 function displayScheduleEntrySaved(saved, scheduleEntryId) {
 	if (saved) {
-		document.getElementById("scheduleEntry" + scheduleEntryId + "HeaderSaved").innerHTML = "<i class='bi bi-file-earmark-check-fill bigIcon px-2' style='color: green;'></i>";
+		getElement("scheduleEntry" + scheduleEntryId + "HeaderSaved").innerHTML = "<i class='bi bi-file-earmark-check-fill bigIcon px-2' style='color: green;'></i>";
 	} else {
-		document.getElementById("scheduleEntry" + scheduleEntryId + "HeaderSaved").innerHTML = "<i class='bi bi-file-earmark-x-fill bigIcon px-2' style='color: red;'></i>";
+		getElement("scheduleEntry" + scheduleEntryId + "HeaderSaved").innerHTML = "<i class='bi bi-file-earmark-x-fill bigIcon px-2' style='color: red;'></i>";
 	}
 }
 
 function enabledChanged(check, scheduleEntryId) {
 	if (check.checked) {
-		document.getElementById("scheduleEntry" + scheduleEntryId + "HeaderEnabled").innerHTML = "<i class='bi bi-check-lg bigIcon pe-2' style='color: green;'></i>";
+		getElement("scheduleEntry" + scheduleEntryId + "HeaderEnabled").innerHTML = "<i class='bi bi-check-lg bigIcon pe-2' style='color: green;'></i>";
 	} else {
-		document.getElementById("scheduleEntry" + scheduleEntryId + "HeaderEnabled").innerHTML = "<i class='bi bi-x-lg bigIcon pe-2' style='color: red;'></i>";
+		getElement("scheduleEntry" + scheduleEntryId + "HeaderEnabled").innerHTML = "<i class='bi bi-x-lg bigIcon pe-2' style='color: red;'></i>";
 	}
 }
 
@@ -1200,7 +1165,24 @@ window.onload = function() {
 	getDefaultLanguage();
 	setDisplayProtocolSelect();
 	setDisplayOrientationSelect();
+	
 	let st = null; //screenshotTime
+	let idleBadge = getElement("idle");
+	let active = getElement("active");
+	let displayState = getElement("displayState");
+	let uptime = getElement("uptime");
+	let cpuLoad = getElement("cpuLoad");
+	let cpuTemp = getElement("cpuTemp");
+	let ramUsed = getElement("ramUsed");
+	let ramTotal = getElement("ramTotal");
+	let ramUsage = getElement("ramUsage");
+	let displayOnBtn = getElement("displayOnButton");
+	let displayStandbyBtn = getElement("displayStandbyButton");
+	let spinnerDisplayOn = getElement("spinnerDisplayOn");
+	let spinnerDisplayStandby = getElement("spinnerDisplayStandby");
+	let screenshot = getElement("screenshot");
+	let screenshotTime = getElement("screenshotTime");
+
 	let requestedUrl = 'cmd.php?id=5';
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.open('GET', requestedUrl, true);
@@ -1316,7 +1298,7 @@ function getDefaultLanguage() { //gets language from server settings.json
 
 function fetchLanguage(lang) { //Sets language to server and gets language.json
 	currentLanguage = lang;
-	document.getElementById(lang).selected = true;
+	getElement(lang).selected = true;
 	let requestedUrl = '../languages/' + currentLanguage + '.json';
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.timeout = timeoutTime;
