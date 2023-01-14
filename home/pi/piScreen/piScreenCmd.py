@@ -91,12 +91,12 @@ def printHelp():
 	Start last crontab entry
 --schedule-manually-command <--commandID> <commandID> [<--parameter> <parameter>]
 	Runs a single command selected by commandid
---schedule-manually-commandset <--id> <index>
+--schedule-manually-commandset <--id> <id>
 	Runs the commandset selected by id in schedule
 --schedule-manually-cron <--index> <index>
 	Runs the cron entry selected by index in schedule
 --schedule-manually-trigger <--index> <index>
-	Runs the trigger selected by index in schedule
+	Runs the trigger selected by index in schedule (Except startup trigger (ID=1))
 --add-cron <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"JJJJ-MM-DD hh:mm">] [--end <"JJJJ-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>]
 	Add a cronentry to schedule.json.
 --update-cron <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["JJJJ-MM-DD hh:mm"]] [--end ["JJJJ-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>]
@@ -1133,12 +1133,12 @@ for i, origItem in enumerate(sys.argv):
 					manualFile.write(json.dumps({"type":"commandset","id":int(sys.argv[i + 2])},indent=4))
 					manualFile.close()
 				else:
-					piScreenUtils.logging.warning("Index is no number")
-					verbose and print("Index is no number")
+					piScreenUtils.logging.warning("ID is no number")
+					verbose and print("ID is no number")
 					exit(1)
 			else:
-				piScreenUtils.logging.warning("Argument --index expected")
-				verbose and print("Argument --index expected")
+				piScreenUtils.logging.warning("Argument --id expected")
+				verbose and print("Argument --id expected")
 				exit(1)
 		else:
 			piScreenUtils.logging.warning("Not enough arguments")

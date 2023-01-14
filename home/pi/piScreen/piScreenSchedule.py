@@ -141,7 +141,7 @@ class cronEntry():
 				if not self.checkPattern(self.pattern[0], timestamp.minute):
 					return False		
 		commandInterpreter(self.command, self.parameter)
-		runCommandset(self.commandset)
+		commandsetTask(self.commandset)
 		return True
 
 	def checkPattern(self, pattern, check):
@@ -389,8 +389,18 @@ class trigger(threading.Thread):
 			else:
 				commandInterpreter(self.config["cases"][state]["command"],None)
 		if "commandset" in self.config["cases"][state]:
-			runCommandset(self.config["cases"][state]["commandset"])
+			commandsetTask(self.config["cases"][state]["commandset"])
 		if self.runOnce: self.active = False
+
+class commandsetTask(threading.Thread):
+	def __init__(self,commandsetID):
+		threading.Thread.__init__(self)
+		self.commandsetID = commandsetID
+		self.start()
+
+	def run(self):
+		runCommandset(self.commandsetID)
+		del self
 
 def runCommandset(commandsetID):
 	if not piScreenUtils.isInt(commandsetID):
@@ -461,7 +471,7 @@ def commandInterpreter(cmd:int, parameter:str):
 		os.system("poweroff")
 	elif cmd == 13: #Call commandset
 		if parameter:
-			runCommandset(parameter)
+			commandsetTask(parameter)
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 30: #Control display [0 = Standby, 1 = On]
@@ -570,7 +580,7 @@ while active:
 					elif manually["type"] == "commandset":
 						piScreenUtils.logging.info("Running commandset manually")
 						if "id" in manually:
-							runCommandset(manually["id"])
+							commandsetTask(manually["id"])
 						else:
 							piScreenUtils.logging.warning("There is no id attribut in manually file")
 					elif manually["type"] == "cron":
