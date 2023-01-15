@@ -21,15 +21,6 @@ try:
 	configModify = os.path.getmtime(piScreenUtils.paths.settings)
 	#Next line is tmp
 	conf = conf["settings"]
-	if "display" in conf:
-		if "protocol" in conf["display"]:
-			piScreenDisplayProtocol = conf["display"]["protocol"]
-			if os.path.exists(piScreenUtils.paths.displayCEC): piScreenUtils.logging.debug("Remove old CEC file") ; os.remove(piScreenUtils.paths.displayCEC)
-			if os.path.exists(piScreenUtils.paths.displayDDC): piScreenUtils.logging.debug("Remove old DDC file") ; os.remove(piScreenUtils.paths.displayDDC)
-			if os.path.exists(piScreenUtils.paths.displayMANUALLY): piScreenUtils.logging.debug("Remove old MANUALLY file") ; os.remove(piScreenUtils.paths.displayMANUALLY)
-			if piScreenDisplayProtocol == "cec": piScreenUtils.logging.info("Create file for cec mode") ; os.system(f"touch {piScreenUtils.paths.displayCEC}")
-			elif piScreenDisplayProtocol == "ddc": piScreenUtils.logging.info("Create file for ddc mode") ; os.system(f"touch {piScreenUtils.paths.displayDDC}")
-			elif piScreenDisplayProtocol == "manually": piScreenUtils.logging.info("Create file for manually mode") ; os.system(f"touch {piScreenUtils.paths.displayMANUALLY}")
 
 except ValueError as err:
 	piScreenUtils.logging.critical(err)

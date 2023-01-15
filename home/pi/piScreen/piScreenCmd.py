@@ -97,9 +97,9 @@ def printHelp():
 	Runs the cron entry selected by index in schedule
 --schedule-manually-trigger <--index> <index>
 	Runs the trigger selected by index in schedule (Except startup trigger (ID=1))
---add-cron <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"JJJJ-MM-DD hh:mm">] [--end <"JJJJ-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>]
+--add-cron <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"YYYY-MM-DD hh:mm">] [--end <"YYYY-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>]
 	Add a cronentry to schedule.json.
---update-cron <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["JJJJ-MM-DD hh:mm"]] [--end ["JJJJ-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>]
+--update-cron <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["YYYY-MM-DD hh:mm"]] [--end ["YYYY-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>]
 	Update a cronentry by index in schedule.json.
 --delete-cron <--index <cronIndex>>
 	Delete a cronentry by index from schedule.json.
@@ -495,18 +495,6 @@ def setDisplayProtocol(protocol):
 		settingsFile = open(piScreenUtils.paths.settings, "w")
 		settingsFile.write(json.dumps(settingsJson,indent=4))
 		settingsFile.close()
-		if os.path.exists(piScreenUtils.paths.displayCEC):
-			os.remove(piScreenUtils.paths.displayCEC)
-		if os.path.exists(piScreenUtils.paths.displayDDC):
-			os.remove(piScreenUtils.paths.displayDDC)
-		if os.path.exists(piScreenUtils.paths.displayMANUALLY):
-			os.remove(piScreenUtils.paths.displayMANUALLY)
-		if protocol == "cec":
-			open(piScreenUtils.paths.displayCEC,"w").close()
-		elif protocol == "ddc":
-			open(piScreenUtils.paths.displayDDC,"w").close()
-		elif protocol == "manually":
-			open(piScreenUtils.paths.displayMANUALLY,"w").close()
 	else:
 		piScreenUtils.logging.warning(f"{protocol} is no permitted protocol")
 		verbose and print(f"{protocol} is no permitted protocol")

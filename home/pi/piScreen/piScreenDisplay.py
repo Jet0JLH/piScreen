@@ -1,5 +1,7 @@
 #!/usr/bin/python3
-import cec, time, os, subprocess, monitorcontrol, piScreenUtils
+import cec, time, os, subprocess, monitorcontrol, piScreenUtils, threading, json
+
+enabled = True
 
 class cecElement:
 	device:cec.Device = None
@@ -75,7 +77,7 @@ class cecElement:
 def doCEC():
 	while True:
 		for i in range(5):
-			if not os.path.exists(piScreenUtils.paths.displayCEC): return
+			if not settings.values.protocol == "cec": return
 			if controlFileHandeling(piScreenUtils.paths.displayOff,not cecObj.isOn):
 				cecObj.cmdSelector("setStandby")
 			elif controlFileHandeling(piScreenUtils.paths.displayOn,cecObj.isOn):
@@ -93,7 +95,7 @@ def doCEC():
 
 def doDDC():
 	lastValue = None
-	while os.path.exists(piScreenUtils.paths.displayDDC):
+	while settings.values.protocol == "ddc":
 		monitors = monitorcontrol.get_monitors()
 		if len(monitors) > 0:
 			with monitors[0]:
@@ -147,7 +149,7 @@ def doMANUALLY():
 	os.system("xset +dpms")
 	os.system("xset s 0")
 	os.system("xset dpms 0 0 0")
-	while os.path.exists(piScreenUtils.paths.displayMANUALLY):
+	while settings.values.protocol == "manually":
 		status = str(subprocess.check_output(["xset", "-q"]))
 		if "Monitor is Off" in status:
 			if lastValue != "off": lastValue = "off" ; piScreenUtils.logging.info("Display status changed to off") ; open(piScreenUtils.paths.displayStatus,"w").write("off")
@@ -200,19 +202,47 @@ def controlFileHandeling(file:str,ready:bool) -> bool:
 		return True
 	return False
 
+class settingsWatcher(threading.Thread):
+	fileModify = 0
+	config = json.dumps({})
+	class values:
+		protocol = "cec"
+		orientation = 0
+		force = False
+	def __init__(self):
+		threading.Thread.__init__(self)
+		self.start()
+
+	def run(self):
+		while enabled:
+			fileModify = os.path.getmtime(piScreenUtils.paths.settings)
+			if fileModify == self.fileModify: continue
+			try:
+				piScreenUtils.logging.info("Config seems to be changed")
+				self.config = json.load(open(piScreenUtils.paths.settings))
+				self.fileModify = fileModify
+				if "settings" in self.config and "display" in self.config["settings"]:
+					if "protocol" in self.config["settings"]["display"]: self.values.protocol = self.config["settings"]["display"]["protocol"]
+					if "orientation" in self.config["settings"]["display"]: self.values.orientation = self.config["settings"]["display"]["orientation"]
+					if "force" in self.config["settings"]["display"]: self.values.force = self.config["settings"]["display"]["force"]
+			except:
+				piScreenUtils.logging.critical("Settingsfile seems to be demaged and could not be loaded as JSON object")
+			time.sleep(5)
+
 if __name__ == "__main__":
 	piScreenUtils.logging.info("Startup")
+	settings = settingsWatcher()
 	cec.init("/dev/cec0") #Can be run only once
 	cecObj = cecElement(cec.CECDEVICE_TV)
 	os.environ["DISPLAY"] = ":0"
-	while True:
-		if os.path.exists(piScreenUtils.paths.displayCEC):
+	while enabled:
+		if settings.values.protocol == "cec":
 			piScreenUtils.logging.info("Switch to CEC mode")	
 			doCEC()
-		elif os.path.exists(piScreenUtils.paths.displayDDC):
+		elif settings.values.protocol == "ddc":
 			piScreenUtils.logging.info("Switch to DDC mode")
 			doDDC()
-		elif os.path.exists(piScreenUtils.paths.displayMANUALLY):
+		elif settings.values.protocol == "manually":
 			piScreenUtils.logging.info("Switch to MANUALLY mode")
 			doMANUALLY()
 		time.sleep(1)
