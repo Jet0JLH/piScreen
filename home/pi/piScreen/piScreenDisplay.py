@@ -181,7 +181,7 @@ def controlFileHandeling(file:str,ready:bool) -> bool:
 	if os.path.exists(file):
 		if ready:
 			try:
-				os.remove(file)
+				if not settings.values.force: os.remove(file)
 			except:
 				piScreenUtils.logging.error(f"Unable to remove {file}")
 			return False

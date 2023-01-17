@@ -3,7 +3,8 @@
 		"language": "de",
 		"display": {
 			"protocol": "cec",
-			"orientation": 0
+			"orientation": 0,
+			"force": false
 		}
 	}
 }

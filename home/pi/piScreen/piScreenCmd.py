@@ -117,6 +117,8 @@ def printHelp():
 	Update a commandset by id in schedule.json.
 --delete-commandset <--id <id>>
 	Delete a commandset by id from schedule.json.
+--write-log <--level <debug/info/warning/error/critical>> <message>
+	Writes a logentry.
 	""")
 
 def checkForRootPrivileges():
@@ -369,16 +371,34 @@ def getMode():
 def screenOn():
 	piScreenUtils.logging.info("Create file for turning on the screen")
 	verbose and print("Create file for turning on the screen")
+	try:	
+		if os.path.exists(piScreenUtils.paths.displayOff): os.remove(piScreenUtils.paths.displayOff)
+		if os.path.exists(piScreenUtils.paths.displayOn): os.remove(piScreenUtils.paths.displayOn)
+		if os.path.exists(piScreenUtils.paths.displayStandby): os.remove(piScreenUtils.paths.displayStandby)
+	except:
+		piScreenUtils.logging.error("Could not remove ramdisk files")
 	open(piScreenUtils.paths.displayOn,"w").close()
 
 def screenStandby():
 	piScreenUtils.logging.info("Create file for turning screen to standby")
 	verbose and print("Create file for turning screen to standby")
+	try:	
+		if os.path.exists(piScreenUtils.paths.displayOff): os.remove(piScreenUtils.paths.displayOff)
+		if os.path.exists(piScreenUtils.paths.displayOn): os.remove(piScreenUtils.paths.displayOn)
+		if os.path.exists(piScreenUtils.paths.displayStandby): os.remove(piScreenUtils.paths.displayStandby)
+	except:
+		piScreenUtils.logging.error("Could not remove ramdisk files")
 	open(piScreenUtils.paths.displayStandby,"w").close()
 
 def screenOff():
 	piScreenUtils.logging.info("Create file for turning off the screen")
 	verbose and print("Create file for turning off the screen")
+	try:	
+		if os.path.exists(piScreenUtils.paths.displayOff): os.remove(piScreenUtils.paths.displayOff)
+		if os.path.exists(piScreenUtils.paths.displayOn): os.remove(piScreenUtils.paths.displayOn)
+		if os.path.exists(piScreenUtils.paths.displayStandby): os.remove(piScreenUtils.paths.displayStandby)
+	except:
+		piScreenUtils.logging.error("Could not remove ramdisk files")
 	open(piScreenUtils.paths.displayOff,"w").close()
 
 def screenSwitchInput():
@@ -421,7 +441,7 @@ def getLatestVersion(draft,prerelease):
 	import requests
 	releases = requests.get("https://api.github.com/repos/Jet0JLH/piScreen/releases")
 	if releases.status_code != 200:
-		verbose and print("Don't able to connect to Github API")
+		verbose and print("Unable to connect to Github API")
 		return
 	for release in releases.json():
 		isPrerelease = release["prerelease"]
@@ -1254,3 +1274,5 @@ for i, origItem in enumerate(sys.argv):
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 			exit(1)
+	elif item == "--write-log":
+		pass

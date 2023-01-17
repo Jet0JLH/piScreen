@@ -465,10 +465,10 @@ def commandInterpreter(cmd:int, parameter:str):
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 11: #Reboot
 		if saveMode: time.sleep(300) ; piScreenUtils.logging.info("We are in save mode. Reboot starts in 300s")
-		os.system("reboot")
+		os.system(piScreenUtils.paths.syscall + "--reboot")
 	elif cmd == 12: #Shutdown
 		if saveMode: time.sleep(300) ; piScreenUtils.logging.info("We are in save mode. Shutdown starts in 300s")
-		os.system("poweroff")
+		os.system(piScreenUtils.paths.syscall + "--shutdown")
 	elif cmd == 13: #Call commandset
 		if parameter:
 			commandsetTask(parameter)
