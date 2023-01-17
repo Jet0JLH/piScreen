@@ -141,7 +141,8 @@ class cronEntry():
 				if not self.checkPattern(self.pattern[0], timestamp.minute):
 					return False		
 		commandInterpreter(self.command, self.parameter)
-		commandsetTask(self.commandset)
+		if self.commandset != None:
+			commandsetTask(self.commandset)
 		return True
 
 	def checkPattern(self, pattern, check):
@@ -455,6 +456,12 @@ def commandInterpreter(cmd:int, parameter:str):
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 2: #LastCron
 		firstRun(True)
+	elif cmd == 3: #Write Log
+		parameter = parameter.split(":-:")
+		if len(parameter) >= 2:
+			os.system(f'{piScreenUtils.paths.syscall} --write-log --level {parameter[0]} "{parameter[1]}"')
+		else:
+			piScreenUtils.logging.error("Wrong structure of log command parameter")
 	elif cmd == 10: #Universal Call
 		if parameter:
 			try:

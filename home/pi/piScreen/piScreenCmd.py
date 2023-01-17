@@ -1275,4 +1275,26 @@ for i, origItem in enumerate(sys.argv):
 			verbose and print("Not enough arguments")
 			exit(1)
 	elif item == "--write-log":
-		pass
+		if "--level" in sys.argv:
+			index = sys.argv.index("--level") + 1
+			if index + 1 < len(sys.argv):
+				sys.argv[index] = sys.argv[index].lower()
+				if sys.argv[index] == "debug":
+					piScreenUtils.logging.debug(sys.argv[index + 1])
+				elif sys.argv[index] == "info":
+					piScreenUtils.logging.info(sys.argv[index + 1])
+				elif sys.argv[index] == "warning":
+					piScreenUtils.logging.warning(sys.argv[index + 1])
+				elif sys.argv[index] == "error":
+					piScreenUtils.logging.error(sys.argv[index + 1])
+				elif sys.argv[index] == "critical":
+					piScreenUtils.logging.critical(sys.argv[index + 1])
+				else:
+					piScreenUtils.logging.warning(f"{sys.argv[index]} is no known loglevel")
+					verbose and print(f"{sys.argv[index]} is no known loglevel")
+			else:
+				piScreenUtils.logging.warning("There are not enough parameter")
+				verbose and print("There are not enough parameter")
+		else:
+			piScreenUtils.logging.warning("Argument --level expected")
+			verbose and print("Argument --level expected")
