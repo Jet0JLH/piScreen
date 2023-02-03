@@ -119,6 +119,8 @@ def printHelp():
 	Delete a commandset by id from schedule.json.
 --write-log <--level <debug/info/warning/error/critical>> <message>
 	Writes a logentry.
+--set-language <countryCode>
+	Changes website language
 	""")
 
 def checkForRootPrivileges():
@@ -893,6 +895,14 @@ def deleteCommandset():
 		verbose and print("Not enough arguments")
 		exit(1)
 
+def changeLanguage(language:str):
+	piScreenUtils.logging.info(f"Set language to {language}")
+	settingsJson = loadSettings()
+	settingsJson["settings"]["language"] = language
+	settingsFile = open(piScreenUtils.paths.settings, "w")
+	settingsFile.write(json.dumps(settingsJson,indent=4))
+	settingsFile.close()
+
 #Main
 verbose = False
 sys.argv.pop(0) #Remove Path
@@ -1298,3 +1308,8 @@ for i, origItem in enumerate(sys.argv):
 		else:
 			piScreenUtils.logging.warning("Argument --level expected")
 			verbose and print("Argument --level expected")
+	elif item == "--set-language":
+		if i + 1 < len(sys.argv):
+			changeLanguage(sys.argv[i + 1])
+		else:
+			piScreenUtils.logging.warning("Not enough arguments")
