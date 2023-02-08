@@ -97,6 +97,7 @@
 													<select id='displayProtocolSelect' onchange='settingSaved("settingsButtonSaveDisplayProtocol", false);' class='disableOnDisconnect form-select border-secondary'>
 														<option id='cec' value='cec' lang-data='cec'>CEC</option>
 														<option id='ddc' value='ddc' lang-data='ddc'>DDC/CI</option>
+														<option id='manually' value='manually' lang-data='manually'>Manuell</option>
 													</select>
 													<label for="displayProtocolSelect" lang-data="display-protocol">Display Protokoll</label>
 												</div>
@@ -163,7 +164,7 @@
 			</div>
 			<div class='col-sm-12 col-lg-6 mb-4'>
 				<div class='card p-3 shadow'>
-					<h1 class='pb-2'><i class='bi bi-lightning-charge bigIcon px-2'></i><span lang-data='trigger-tile-header'>Trigger</span></h1>
+					<h1 class='pb-2'><i class='bi bi-lightning-charge bigIcon px-2'></i><span lang-data='startup-trigger'>Startuptrigger</span></h1>
 					<div class='form-check form-switch m-1' style='display: flex; flex-flow: row wrap; align-items: center;'>
 						<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="trigger0EnabledSwitch" onchange='triggerSaved(false, 0);'></input>
 						<label for="trigger0EnabledSwitch" class="px-2" lang-data='active'>Startup trigger</label>
@@ -190,43 +191,38 @@
 			</div>
 			<div class='col-lg-12 col-xl-6 mb-4'>
 				<div class='card p-3 shadow'>
-				<h1 class='pb-2'><i class='bi bi-calendar2-day bigIcon px-2'></i><span lang-data='timeschedule-tile-header'>Zeitplan</span></h1>
-					<div class="accordion" id="scheduleAccordion">
-						<div class="accordion-item" style='background-color: transparent; border: none !important;'>
-							<div id="collapseCommandsets" class="accordion-collapse collapse show" data-bs-parent="#scheduleAccordion">
-							<h3 class='pb-2 accordion-header' lang-data="edit-timeschedule">Zeitplan bearbeiten</h3>
-								<div class="accordion-body p-0">
-									<!--<div style='display:flex;flex-flow:row wrap;align-items:center;'>
-										<div style='width:auto' class='form-check form-switch'>
-										<input id='scheduleExclusionActiv' class='form-check-input' type='checkbox' checked></input>
-									</div>
-									<span lang-data='ignore-timeschedule'>Zeitplan ignorieren</span> 
-									<div class='mx-1' style='display:flex;flex-flow:row wrap;align-items:center;'>
-										<span lang-data='from'>Von</span> <input id='scheduleExclusionFrom' style='display:inline;width:auto' type='date' class='form-control mx-2'></input> <span lang-data='to'>bis</span> <input id='scheduleExclusionTo' style='display:inline;width:auto' type='date' class='form-control mx-2'></input></div>
-									</div>
-									<hr>-->
-									<div class="accordion" id="scheduleEntryCollectionAccordion">
+					<h1 class='pb-2'><i class='bi bi-calendar-check bigIcon px-2'></i><span lang-data='planner'>Planer</span></h1>
+					<table class="pb-3" style="width: 100%;">
+						<tr class="text-center">
+							<td style="width: 33%;">
+								<button type="radio" id="option1" name="options" class='disableOnDisconnect btn-check' data-bs-target="#timeActionsCarousel" data-bs-slide-to="0" style="cursor: pointer;" checked></button>
+								<label id="plannerOption0" class="btn btn-primary w-100 m-2 mb-4" for="option1"><i class='bi bi-calendar2-day bigIcon px-2'></i><span lang-data='timeschedule'>Zeitplan</label>
+							</td>
+							<td style="width: 33%;">
+								<button type="radio" id="option2" name="options" class='disableOnDisconnect btn-check' data-bs-target="#timeActionsCarousel" data-bs-slide-to="1" style="cursor: pointer;"></button>
+								<label id="plannerOption1" class="btn btn-secondary w-100 m-2 mb-4" for="option2"><i class='bi bi-terminal bigIcon px-2'></i><span lang-data='commandsets'>Commandsets</label>
+							</td>
+							<td style="width: 33%;">
+								<button type="radio" id="option3" name="options" class='disableOnDisconnect btn-check' data-bs-target="#timeActionsCarousel" data-bs-slide-to="2" style="cursor: pointer;"></button>
+								<label id="plannerOption2" class="btn btn-secondary w-100 m-2 mb-4" for="option3"><i class='bi bi-lightning-charge bigIcon px-2'></i><span lang-data='trigger'>Trigger</span></label>
+							</td>
+						</tr>
+					</table>
+					<div id="timeActionsCarousel" class="carousel slide">
+						<div class="carousel-inner">
+							<div class="carousel-item active">
+								<div id='scheduleEntryCollectionList' class="list-group">
 
-									</div>
-									<button id='newScheduleEntry' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='generateNewScheduleEntry()'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-entry'>Neuer Eintrag</span></button>
-									<button id='lastCronButton' class='disableOnDisconnect btn btn-outline-warning mt-2 px-2' onclick="executeLastCron();"><i class='bi bi-play pe-2'></i><span id='executeLastCronSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data='lastcron'>Letzter Eintrag ausführen</span></button>
-									<hr>
-									<button id='showCommandsets' class='disableOnDisconnect btn btn-outline-primary' onclick='getScheduleFromServer(); rearrangeGui();' data-bs-toggle="collapse" data-bs-target="#collapseTimeSchedule"><i class='bi bi-pencil-square pe-2'></i><span lang-data="edit-commandsets">Commandsets bearbeiten</span></button>
+								</div>
+								<div>
+									<button id='newScheduleEntry' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showCronModal(Math.floor(Math.random() * 9999) - 10000 );'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-entry'>Neuer Eintrag</span></button>
 								</div>
 							</div>
-						</div>
-
-						<div class="accordion-item" style='background-color: transparent; border: none !important;'>
-							<div id="collapseTimeSchedule" class="accordion-collapse collapse" data-bs-parent="#scheduleAccordion">
-								<h3 class='pb-2 accordion-header' lang-data="edit-commandsets">Commandsets bearbeiten</h3>
-								<div class="accordion-body p-0">
-									<!--commandset accordion-->
-									<div class="accordion" id="commandsetCollectionAccordion">
-									</div>
-									<button id='commandsetEntryButtonAdd' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='generateCommandsetEntry();'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-commandset'>Neues Commandset</span></button>
-									<hr>
-									<button id='showTimeschedule' class='disableOnDisconnect btn btn-outline-primary' onclick='getScheduleFromServer(); rearrangeGui();' data-bs-toggle="collapse" data-bs-target="#collapseCommandsets"><i class='bi bi-pencil-square pe-2'></i><span lang-data='edit-timeschedule'>Neues Commandset</span></button>
+							<div class="carousel-item">
+								<div id="commandsetCollectionList" class="list-group">
 								</div>
+							<button id='commandsetEntryButtonAdd' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showCommandsetModal();'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-commandset'>Neues Commandset</span></button>
+							<div class="carousel-item">
 							</div>
 						</div>
 					</div>
@@ -234,16 +230,72 @@
 			</div>
 		</div>
 	</main>
+	<div id='cronModal' class='modal fade' tabindex='-1'>
+		<div class='modal-xl modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-xl-down'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<h5 id='cronModalTitle' class='modal-title'></h5>
+					<button class='btn-close btn-close-white' data-bs-dismiss='modal'></button>
+				</div>
+				<div id='cronModalBody' class='modal-body'>
+
+				</div>
+				<hr>
+				<div class='modal-footer'>
+					<table style="width: 100%;">
+						<tr>
+							<td style="width: 50%;">
+								<button id="scheduleEntryButtonDelete" class="disableOnDisconnect btn btn-outline-danger m-1" onclick='deleteScheduleEntry();'><i class='bi bi-trash pe-2'></i><span lang-data='delete-commandset'></span></button>
+							</td>
+							<td>
+								<button id='scheduleEntryButtonSave' class='btn btn-outline-success m-1' onclick='saveScheduleEntry();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
+								<button id='scheduleEntryButtonCancel' class='btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id='commandsetModal' class='modal fade' tabindex='-1'>
+		<div class='modal-xl modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-xl-down'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<h5 id='commandsetModalTitle' class='modal-title'></h5>
+					<button class='btn-close btn-close-white' data-bs-dismiss='modal'></button>
+				</div>
+				<div id='commandsetModalBody' class='modal-body'>
+
+				</div>
+				<hr>
+				<div class='modal-footer'>
+					<table style="width: 100%;">
+						<tr>
+							<td style="width: 50%;">
+								<button id="commandsetEntryButtonDelete" class="disableOnDisconnect btn btn-outline-danger m-1" onclick='deleteCommandsetEntry();'><i class='bi bi-trash pe-2'></i><span lang-data='delete-commandset'></span></button>
+							</td>
+							<td>
+								<button id='commandsetEntryButtonSave' class='btn btn-outline-success m-1' onclick='saveCommandsetEntry();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
+								<button id='commandsetEntryButtonCancel' class='btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div id='modal' class='modal fade' tabindex='-1'>
 		<div class='modal-lg modal-dialog modal-dialog-centered'>
 			<div class='modal-content'>
 				<div class='modal-header'>
 					<h5 class='modal-title'></h5>
-					<button class='btn-close' data-bs-dismiss='modal'></button>
+					<button class='btn-close btn-close-white' data-bs-dismiss='modal'></button>
 				</div>
 				<div class='modal-body'>
 
 				</div>
+				<hr>
 				<div class='modal-footer'>
 					<button id='modal-cancelBtn' class='btn btn-secondary' data-bs-dismiss='modal' lang-data='cancel'>Abbruch</button>
 					<button id='modal-actionBtn' class='btn'></button>

@@ -1,9 +1,8 @@
 //genereal variables
 var timeoutTime = 1994;
 //schedule
-var scheduleEntryCount = 0;
+let commandsetCommandCount = 0;
 var commandsetEntryCount = 0;
-var commandEntryCounts = {};
 const commandCollection = [//text, parameter
 		["---", false], ["sleep", "text"], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["universal", "text"], ["restart-device", false], ["shutdown-device", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
@@ -16,7 +15,7 @@ const commandCollection = [//text, parameter
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 	];
-var scheduleEntryShown = false;
+var scheduleObj;
 //import
 var scheduleToImport = null;
 //trigger
@@ -28,14 +27,16 @@ var modalTitle = modal._element.getElementsByClassName('modal-title')[0];
 var modalBody = modal._element.getElementsByClassName('modal-body')[0];
 var modalCancelBtn = getElement("modal-cancelBtn");
 var modalActionBtn = getElement("modal-actionBtn");
+//modals
+var cronModal = new bootstrap.Modal(getElement("cronModal"));
+var commandsetModal = new bootstrap.Modal(getElement("commandsetModal"));
 //tooltip
 var tooltipTriggerList;
 var tooltipList;
 //language
 var currentLanguage = null;
-var availableLanguages = [];
 var languageStrings = null;
-
+var prevItemsEnabled = null;
 //general functions
 function addLeadingZero (input) {
 	intInput = parseInt(input);
@@ -45,6 +46,7 @@ function addLeadingZero (input) {
 		return input;
 	}
 }
+
 function setToUnknownValues() {
 	getElement("active").classList = "badge rounded-pill bg-danger";
 	getElement("active").innerHTML = getLanguageAsText('offline');
@@ -65,159 +67,78 @@ function setToUnknownValues() {
 	getElement("ramUsage").innerHTML = "???";
 }
 
+function connectionStatusChanged(status) {
+	return prevItemsEnabled != status;
+}
+
 function enableElements(enable) {
 	let disable = !enable;
 	let elementsToDisable = document.getElementsByClassName("disableOnDisconnect");
 	for (let i = 0; i < elementsToDisable.length; i++) {
 		elementsToDisable[i].disabled = disable;
 	}
+	prevItemsEnabled = enable;
 }
 
 function getElement(id) {
 	return document.getElementById(id);
 }
 
-function generateNewScheduleEntry(enabled=true, pattern="* * * * *", start="", end="", command=0, commandset=0, parameter="", saved=false, newScheduleEntry=true) {
-	let eId = scheduleEntryCount;
-	if (command < 0 || command > commandCollection.length - 1) {
-		console.error("Command " + command + " not known! CronID: " + eId);
-		command = 0;
-	} else if (commandCollection[command][0] == "") {
-		console.error("Command " + command + " not assigned! CronID: " + eId);
-		command = 0;
+function commandsetExists(commandsetId) {
+	return undefined != getCommandsetName(commandsetId);
+}
+
+function generateNewScheduleEntry(scheduleEntryId=-1, scheduleEntryObject) {//enabled=true, pattern="* * * * *", start="", end="", command=0, commandset=0, parameter="") {
+	if (scheduleEntryObject.command == undefined) scheduleEntryObject.command = 0;
+	if (scheduleEntryObject.parameter == undefined) scheduleEntryObject.parameter = "";
+	if (scheduleEntryObject.commandset == undefined) scheduleEntryObject.commandset = 0;
+	
+	if (scheduleEntryObject.command < 0 || scheduleEntryObject.command > commandCollection.length - 1) {
+		console.error("Command " + scheduleEntryObject.command + " not known! CronID: " + scheduleEntryId);
+		scheduleEntryObject.command = 0;
+	} else if (commandCollection[scheduleEntryObject.command][0] == "") {
+		scheduleEntryObject.command = 0;
+	}
+	
+	let start, end;
+	if (scheduleEntryObject.start == undefined) start = "";
+	else {
+		let startDateTime = new Date(scheduleEntryObject.start);
+		start = "<td>" + addLeadingZero(startDateTime.getHours()) + ":" + addLeadingZero(startDateTime.getMinutes()) + " Uhr " + addLeadingZero(startDateTime.getDay()) + "." + addLeadingZero(startDateTime.getMonth() + 1) + "." + addLeadingZero(startDateTime.getFullYear()) + "</td>";
+	}
+	if (scheduleEntryObject.end == undefined) end = "";
+	else {
+		let endDateTime = new Date(scheduleEntryObject.end);
+		end = "<td>" + addLeadingZero(endDateTime.getHours()) + ":" + addLeadingZero(endDateTime.getMinutes()) + " Uhr " + addLeadingZero(endDateTime.getDay()) + "." + addLeadingZero(endDateTime.getMonth() + 1) + "." + addLeadingZero(endDateTime.getFullYear()) + "</td>";
 	}
 
-	let startDate = start.split(" ")[0];
-	let startTime = start.split(" ")[1];
-	let endDate = end.split(" ")[0];
-	let endTime = end.split(" ")[1];
 	let newScheduleEntryObj = document.createElement('div');
-	newScheduleEntryObj.id = "scheduleEntry" + eId;
-	newScheduleEntryObj.className = "accordion-item border border-primary";
+	newScheduleEntryObj.id = "scheduleEntry" + scheduleEntryId;
+	newScheduleEntryObj.className = "disableOnDisconnect scheduleEntryListItem list-group-item list-group-item-action border border-primary p-3";
 	newScheduleEntryObj.style.backgroundColor = "transparent";
-	newScheduleEntryObj.innerHTML = `	<h2 class="accordion-header">
-			<label id='scheduleEntry${eId}Label' class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#collapseScheduleEntry${eId}Collection" style='width: 100%; cursor: pointer;'>
-				<span id='scheduleEntry${eId}HeaderEnabled' style='width: 10%;'>${enabled ? "<i class='bi bi-check-lg bigIcon pe-2' style='color: green;'></i>" : "<i class='bi bi-x-lg bigIcon pe-2' style='color: red;'></i>"}</span>
-				<span id='scheduleEntry${eId}HeaderCommandset' class='px-2' style='width: 30%;'>${commandset}</span>
-				<span id='scheduleEntry${eId}HeaderCommand' class='px-2' style='width: 30%;' lang-data='${commandCollection[command][0]}'>${commandCollection[command][0]}</span>
-				<span id='scheduleEntry${eId}HeaderCron' class='px-2' style='width: 20%;'>${pattern}</span>
-				<span id='scheduleEntry${eId}HeaderSaved' class='px-2 text-end' style='width: 10%;'></span>
-			</label>
-		</h2>
-		<div id="collapseScheduleEntry${eId}Collection" class="accordion-collapse collapse" data-bs-parent="#scheduleEntryCollectionAccordion">
-			<div class="accordion-body">
-				<table class="table-sm" style='width: 100%;'>
-					<div id='scheduleEntry${eId}'>
-						<tr>
-							<td style='width: 50%;'>
-								<div class="form-check form-switch">
-									<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="scheduleEntry${eId}EnabledSwitchCheck" onchange="enabledChanged(this, ${eId}); displayScheduleEntrySaved(false, ${eId});" ${enabled ? "checked" : ""}>
-									<label class="form-check-label" for="scheduleEntry${eId}EnabledSwitchCheck" lang-data="active">Aktiviert</label>
-								</div>
-							</td>
-							<td style='width: 50%;'>
-								<button id="scheduleEntry${eId}ButtonExecute" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeScheduleEntry(${eId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='scheduleEntry${eId}ButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<div class='form-floating'>
-									<input type='text' class='disableOnDisconnect form-control border border-secondary' name='cronentry' id='cronentry${eId}' value='${pattern}' onkeyup='checkCronEntryValidity(this, ${eId}); showScheduleEntryHeader(${eId}); displayScheduleEntrySaved(false, ${eId});'>
-									<label for='cronentry${eId}'lang-data="cron-entry">Croneintrag</label>
-								</div>
-							</td>
-							<td>
-								<i class='bi-question-octagon p-2' style='cursor: pointer;' id='cronEntry${eId}Help' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="${getLanguageAsText('help')}" onclick='showModal(getLanguageAsText("help"), getLanguageAsText("cronHelpText"), false, true, getLanguageAsText("ok"));'></i>
-							</td>
-						</tr>
-						<tr>
-							<td colspan="2">
-								<div class='form-floating'>
-									<select id='scheduleEntry${eId}CommandsetSelect' class='disableOnDisconnect commandsetDropdown form-select border border-secondary' onchange='showScheduleEntryHeader(${eId}); displayScheduleEntrySaved(false, ${eId});' value='${commandset}'>
-									</select>
-									<label for="scheduleEntry${eId}CommandsetSelect" lang-data="choose-commandset">Befehlssatz auswählen</label>
-								</div>
-							</td>
-						</tr>
-						<tr>
-							<td>
-								<div class='form-floating'>
-									<select id='scheduleEntry${eId}CommandSelect' class='disableOnDisconnect form-select border border-secondary' onchange='showScheduleEntryHeader(${eId}); displayScheduleEntrySaved(false, ${eId}); addParameterToScheduleEntry(${eId}, value);'>
-									</select>
-									<label for="scheduleEntry${eId}CommandSelect" lang-data="choose-command">Befehl auswählen</label>
-								</div>
-							</td>
-							<td id="scheduleEntry${eId}ParameterCell">
-							</td>
-						</tr>
-						<tr>
-							<td colspan='3' class='p-0'>
-								<table class='p-0' style="width: 100%;">
-									<tr>
-										<td colspan='2' class='p-2'>
-											<div class="form-check form-switch">
-												<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="scheduleEntry${eId}ValiditySwitchCheckFrom" onchange='toggleValidityFrom(${eId}, checked); displayScheduleEntrySaved(false, ${eId});' ${start != "" ? "checked" : ""}>
-												<label class="form-check-label" for="scheduleEntry${eId}ValiditySwitchCheckFrom" lang-data="valid-from">Gültig von</label>
-											</div>
-										</td>
-										<td colspan='2' class='p-2'>
-											<div class="form-check form-switch">
-												<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="scheduleEntry${eId}ValiditySwitchCheckTo" onchange='toggleValidityTo(${eId}, checked); displayScheduleEntrySaved(false, ${eId});' ${end != "" ? "checked" : ""}>
-												<label class="form-check-label" for="scheduleEntry${eId}ValiditySwitchCheckTo" lang-data="valid-to">Gültig bis</label>
-											</div>
-										</td>
-									</tr>
-									<tr>
-										<td id='scheduleEntry${eId}ValidityTimeSpanFrom1' class='px-2' lang-data='from'>
-											von
-										</td>
-										<td id='scheduleEntry${eId}ValidityTimeSpanFrom2'>
-											<div class='input-group'>
-												<input id='scheduleEntry${eId}StartTime' name='scheduleEntry${eId}StartDateTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" onchange="displayScheduleEntrySaved(false, ${eId});" style="text-align: center; width: 40%;" value="${startTime}">
-												<input id='scheduleEntry${eId}StartDate' type="date" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 60%;" value="${startDate}">
-											</div>
-										</td>
-										<td id='scheduleEntry${eId}ValidityTimeSpanTo1' class='px-2' lang-data='to'>
-											bis
-										</td>
-										<td id='scheduleEntry${eId}ValidityTimeSpanTo2'>
-											<div class='input-group'>
-												<input id='scheduleEntry${eId}EndTime' name='scheduleEntry${eId}EndDateTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" onchange="displayScheduleEntrySaved(false, ${eId});" style="text-align: center; width: 40%;" value="${endTime}">
-												<input id='scheduleEntry${eId}EndDate' type="date" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 60%;" value="${endDate}">
-											</div>
-										</td>
-									</tr>
-								</table>
-							</td>
-						</tr>
-					</div>
-				</table>
-				<button id="scheduleEntry${eId}SaveButton" class="disableOnDisconnect btn btn-outline-success mt-2" onclick='saveScheduleEntry(${eId})' data-bs-toggle="collapse" data-bs-target="#collapseScheduleEntry${eId}Collection"><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
-				<button id="scheduleEntry${eId}ButtonDelete" class="disableOnDisconnect btn btn-danger mt-2" onclick='deleteScheduleEntry(${eId})' style='float: right;'><i class='bi bi-trash pe-2'></i><span lang-data='delete-commandset'>${getLanguageAsText("delete-entry")}</span></button>
-				<i id='scheduleEntryInfo${eId}' data='${newScheduleEntry}' class='bi bi-info-circle mt-3' style="float: right;" data-bs-toggle="tooltip" data-bs-placement="right" data-bs-title="CronID: ${eId}" hidden></i>
-			</div>
-		</div>
-	</div>`;
+	newScheduleEntryObj.onclick = () => {showCronModal(scheduleEntryId);};
+	newScheduleEntryObj.style.cursor = "pointer";
+	newScheduleEntryObj.innerHTML = `<div class="d-flex w-100 justify-content-between">
+	<p><i class='bi bi-asterisk bigIcon pe-2'></i><span lang-data="cron-entry">${getLanguageAsText("cron-entry")}</span>: ${scheduleEntryObject.pattern}</p>
+	<p><span lang-data="active">${getLanguageAsText("active")}</span>: ${scheduleEntryObject.enabled ? "<i class='bi bi-check-lg bigIcon pe-2' style='color: green;'></i>" : "<i class='bi bi-x-lg bigIcon pe-2' style='color: red;'></i>"}</p>
+</div>
+<i class='bi bi-terminal bigIcon pe-2'></i><span lang-data="command">${getLanguageAsText("command")}</span>: ${getLanguageAsText(commandCollection[scheduleEntryObject.command][0])}<br>
+<i class='bi bi-node-plus bigIcon pe-2'></i><span lang-data="parameter">${getLanguageAsText("parameter")}</span>: ${scheduleEntryObject.parameter.length > 50 ? scheduleEntryObject.parameter.substring(0, 40) + "..." : scheduleEntryObject.parameter}<br><br>
+<i class='bi bi-file-ruled bigIcon pe-2'></i><span lang-data="commandset">${getLanguageAsText("commandset")}</span>: ${commandsetExists(scheduleEntryObject.commandset) ? getCommandsetName(scheduleEntryObject.commandset) : "---"}<br><br>
+<table style='width: 100%;'>
+	<tr>
+		${scheduleEntryObject.start == undefined ? "" : "<td style='width: 50%;'><i class='bi bi-stopwatch bigIcon pe-2'></i><span lang-data='valid-from'>" + getLanguageAsText('valid-from') + "</span>: </td>"}
+		${scheduleEntryObject.end == undefined ? "" : "<td style='width: 50%;'><i class='bi bi-stopwatch bigIcon pe-2'></i><span lang-data='valid-from'>" + getLanguageAsText('valid-to') + "</span>: </td>"}
+	</tr>
+	<tr>
+		${start}
+		${end}
+	</tr>
+</table>`;
 
-	//Adding element to document
-	getElement("scheduleEntryCollectionAccordion").appendChild(newScheduleEntryObj);
-	if (newScheduleEntry) getElement("scheduleEntry" + eId + "Label").click();
+	getElement("scheduleEntryCollectionList").appendChild(newScheduleEntryObj);
+	if (scheduleEntryId < 0) getElement("scheduleEntry" + scheduleEntryId).click();
 
-	displayScheduleEntrySaved(saved, eId);
-
-	toggleValidityFrom(eId, getElement("scheduleEntry" + eId + "ValiditySwitchCheckFrom").checked);
-	toggleValidityTo(eId, getElement("scheduleEntry" + eId + "ValiditySwitchCheckTo").checked);
-
-	addCommandsetsToDropdown("scheduleEntry" + eId + "CommandsetSelect", commandset);
-
-	addCommandsToDropdown("scheduleEntry" + eId + "CommandSelect");
-	getElement("scheduleEntry" + eId + "CommandSelect").value = command;
-	addParameterToScheduleEntry(eId, command, parameter);
-
-	showScheduleEntryHeader(eId);
-	tooltipTriggerList = document.querySelectorAll('[data-bs-toggle="tooltip"]');
-	tooltipList = [...tooltipTriggerList].map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
-	scheduleEntryCount += 1;
 }
 
 function addCommandsToDropdown(dropdownId) {
@@ -234,21 +155,21 @@ function addCommandsToDropdown(dropdownId) {
 	}
 }
 
-function addParameterToScheduleEntry(scheduleEntryId, commandId, parameter) {
-	let cell = getElement("scheduleEntry" + scheduleEntryId + "ParameterCell");
+function addParameterToScheduleEntry(commandId, parameter) {
+	let cell = getElement("scheduleEntryParameterCell");
 	cell.innerHTML = "";
 	//add element
 	let div = document.createElement("div");
-	div.id = "scheduleEntry" + scheduleEntryId + "ParameterInputDiv";
+	div.id = "scheduleEntryParameterInputDiv";
 	div.className = "form-floating";
 
 	if (commandCollection[commandId][1] == false) {
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
-		div.innerHTML = `<input id='scheduleEntry${scheduleEntryId}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary' onkeyup='displayScheduleEntrySaved(false, ${scheduleEntryId});' value='${parameter}' lang-data='parameter'>`;
+		div.innerHTML = `<input id='scheduleEntryParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary' value='${parameter}' lang-data='parameter'>`;
 		if (parameter == undefined) parameter = "";
 	} else if (Array.isArray(commandCollection[commandId][1])) {
-		let htmlSelect = `<select id='scheduleEntry${scheduleEntryId}ParameterInput' onchange='displayScheduleEntrySaved(false, ${scheduleEntryId});' class='disableOnDisconnect form-select border border-secondary'>\n`;
+		let htmlSelect = `<select id='scheduleEntryParameterInput' class='disableOnDisconnect form-select border border-secondary'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
 			htmlSelect += `<option value='${commandCollection[commandId][1][i][0]}' lang-data='${commandCollection[commandId][1][i][1]}'>${getLanguageAsText(commandCollection[commandId][1][i][1])}</option>\n`;
 		}
@@ -258,11 +179,11 @@ function addParameterToScheduleEntry(scheduleEntryId, commandId, parameter) {
 	}
 
 	cell.appendChild(div);
-	getElement("scheduleEntry" + scheduleEntryId + "ParameterInput").value = parameter;
+	getElement("scheduleEntryParameterInput").value = parameter;
 
 	//add label
 	let label = document.createElement("label");
-	label.htmlFor = "scheduleEntry" + scheduleEntryId + "ParameterInput";
+	label.htmlFor = "scheduleEntryParameterInput";
 	label.setAttribute('lang-data', 'parameter');
 	label.innerHTML = getLanguageAsText('parameter');
 	div.appendChild(label);
@@ -320,14 +241,13 @@ function getScheduleFromServer() {
 }
 
 function loadScheduleJson(jsonString) {
-	scheduleEntryCount = 0;
-	commandsetEntryCount = 0;
-	commandEntryCounts = {};
-	let scheduleObj = JSON.parse(jsonString);
-	for (let i = 0; i < scheduleObj.commandsets.length; i++) {
-		commandEntryCounts[scheduleObj.commandsets[i].id] = 0;
+	try {
+		scheduleObj = JSON.parse(jsonString);
+	} catch (error) {
+		showServerError("Failed to load time schedule", "schedule.json", error);
+		return;
 	}
-	getElement("commandsetCollectionAccordion").innerHTML = "";
+	getElement("commandsetCollectionList").innerHTML = "";
 	for (let i = 0; i < scheduleObj.commandsets.length; i++) {//commandsets
 		let commandsetCommandsArray = [];
 		let commandsetObj = scheduleObj.commandsets[i];
@@ -336,21 +256,30 @@ function loadScheduleJson(jsonString) {
 		}
 		generateCommandsetEntry(commandsetObj.name, commandsetCommandsArray, commandsetObj.id, true);
 	}
-	getElement("scheduleEntryCollectionAccordion").innerHTML = "";
+	
+	getElement("scheduleEntryCollectionList").innerHTML = "";
 	for (let i = 0; i < scheduleObj.cron.length; i++) {//crons
 		let cronObj = scheduleObj.cron[i];
-		generateNewScheduleEntry(cronObj.enabled, cronObj.pattern, cronObj.start, cronObj.end, cronObj.command, cronObj.commandset, cronObj.parameter, true, false);
+		generateNewScheduleEntry(i, cronObj);
 	}
+
 	addCommandsToDropdown("trigger0CommandSelect");//trigger
 	addCommandsetsToDropdown("trigger0CommandsetSelect");//trigger
 	for (let i = 0; i < scheduleObj.trigger.length; i++) {//trigger parameter
 		let triggerObj = scheduleObj.trigger[i];
 		if (triggerObj.trigger == 1) {
 			startupTriggerIndex = i;
-			getElement("trigger0EnabledSwitch").checked = triggerObj.enabled;
-			getElement("trigger0CommandSelect").value = triggerObj.cases.true.command;
-			getElement("trigger0CommandsetSelect").value = triggerObj.cases.true.commandset;
-			addParameterToTrigger(0, triggerObj.cases.true.command, triggerObj.cases.true.parameter);
+			if (triggerObj.enabled != undefined) getElement("trigger0EnabledSwitch").checked = triggerObj.enabled;
+			else getElement("trigger0EnabledSwitch").checked = false;
+			
+			if (triggerObj.cases.true.command != undefined) {
+				getElement("trigger0CommandSelect").value = triggerObj.cases.true.command;
+				addParameterToTrigger(0, triggerObj.cases.true.command, triggerObj.cases.true.parameter);
+			} else getElement("trigger0CommandSelect").value = 0;
+
+			if (triggerObj.cases.true.commandset != undefined) {
+				getElement("trigger0CommandsetSelect").value = triggerObj.cases.true.commandset;
+			} else getElement("trigger0CommandsetSelect").value = 0;
 			break;
 		}
 	}
@@ -382,6 +311,142 @@ function showModal(title="Titel", body="---", showClose=true, showCancel=true, c
 	modal.show();
 }
 
+function showCronModal(scheduleEntryId) {
+	//default new entry
+	let obj = {
+		"enabled": true,
+		"pattern": "* * * * *"
+	};
+	if (scheduleObj.cron[scheduleEntryId] != undefined) { // load already existing schedule entry
+		obj = scheduleObj.cron[scheduleEntryId];
+	}
+	let enabled = obj.enabled;
+	let pattern = obj.pattern;
+	let command = obj.command == undefined ? 0 : obj.command;
+	let commandset = obj.commandset == undefined ? 0 : obj.commandset;
+	let parameter = obj.parameter;
+	let start = obj.start;
+	let end = obj.end;
+	let startDate = "";
+	if (obj.start) {
+		startDate = start.split(" ")[0];
+	}
+	let startTime = "";
+	if (obj.start) {
+		startTime = start.split(" ")[1];
+	}
+	let endDate = "";
+	if (obj.end) {
+		endDate = end.split(" ")[0];
+	}
+	let endTime = "";
+	if (obj.end) {
+		endTime = end.split(" ")[1];
+	}
+
+	getElement("cronModalTitle").innerHTML = `<span lang-data="cron-entry">${getLanguageAsText("cron-entry")}</span>: <span id='currentScheduleEntryId'>${scheduleEntryId}</span>`;
+	getElement("cronModalBody").innerHTML = `<table class="table-sm" style='width: 100%;'>
+	<div id='scheduleEntry'>
+		<tr>
+			<td style='width: 50%;'>
+				<div class="form-check form-switch">
+					<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="scheduleEntryEnabledSwitchCheck" ${enabled ? "checked" : ""}>
+					<label class="form-check-label" for="scheduleEntryEnabledSwitchCheck" lang-data="active">${getLanguageAsText("active")}</label>
+				</div>
+			</td>
+			<td style='width: 50%;'>
+				<button id="scheduleEntryButtonExecute" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeCurrentScheduleEntry(${scheduleEntryId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='scheduleEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class='form-floating'>
+					<input type='text' class='disableOnDisconnect form-control border border-secondary' name='cronentry' id='cronentry' value='${pattern}' onkeyup='checkCronEntryValidity(this);'>
+					<label for='cronentry' lang-data="cron-entry">${getLanguageAsText("cron-entry")}</label>
+				</div>
+			</td>
+			<td>
+				<i class='bi-question-octagon p-2' style='cursor: pointer;' id='cronEntryHelp' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="${getLanguageAsText('help')}" onclick='showModal(getLanguageAsText("help"), getLanguageAsText("cronHelpText"), false, true, getLanguageAsText("ok"));'></i>
+			</td>
+		</tr>
+		<tr>
+			<td>
+				<div class='form-floating'>
+					<select id='scheduleEntryCommandSelect' class='disableOnDisconnect form-select border border-secondary' onchange='addParameterToScheduleEntry(value);'>
+					</select>
+					<label for="scheduleEntryCommandSelect" lang-data="choose-command">${getLanguageAsText("choose-command")}</label>
+				</div>
+			</td>
+			<td id="scheduleEntryParameterCell">
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<div class='form-floating'>
+					<select id='scheduleEntryCommandsetSelect' class='disableOnDisconnect commandsetDropdown form-select border border-secondary' value='${commandset}'>
+					</select>
+					<label for="scheduleEntryCommandsetSelect" lang-data="choose-commandset">${getLanguageAsText("choose-commandset")}</label>
+				</div>
+			</td>
+		</tr>
+		<tr>
+			<td colspan='3' class='p-0'>
+				<table class='p-0' style="width: 100%;">
+					<tr>
+						<td colspan='2' class='p-2'>
+							<div class="form-check form-switch">
+								<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="scheduleEntryValiditySwitchCheckFrom" onchange='toggleValidityFrom(checked);' ${start != undefined ? "checked" : ""}>
+								<label class="form-check-label" for="scheduleEntryValiditySwitchCheckFrom" lang-data="valid-from">${getLanguageAsText("valid-from")}</label>
+							</div>
+						</td>
+						<td colspan='2' class='p-2'>
+							<div class="form-check form-switch">
+								<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="scheduleEntryValiditySwitchCheckTo" onchange='toggleValidityTo(checked);' ${end != undefined ? "checked" : ""}>
+								<label class="form-check-label" for="scheduleEntryValiditySwitchCheckTo" lang-data="valid-to">${getLanguageAsText("valid-to")}</label>
+							</div>
+						</td>
+					</tr>
+					<tr>
+						<td id='scheduleEntryValidityTimeSpanFrom1' class='px-2' lang-data='from'>
+						${getLanguageAsText("from")}
+						</td>
+						<td id='scheduleEntryValidityTimeSpanFrom2'>
+							<div class='input-group'>
+								<input id='scheduleEntryStartTime' name='scheduleEntryStartDateTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 40%;" value="${startTime}">
+								<input id='scheduleEntryStartDate' type="date" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 60%;" value="${startDate}">
+							</div>
+						</td>
+						<td id='scheduleEntryValidityTimeSpanTo1' class='px-2' lang-data='to'>
+						${getLanguageAsText("to")}
+						</td>
+						<td id='scheduleEntryValidityTimeSpanTo2'>
+							<div class='input-group'>
+								<input id='scheduleEntryEndTime' name='scheduleEntryEndDateTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 40%;" value="${endTime}">
+								<input id='scheduleEntryEndDate' type="date" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 60%;" value="${endDate}">
+							</div>
+						</td>
+					</tr>
+				</table>
+			</td>
+		</tr>
+	</div>
+</table>`;
+	
+	addCommandsetsToDropdown("scheduleEntryCommandsetSelect", commandset);
+
+	toggleValidityFrom(getElement("scheduleEntryValiditySwitchCheckFrom").checked);
+	toggleValidityTo(getElement("scheduleEntryValiditySwitchCheckTo").checked);
+
+	addCommandsToDropdown("scheduleEntryCommandSelect");
+	getElement("scheduleEntryCommandSelect").value = command;
+	addParameterToScheduleEntry(command, parameter);	
+
+	getElement("scheduleEntryButtonSave").onclick = () => saveScheduleEntry(scheduleEntryId);
+	getElement("scheduleEntryButtonDelete").onclick = () => deleteScheduleEntry(scheduleEntryId);
+	cronModal.show();
+	enableElements(prevItemsEnabled);
+}
+
 function isInDarkmode() {
 	return !getElement("theme").href.includes("/bootstrap/css/bootstrap.min.css");
 }
@@ -394,14 +459,26 @@ function setDarkMode(dark) {
 	let darkmodeButton = getElement("darkmodeButton");
 	let theme = getElement("theme");
 	let languageSelect = getElement("languageSelect");
-	if (dark) {
+	let scheduleEntryButtonCancel = getElement("scheduleEntryButtonCancel");
+	let commandsetEntryButtonCancel = getElement("commandsetEntryButtonCancel");
+		if (dark) {
 		theme.href = "/bootstrap/darkpan-1.0.0/css/bootstrap.min.css";
 		darkmodeButton.classList.replace("btn-outline-secondary", "btn-outline-light");
 		languageSelect.classList.replace("border-secondary", "border-light");
+		scheduleEntryButtonCancel.classList.replace("btn-outline-dark", "btn-outline-light");
+		commandsetEntryButtonCancel.classList.replace("btn-outline-dark", "btn-outline-light");
+		for (let i = 0; i < document.getElementsByClassName("btn-close-dark").length; i++) {
+			document.getElementsByClassName("btn-close-dark")[i].classList.replace("btn-close-dark", "btn-close-white");
+		}
 	} else {
 		theme.href = "/bootstrap/css/bootstrap.min.css";
 		darkmodeButton.classList.replace("btn-outline-light", "btn-outline-secondary");
 		languageSelect.classList.replace("border-light", "border-secondary");
+		scheduleEntryButtonCancel.classList.replace("btn-outline-light", "btn-outline-dark");
+		commandsetEntryButtonCancel.classList.replace("btn-outline-light", "btn-outline-dark");
+		for (let i = 0; i < document.getElementsByClassName("btn-close-white").length; i++) {
+			document.getElementsByClassName("btn-close-white")[i].classList.replace("btn-close-white", "btn-close-dark");
+		}
 	}
 }
 
@@ -524,13 +601,6 @@ function saveEntireSchedule(jsonString) {
 	xmlhttp.send(jsonString);
 }
 
-function updateCommandsetDropdowns() {
-	let commandsetDropdowns = document.getElementsByClassName("commandsetDropdown");
-	for (let i = 0; i < commandsetDropdowns.length; i++) {
-		console.log(commandsetDropdowns[i]);
-	}
-}
-
 //click events
 function reloadBrowser() {
 	getElement("restartBrowserSpinner").hidden = false;
@@ -563,8 +633,12 @@ function showPiscreenInfo() {
 			showServerError("Error while getting display protocol");
 			return;
 		}
-		let jsonData = JSON.parse(parseReturnValuesFromServer(xmlhttp.responseText));
-		showModal(getLanguageAsText('about-info'), getLanguageAsText('info-text') + ' ' + jsonData.version.major + '.' + jsonData.version.minor + '.' + jsonData.version.patch, false, true, getLanguageAsText('alright'));
+		try {
+			let jsonData = JSON.parse(parseReturnValuesFromServer(xmlhttp.responseText));
+			showModal(getLanguageAsText('about-info'), getLanguageAsText('info-text') + ' ' + jsonData.version.major + '.' + jsonData.version.minor + '.' + jsonData.version.patch, false, true, getLanguageAsText('alright'));
+		} catch (error) {
+			showServerError("Failed to load piScreen info", "manifest.json", error);
+		}
 	}
 	xmlhttp.open('GET', requestedUrl, true);
 	xmlhttp.send();
@@ -584,13 +658,9 @@ getElement("collapseMainSettings").addEventListener("shown.bs.collapse", event =
 getElement("collapseLoginSettings").addEventListener("shown.bs.collapse", event => {
 	rearrangeGui();
 });
-
-getElement("showCommandsets").addEventListener("shown.bs.collapse", event => {
-	rearrangeGui();
-});
-
-getElement("showTimeschedule").addEventListener("shown.bs.collapse", event => {
-	rearrangeGui();
+//slide.bs.carousel
+getElement("timeActionsCarousel").addEventListener("slide.bs.carousel", event => {
+	plannerSwitchRadio(event.to);
 });
 
 function showServerError(text, request, details=null) {
@@ -690,7 +760,7 @@ function setWebLoginAndPassword() {
 	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
 	xmlhttp.onloadend = () => {
 		if (serverExecutedSuccessfully(xmlhttp.responseText)) {
-			showModal(getLanguageAsText("success"), "updated weblogin successfully", true, true, getLanguageAsText("ok"));
+			showModal(getLanguageAsText("success"), "Updated weblogin successfully", true, true, getLanguageAsText("ok"));
 			location.reload();
 		} else {
 			showServerError("An error occured on the server while setting weblogin user and password.", requestedUrl);
@@ -747,9 +817,9 @@ function showScheduleEntryHeader(scheduleEntryId) {
 	getElement("scheduleEntry" + scheduleEntryId + "HeaderCron").innerText = getElement("cronentry" + scheduleEntryId).value;
 }
 
-function toggleValidityFrom(scheduleEntryId, checked){
-	let scheduleEntry1 = getElement('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanFrom1');
-	let scheduleEntry2 = getElement('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanFrom2');
+function toggleValidityFrom(checked){
+	let scheduleEntry1 = getElement('scheduleEntryValidityTimeSpanFrom1');
+	let scheduleEntry2 = getElement('scheduleEntryValidityTimeSpanFrom2');
 	if (checked) {
 		scheduleEntry1.style.visibility = "";
 		scheduleEntry2.style.visibility = "";
@@ -759,9 +829,9 @@ function toggleValidityFrom(scheduleEntryId, checked){
 	}
 }
 
-function toggleValidityTo(scheduleEntryId, checked){
-	let scheduleEntry1 = getElement('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanTo1');
-	let scheduleEntry2 = getElement('scheduleEntry' + scheduleEntryId + 'ValidityTimeSpanTo2');
+function toggleValidityTo(checked){
+	let scheduleEntry1 = getElement('scheduleEntryValidityTimeSpanTo1');
+	let scheduleEntry2 = getElement('scheduleEntryValidityTimeSpanTo2');
 	if (checked) {
 		scheduleEntry1.style.visibility = "";
 		scheduleEntry2.style.visibility = "";
@@ -787,62 +857,64 @@ function saveTrigger(triggerId) {
 }
 
 function prepareTriggerString(triggerId, triggerCase=["true"]) {
-	for (let i = 0; i < triggerCase.length; i++) {
-		
-	}
 	let enabled = getElement("trigger" + triggerId + "EnabledSwitch").checked;
 	let command = getElement("trigger" + triggerId + "CommandSelect").value;
 	let commandset = getElement("trigger" + triggerId + "CommandsetSelect").value;
-	let parameterElement = getElement("trigger" + triggerId + "ParameterInput");
-	let parameter = parameterElement.value;
+	let parameter = "";
 
 	let msg = "enabled=" + enabled.toString().trim() + "&";
-	msg += "command=" + command + "&";
-	msg += "commandset=" + commandset + "&";
-	if (parameter != null) {
-		parameter = parameter.replaceAll("%20", " ");
-		parameter = parameter.replaceAll("\"", "\\\"");
-		msg += "parameter=\"" + encodeURIComponent(parameter) + "\"&";
+
+	for (let i = 0; i < triggerCase.length; i++) {
+		if (command != 0) msg += "command=" + triggerCase[i] + " " + command + "&";
+		else msg += "command=" + triggerCase[i] + " &";
+		if (getElement("trigger" + triggerId + "ParameterInput") != null) {
+			let parameterElement = getElement("trigger" + triggerId + "ParameterInput");
+			parameter = parameterElement.value;
+			parameter = parameter.replaceAll("%20", " ");
+			parameter = parameter.replaceAll("\"", "\\\"");
+			msg += "parameter=" + triggerCase[i] + " \"" + encodeURIComponent(parameter) + "\"&";
+		} else msg += "parameter=" + triggerCase[i] + " &";
+		if (commandset != 0) msg += "commandset=" + triggerCase[i] + " " + commandset + "&";
+		else msg += "commandset=" + triggerCase[i] + " &";
 	}
+
 	if (triggerId == 0) msg += "trigger=1&";
 	msg = msg.substring(0, msg.length - 1);
 
 	return msg;
 }
 
-function saveScheduleEntry(scheduleEntryId) {
+function saveScheduleEntry() {
 	//send to server
-	if (getElement("scheduleEntryInfo" + scheduleEntryId).getAttribute("data") == "true") {//add
-		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=add&' + prepareScheduleString(scheduleEntryId), true, () => displayScheduleEntrySaved(true, scheduleEntryId));
-		getElement("scheduleEntryInfo" + scheduleEntryId).setAttribute("data", "false");
+	if (getElement("currentScheduleEntryId").innerText < 0) {//add
+		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=add&' + prepareScheduleString(), true, () => {cronModal.hide(); getScheduleFromServer();});
 	} else {//update
-		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=update&' + prepareScheduleString(scheduleEntryId) + '&index=' + scheduleEntryId, true, () => displayScheduleEntrySaved(true, scheduleEntryId));
+		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=update&' + prepareScheduleString() + '&index=' + getElement("currentScheduleEntryId").innerText, true, () => {cronModal.hide(); getScheduleFromServer();});
 	}
 }
 
-function deleteScheduleEntry(scheduleEntryId) {
-	if (getElement("scheduleEntry" + scheduleEntryId + "HeaderSaved").children[0].className.includes("bi-file-earmark-x-fill")) {
-		getElement('scheduleEntry' + scheduleEntryId).remove();
+function deleteScheduleEntry() {
+	if (getElement("currentScheduleEntryId").innerText >= 0) {
+		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=delete&index=' + getElement("currentScheduleEntryId").innerText, true, () => {cronModal.hide(); getScheduleFromServer();});
 	} else {
-		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=delete&index=' + scheduleEntryId, true, () => getElement('scheduleEntry' + scheduleEntryId).remove());
+		cronModal.hide();
 	}
-	if (scheduleEntryId == scheduleEntryCount + 1) scheduleEntryCount--;
 }
 
-function prepareScheduleString(scheduleEntryId) {
+function prepareScheduleString() {
 	//get elements
-	let enabled = getElement("scheduleEntry" + scheduleEntryId + "EnabledSwitchCheck").checked;
-	let cronentry = getElement("cronentry" + scheduleEntryId).value;
-	let command = getElement("scheduleEntry" + scheduleEntryId + "CommandSelect").value;
-	let commandset = getElement("scheduleEntry" + scheduleEntryId + "CommandsetSelect").value;
-	let parameterElement = getElement("scheduleEntry" + scheduleEntryId + "ParameterInput");
+	let enabled = getElement("scheduleEntryEnabledSwitchCheck").checked;
+	let cronentry = getElement("cronentry").value;
+	let command = getElement("scheduleEntryCommandSelect").value;
+	let commandset = getElement("scheduleEntryCommandsetSelect").value;
+	let parameterElement = getElement("scheduleEntryParameterInput");
 	let parameter = parameterElement != null ? parameterElement.value : null;
-	let startTime = getElement("scheduleEntry" + scheduleEntryId + "StartTime").value;
-	let endTime = getElement("scheduleEntry" + scheduleEntryId + "EndTime").value;
-	let startDate = getElement("scheduleEntry" + scheduleEntryId + "StartDate").value;
-	let endDate = getElement("scheduleEntry" + scheduleEntryId + "EndDate").value;
-	let startDateTime = getElement("scheduleEntry" + scheduleEntryId + "ValiditySwitchCheckFrom").checked;
-	let endDateTime = getElement("scheduleEntry" + scheduleEntryId + "ValiditySwitchCheckTo").checked;
+	let startTime = getElement("scheduleEntryStartTime").value;
+	let endTime = getElement("scheduleEntryEndTime").value;
+	let startDate = getElement("scheduleEntryStartDate").value;
+	let endDate = getElement("scheduleEntryEndDate").value;
+	let startDateTime = getElement("scheduleEntryValiditySwitchCheckFrom").checked;
+	let endDateTime = getElement("scheduleEntryValiditySwitchCheckTo").checked;
 
 	let msg = "enabled=" + enabled.toString().trim() + "&";
 	while (cronentry.includes("  ")) cronentry = cronentry.replaceAll("  ", " ");
@@ -865,7 +937,7 @@ function prepareScheduleString(scheduleEntryId) {
 	return msg;
 }
 
-function checkCronEntryValidity(scheduleCronEntry, scheduleEntryId) {
+function checkCronEntryValidity(scheduleCronEntry) {
 	let acceptetChars = "0123456789,/-* "
 	let validity = true;
 	let tempString = scheduleCronEntry.value;
@@ -885,7 +957,7 @@ function checkCronEntryValidity(scheduleCronEntry, scheduleEntryId) {
 		}
 	}
 
-	let saveButton = getElement("scheduleEntry" + scheduleEntryId + "SaveButton");
+	let saveButton = getElement("scheduleEntryButtonSave");
 	if (validity) {
 		saveButton.className = "disableOnDisconnect btn btn-outline-success mt-2"
 		saveButton.disabled = false;
@@ -899,25 +971,9 @@ function checkCronEntryValidity(scheduleCronEntry, scheduleEntryId) {
 	return validity;
 }
 
-function displayScheduleEntrySaved(saved, scheduleEntryId) {
-	if (saved) {
-		getElement("scheduleEntry" + scheduleEntryId + "HeaderSaved").innerHTML = "<i class='bi bi-file-earmark-check-fill bigIcon px-2' style='color: green;'></i>";
-	} else {
-		getElement("scheduleEntry" + scheduleEntryId + "HeaderSaved").innerHTML = "<i class='bi bi-file-earmark-x-fill bigIcon px-2' style='color: red;'></i>";
-	}
-}
-
-function enabledChanged(check, scheduleEntryId) {
-	if (check.checked) {
-		getElement("scheduleEntry" + scheduleEntryId + "HeaderEnabled").innerHTML = "<i class='bi bi-check-lg bigIcon pe-2' style='color: green;'></i>";
-	} else {
-		getElement("scheduleEntry" + scheduleEntryId + "HeaderEnabled").innerHTML = "<i class='bi bi-x-lg bigIcon pe-2' style='color: red;'></i>";
-	}
-}
-
-function executeScheduleEntry(scheduleEntryId) {
-	getElement("scheduleEntry" + scheduleEntryId + "ButtonExecuteSpinner").hidden = false;
-	sendHTTPRequest('GET', 'cmd.php?id=9&cmd=execute&index=' + scheduleEntryId, true, () => getElement("scheduleEntry" + scheduleEntryId + "ButtonExecuteSpinner").hidden = true);
+function executeCurrentScheduleEntry() {
+	getElement("scheduleEntryButtonExecuteSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=9&cmd=execute&index=' + getElement("currentScheduleEntryId").innerText, true, () => getElement("scheduleEntryButtonExecuteSpinner").hidden = true);
 }
 
 function executeCommandsetEntry(commandsetEntryId) {
@@ -927,73 +983,83 @@ function executeCommandsetEntry(commandsetEntryId) {
 
 function generateCommandsetEntry(name=getLanguageAsText("new-commandset"), commands=[], commandsetId=0, saved=false) {
 	let cId = commandsetEntryCount;
+	let newCommandsetEntryObj = document.createElement('div');
+	newCommandsetEntryObj.id = "commandsetEntry" + cId;
+	newCommandsetEntryObj.className = "disableOnDisconnect list-group-item list-group-item-action border border-primary p-3";
+	newCommandsetEntryObj.onclick = () => {showCommandsetModal(commandsetId);};
+	newCommandsetEntryObj.style.backgroundColor = "transparent";
+	newCommandsetEntryObj.style.cursor = "pointer";
+	newCommandsetEntryObj.innerHTML = `<div class="d-flex w-100 justify-content-between">
+	<p class='m-2'><i class='bi bi-terminal bigIcon pe-2'></i>${name}</p>
+	<p id='commandset${cId}Id' class='m-2'>${commandsetId}</p>
+</div>`;
+	//Adding element to document
+	getElement("commandsetCollectionList").appendChild(newCommandsetEntryObj);
+	
+	commandsetEntryCount += 1;
+}
+
+function showCommandsetModal(commandsetId=0) {
 	if (commandsetId == 0) {
 		commandsetId = Math.floor(Math.random() * 9999) + 1;
 		commandsetId -= commandsetId * 2;
 	}
-	commandEntryCounts[commandsetId] = 0;
-	let newCommandsetEntryObj = document.createElement('div');
-	newCommandsetEntryObj.id = "commandsetEntry" + cId;
-	newCommandsetEntryObj.className = "accordion-item border border-primary";
-	newCommandsetEntryObj.style.backgroundColor = "transparent";
-	newCommandsetEntryObj.innerHTML = `<h2 class="accordion-header">
-	<label id='commandsetEntry${cId}Label' class="accordion-button collapsed" style='cursor: pointer;' data-bs-toggle="collapse" data-bs-target="#collapseCommandset${cId}" onclick='getElement("commandsetEntry${cId}Name").setSelectionRange(0, getElement("commandsetEntry${cId}Name").value.length); getElement("commandsetEntry${cId}Name").focus();'>
-		<span id='commandsetEntry${cId}Header' class='px-2' style='width: 80%;'>${name}</span>
-		<span id='commandsetEntry${cId}HeaderSaved' class='px-2 text-end' style='width: 20%;'></span>
-	</label>
-</h2>
-<div id="collapseCommandset${cId}" class="accordion-collapse collapse" data-bs-parent="#commandsetCollectionAccordion">
-	<div class="accordion-body">
-		<table id="commandsetEntry${cId}CommandCollection" style='width: 100%;'>
-			<tr>
-				<td style='width: 50%;'>
-					<div class='form-floating mb-3'>
-						<input id='commandsetEntry${cId}Name' type='text' class='disableOnDisconnect form-control border border-secondary' value='${name}' onkeyup='showCommandsetEntryHeader(${cId}); commandsetEntrySaved(false, ${cId});'>
-						<label for='commandsetEntry${cId}Name' lang-data='description'>${getLanguageAsText("description")}</label>
-					</div>
-				</td>
-				<td colspan="2" style='width: 50%;'>
-					<label id='commandset${cId}Id' class='m-2'>${commandsetId}</label>
-					<button id="commandsetEntry${cId}ButtonExecute" class="disableOnDisconnect btn btn-outline-warning mb-3" onclick='executeCommandsetEntry(${cId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='commandsetEntry${cId}ButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
-				</td>
-			</tr>
-		</table>
-		<button id='commandEntry${cId}ButtonNew' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='addCommandToCommandset(${cId}); commandsetEntrySaved(false, ${cId});'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-command'>${getLanguageAsText("new-command")}</span></button>
-		<hr>
-		<button id="commandsetEntry${cId}ButtonSave" class="disableOnDisconnect btn btn-outline-success mt-2" onclick='saveCommandsetEntry(${cId})' data-bs-toggle="collapse" data-bs-target="#collapseCommandset${cId}"><i class='bi bi-save pe-2'></i><span lang-data="save">${getLanguageAsText("save")}</span></button>
-		<button id='commandsetEntry${cId}ButtonDelete' class='disableOnDisconnect btn btn-danger mt-2' onclick='deleteCommandsetEntry(${cId});' style='float: right;'><i class='bi bi-trash pe-2'></i><span lang-data='delete-commandset'>${getLanguageAsText("delete-commandset")}</span></button>
-	</div>
-</div>
-`;
-
-	//Adding element to document
-	getElement("commandsetCollectionAccordion").appendChild(newCommandsetEntryObj);
-	
-	if (commandsetId < 0) getElement("commandsetEntry" + cId + "Label").click();
-
-	commandsetEntrySaved(saved, cId);
-
-	for (let i = 0; i < commands.length; i++) {
-		addCommandToCommandset(cId, commands[i][0], commands[i][1] == undefined ? "" : commands[i][1]);
+	//default new entry
+	let obj = {
+		"id": commandsetId,
+		"name": getLanguageAsText("new-commandset"),
+		"commands": []
+	};
+	for (let i = 0; i < scheduleObj.commandsets.length; i++) {
+		if (scheduleObj.commandsets[i].id == commandsetId) { // load already existing schedule entry
+			obj = scheduleObj.commandsets[i];
+		}
 	}
-	commandsetEntryCount += 1;
+	commandsetCommandCount = 0;
+	getElement("commandsetModalTitle").innerHTML = `<span lang-data="commandset">${getLanguageAsText("commandset")}</span>: <span id='currentScheduleEntryId'>${obj.name}</span>`;
+	getElement("commandsetModalBody").innerHTML = `<table id="commandsetEntry${commandsetId}CommandCollection" style='width: 100%;'>
+		<tr>
+			<td style='width: 50%;'>
+				<div class='form-floating mb-3'>
+					<input id='commandsetEntryName' type='text' class='disableOnDisconnect form-control border border-secondary' value='${obj.name}' onkeyup='showCommandsetEntryTitle();'>
+					<label for='commandsetEntryName' lang-data='description'>${getLanguageAsText("description")}</label>
+				</div>
+			</td>
+			<td colspan="2" style='width: 50%;'>
+				<span class='ms-2'>ID: </span><span id='commandsetId'>${commandsetId}</span>
+				<button id="commandsetEntry${commandsetId}ButtonExecute" class="disableOnDisconnect btn btn-outline-warning mb-3" onclick='executeCommandsetEntry(${commandsetId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='commandsetEntry${commandsetId}ButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
+			</td>
+		</tr>
+	</table>
+<button id='commandEntry${commandsetId}ButtonNew' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='addCommandToCommandset(${commandsetId});'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-command'>${getLanguageAsText("new-command")}</span></button>`;
+	
+	for (let i = 0; i < obj.commands.length; i++) {
+		addCommandToCommandset(commandsetId, obj.commands[i].command, obj.commands[i].parameter == undefined ? "" : obj.commands[i].parameter);
+	}
+	commandsetModal.show();
+	enableElements(prevItemsEnabled);
+}
+
+function plannerSwitchRadio(id) {
+	for (let i = 0; i < 3; i++) getElement("plannerOption" + i).className = "btn btn-secondary w-100 m-2 mb-4";
+	getElement("plannerOption" + id).className = "btn btn-primary w-100 m-2 mb-4";
 }
 
 function addCommandToCommandset(commandsetEntryId, command=0, parameter="") {
-	let commandId = commandEntryCounts[getCommandsetId(commandsetEntryId)];
+	let commandId = commandsetCommandCount;
 	let newCommandEntryObj = document.createElement('tr');
 	newCommandEntryObj.className = "border-top border-bottom border-primary commandrow";
-	newCommandEntryObj.innerHTML = `<td class='p-1' style='width: 50%;'>
+	newCommandEntryObj.innerHTML = `<td class='p-2' style='width: 50%;'>
 	<div class='form-floating'>
-		<select id='commandsetEntry${commandsetEntryId}CommandSelect${commandId}' class='disableOnDisconnect form-select border border-secondary commandSelect' onchange='addParameterToCommandsetEntryCommand(${commandsetEntryId}, ${commandId}, value); commandsetEntrySaved(false, ${commandsetEntryId});'>
+		<select id='commandsetEntry${commandsetEntryId}CommandSelect${commandId}' class='disableOnDisconnect form-select border border-secondary commandSelect' onchange='addParameterToCommandsetEntryCommand(${commandsetEntryId}, ${commandId}, value);'>
 		</select>
 		<label for="commandsetEntry${commandsetEntryId}CommandSelect${commandId}" lang-data="choose-command">${getLanguageAsText("choose-command")}</label>
 	</div>
 </td>
-<td id='commandsetEntry${commandsetEntryId}Command${commandId}ParameterCell' class='p-1' style='width: 40%;'>
+<td id='commandsetEntry${commandsetEntryId}Command${commandId}ParameterCell' class='p-2' style='width: 40%;'>
 </td>
-<td class='p-1' style='width: 10%;'>
-	<button id="commandsetEntry${commandsetEntryId}CommandButtonDelete" class="disableOnDisconnect btn btn-danger" onclick='deleteCommandFromCommandset(this); commandsetEntrySaved(false, ${commandsetEntryId});' style='float: right;'><i class='bi bi-trash'></i></button>
+<td class='p-2' style='width: 10%;'>
+	<button id="commandsetEntry${commandsetEntryId}CommandButtonDelete" class="disableOnDisconnect btn btn-danger" onclick='deleteCommandFromCommandset(this);' style='float: right;'><i class='bi bi-trash'></i></button>
 </td>
 `;
 	//Adding element to document
@@ -1005,10 +1071,10 @@ function addCommandToCommandset(commandsetEntryId, command=0, parameter="") {
 
 	addParameterToCommandsetEntryCommand(commandsetEntryId, commandId, command, parameter);
 
-	commandEntryCounts[getCommandsetId(commandsetEntryId)]++;
+	commandsetCommandCount++;
 }
 
-function addParameterToCommandsetEntryCommand(commandsetEntryId, commandEntryId, commandId, parameter="") {
+function addParameterToCommandsetEntryCommand(commandsetEntryId, commandEntryId, commandId, parameter) {
 	let cell = getElement("commandsetEntry" + commandsetEntryId + "Command" + commandEntryId + "ParameterCell");
 	cell.innerHTML = "";
 	//add element
@@ -1022,9 +1088,9 @@ function addParameterToCommandsetEntryCommand(commandsetEntryId, commandEntryId,
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
 		if (parameter == undefined) parameter = "";
-		div.innerHTML = `<input id='commandsetEntry${commandsetEntryId}Command${commandEntryId}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandParameter' onkeyup='commandsetEntrySaved(false, ${commandsetEntryId});' value='${parameter}' lang-data='parameter'>`;
+		div.innerHTML = `<input id='commandsetEntry${commandsetEntryId}Command${commandEntryId}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandParameter' onkeyup='' value='${parameter}' lang-data='parameter'>`;
 	} else if (Array.isArray(commandCollection[commandId][1])) {
-		let htmlSelect = `<select id='commandsetEntry${commandsetEntryId}Command${commandEntryId}ParameterInput' onchange='commandsetEntrySaved(false, ${commandsetEntryId});' class='disableOnDisconnect form-select border border-secondary commandParameter' value='${commandCollection[commandId][1][0][1]}'>\n`;
+		let htmlSelect = `<select id='commandsetEntry${commandsetEntryId}Command${commandEntryId}ParameterInput' onchange='' class='disableOnDisconnect form-select border border-secondary commandParameter' value='${commandCollection[commandId][1][0][1]}'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
 			htmlSelect += `<option value='${commandCollection[commandId][1][i][0]}' lang-data='${commandCollection[commandId][1][i][1]}'>${getLanguageAsText(commandCollection[commandId][1][i][1])}</option>\n`;
 		}
@@ -1048,37 +1114,33 @@ function deleteCommandFromCommandset(commandEntry) {
 	getElement(commandEntry.parentElement.parentElement.remove());
 }
 
-function deleteCommandsetEntry(commandsetEntryId) {
-	if (getCommandsetId(commandsetEntryId) < 0) {// < 0 is unsaved, > 0 is saved
-		getElement("commandsetEntry" + commandsetEntryId).remove();
+function deleteCommandsetEntry() {
+	if (getCommandsetId(getCommandsetId()) < 0) {// < 0 is unsaved, > 0 is saved
+		commandsetModal.hide();
 	} else {
-		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=delete&commandsetid=' + getCommandsetId(commandsetEntryId), true, () => getElement("commandsetEntry" + commandsetEntryId).remove());
-	}
-	if (commandsetEntryId == commandsetEntryCount + 1) commandsetEntryCount--;
-}
-
-function getCommandsetId(entryIndex) {
-	return getElement("commandset" + entryIndex + "Id").textContent;
-}
-
-function getCommandsetName(commandsetEntryId) {
-	return getElement("commandsetEntry" + commandsetEntryId + "Name").value;
-}
-
-function showCommandsetEntryHeader(commandsetEntryId) {
-	getElement("commandsetEntry" + commandsetEntryId + "Header").innerText =  getElement("commandsetEntry" + commandsetEntryId + "Name").value;
-}
-
-function commandsetEntrySaved(saved, commandsetEntryId) {
-	if (saved) {
-		getElement("commandsetEntry" + commandsetEntryId + "HeaderSaved").innerHTML = "<i class='bi bi-file-earmark-check-fill bigIcon px-2' style='color: green;'></i>";
-	} else {
-		getElement("commandsetEntry" + commandsetEntryId + "HeaderSaved").innerHTML = "<i class='bi bi-file-earmark-x-fill bigIcon px-2' style='color: red;'></i>";
+		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=delete&commandsetid=' + getCommandsetId(), true, () => {commandsetModal.hide(); getScheduleFromServer();});
 	}
 }
 
-function saveCommandsetEntry(commandsetEntryId) {
-	let commandsetEntryNameElement = getElement("commandsetEntry" + commandsetEntryId + "Name");
+function getCommandsetId() {
+	return getElement("commandsetId").textContent;
+}
+
+function getCommandsetName(commandsetId) {
+	for (let i = 0; i < scheduleObj.commandsets.length; i++) {
+		if (scheduleObj.commandsets[i].id == commandsetId) {
+			return scheduleObj.commandsets[i].name;
+		}
+	}
+}
+
+function showCommandsetEntryTitle() {
+	getElement("commandsetModalTitle").innerText = getLanguageAsText("commandset") + ": " + getElement("commandsetEntryName").value;
+}
+
+function saveCommandsetEntry() {
+	let commandsetEntryId = getCommandsetId();
+	let commandsetEntryNameElement = getElement("commandsetEntryName");
 	if (commandsetEntryNameElement.value == "") {
 		commandsetEntryNameElement.className = "disableOnDisconnect form-control border border-danger";
 		return;
@@ -1086,24 +1148,10 @@ function saveCommandsetEntry(commandsetEntryId) {
 
 	let sendString = prepareCommandsetString(commandsetEntryId, commandsetEntryNameElement.value);
 	if (getCommandsetId(commandsetEntryId) < 0) {//add
-		let requestedUrl = 'cmd.php?id=19&cmd=add&' + sendString;
-		let xmlhttp = new XMLHttpRequest();
-		xmlhttp.timeout = timeoutTime;
-		xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
-		xmlhttp.onloadend = () => {
-			if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
-				showServerError("Error while adding commandset", requestedUrl);
-				return;
-			}
-			commandsetEntrySaved(true, commandsetEntryId);
-			getElement("commandset" + commandsetEntryId + "Id").textContent = parseReturnValuesFromServer(xmlhttp.responseText);
-		}
-		xmlhttp.open('GET', requestedUrl, true);
-		xmlhttp.send();
+		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=add&' + sendString, true, () => {commandsetModal.hide(); getScheduleFromServer();});
 	} else {//update
-		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=update&commandsetid=' + getCommandsetId(commandsetEntryId) + '&' + sendString, true, () => commandsetEntrySaved(true, commandsetEntryId));
+		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=update&commandsetid=' + getCommandsetId(commandsetEntryId) + '&' + sendString, true, () => {commandsetModal.hide(); getScheduleFromServer();});
 	}
-	updateCommandsetDropdowns();
 }
 
 function prepareCommandsetString(commandsetEntryId, commandsetName) {
@@ -1135,28 +1183,15 @@ function addCommandsetsToDropdown(dropdownId, selectedId=0) {
 	firstoptionTag.value = 0;
 	firstoptionTag.innerText = "---";
 	getElement(dropdownId).appendChild(firstoptionTag);
-	let savedEntries = getSavedCommandsetEntryIds();
-	for (let i = 0; i < savedEntries.length; i++) {
+	for (let i = 0; i < scheduleObj.commandsets.length; i++) {
 		let optionTag = document.createElement("option");
-		optionTag.value = savedEntries[i][0];
-		optionTag.innerText = savedEntries[i][1];
+		optionTag.value = scheduleObj.commandsets[i].id;
+		optionTag.innerText = scheduleObj.commandsets[i].name;
 		getElement(dropdownId).appendChild(optionTag);
-		if (selectedId == savedEntries[i][0]) {
+		if (selectedId == scheduleObj.commandsets[i].id) {
 			getElement(dropdownId).value = selectedId;
 		}
 	}
-}
-
-function getSavedCommandsetEntryIds() {
-	let ids = [];
-	let htmlItems = getElement("commandsetCollectionAccordion").getElementsByClassName("accordion-item");
-	for (let i = 0; i < htmlItems.length; i++) {
-		let commandsetEntryId = htmlItems[i].id.substring("commandsetEntry".length);
-		if (getCommandsetId(commandsetEntryId) != 0) {
-			ids.push([getElement("commandset" + commandsetEntryId + "Id").textContent, getElement("commandsetEntry" + commandsetEntryId + "Name").value]);
-		}
-	}
-	return ids;
 }
 
 //main
@@ -1165,7 +1200,7 @@ window.onload = function() {
 	getDefaultLanguage();
 	setDisplayProtocolSelect();
 	setDisplayOrientationSelect();
-	
+
 	let st = null; //screenshotTime
 	let idleBadge = getElement("idle");
 	let active = getElement("active");
@@ -1182,7 +1217,7 @@ window.onload = function() {
 	let spinnerDisplayStandby = getElement("spinnerDisplayStandby");
 	let screenshot = getElement("screenshot");
 	let screenshotTime = getElement("screenshotTime");
-
+	
 	let requestedUrl = 'cmd.php?id=5';
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.open('GET', requestedUrl, true);
@@ -1194,7 +1229,11 @@ window.onload = function() {
 		setTimeout(() => {
 			idleBadge.id = "idle"
 		}, 100);
-		jsonData = JSON.parse(parseReturnValuesFromServer(xmlhttp.responseText));
+		try {
+			jsonData = JSON.parse(parseReturnValuesFromServer(xmlhttp.responseText));
+		} catch (error) {
+			showServerError("Failed to parse piScreen status", "", error);
+		}
 		active.classList = "badge rounded-pill bg-success";
 		active.innerHTML = getLanguageAsText('online');
 		switch (jsonData.displayState) {
@@ -1248,19 +1287,23 @@ window.onload = function() {
 				
 				break;
 		}
-		enableElements(true);
+		if (connectionStatusChanged(true)) enableElements(true);
 
 		rearrangeGui();
 	}
 	xmlhttp.onerror = () => {
-		setToUnknownValues();
-		enableElements(false);
+		if (connectionStatusChanged(false)) {
+			setToUnknownValues();
+			enableElements(false);
+			prevItemsEnabled = false;
+		}
 	}
 	xmlhttp.ontimeout = () => {
-		setToUnknownValues();
-		enableElements(false);
-		//var today = new Date();
-		//showModal(getLanguageAsText("error"), getLanguageAsText("connection-lost") + "<br>" + today.getFullYear() + '-' + (today.getMonth() + 1) + '-' + today.getDate() + "<br>" + today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds(), false, true, getLanguageAsText("ok"));
+		if (connectionStatusChanged(false)) {
+			setToUnknownValues();
+			enableElements(false);
+			prevItemsEnabled = false;
+		}
 	}
 	xmlhttp.send();
 
@@ -1288,9 +1331,13 @@ function getDefaultLanguage() { //gets language from server settings.json
 			showServerError("Error while getting default language", requestedUrl);
 			return;
 		}
-		let settingsJSON = JSON.parse(parseReturnValuesFromServer(xmlhttp.responseText));
-		currentLanguage = settingsJSON.settings.language;
-		fetchLanguage(currentLanguage);
+		try {
+			let settingsJSON = JSON.parse(parseReturnValuesFromServer(xmlhttp.responseText));
+			currentLanguage = settingsJSON.settings.language;
+			fetchLanguage(currentLanguage);
+		} catch (error) {
+			showServerError("Failed to parse piScreen default language", xmlhttp.responseText, error);
+		}
 	}
 	xmlhttp.open('GET', requestedUrl, true);
 	xmlhttp.send();
@@ -1304,7 +1351,12 @@ function fetchLanguage(lang) { //Sets language to server and gets language.json
 	xmlhttp.timeout = timeoutTime;
 	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
 	xmlhttp.onloadend = function() {
-		languageStrings = JSON.parse(xmlhttp.responseText);
+		try {
+			languageStrings = JSON.parse(xmlhttp.responseText);
+		} catch (error) {
+			showServerError("Failed to parse piScreen language json", requestedUrl, error);
+			return;
+		}
 		getScheduleFromServer();
 		setLanguageOnSite();
 	}

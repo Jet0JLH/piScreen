@@ -159,11 +159,7 @@
 		}
 	}
 	elseif ($_GET['id'] == 13) { //Set language
-		$data = json_decode(file_get_contents('/home/pi/piScreen/settings.json'), true);
-		$data['settings']['language'] = $_GET['lang'];
-		file_put_contents('/home/pi/piScreen/settings.json', json_encode($data, JSON_PRETTY_PRINT));
-		sendResponse($data['settings']['language'], 0);
-		//executeCommand("$syscall --set-language " . $_GET['lang'], true);
+		executeCommand("$syscall --set-language " . $_GET['lang'], true);
 	}
 	elseif ($_GET['id'] == 14) { //Set diplay control protocol
 		if ($_GET['protocol'] == 'cec') {
@@ -171,6 +167,9 @@
 		}
 		elseif ($_GET['protocol'] == 'ddc') {
 			executeCommand("$syscall --set-display-protocol ddc", true);
+		}
+		elseif ($_GET['protocol'] == 'manually') {
+			executeCommand("$syscall --set-display-protocol manually", true);
 		}
 	}
 	elseif ($_GET['id'] == 15) { //Get display control protocol
@@ -245,15 +244,15 @@
 				$parameterString .= " --trigger " . $_GET['trigger'];
 			}
 			if ($_GET['command'] != NULL) {
-				$parameterString .= " --command " . $_GET['command'];
+				$parameterString .= " --command:" . $_GET['command'];
 			}
 			if ($_GET['parameter'] != NULL) {
-				$parameterString .= " --parameter " . $_GET['parameter'];
+				$parameterString .= " --parameter:" . $_GET['parameter'];
 			}
 			if ($_GET['commandset'] != NULL) {
-				$parameterString .= " --commandset " . $_GET['commandset'];
+				$parameterString .= " --commandset:" . $_GET['commandset'];
 			}
-			//echo "$syscall --add-trigger$parameterString";
+			echo "$syscall --add-trigger$parameterString";
 			executeCommand("$syscall --add-trigger$parameterString", true);
 
 		} elseif ($_GET['cmd'] == "update") {
@@ -261,17 +260,17 @@
 			if ($_GET['enabled'] != NULL) {
 				$parameterString .= " --enabled " . $_GET['enabled'];
 			}
-			if ($_GET['triggerID'] != NULL) {
-				$parameterString .= " --triggerID " . $_GET['triggerID'];
+			if ($_GET['trigger'] != NULL) {
+				$parameterString .= " --trigger " . $_GET['trigger'];
 			}
 			if ($_GET['command'] != NULL) {
-				$parameterString .= " --command " . $_GET['command'];
+				$parameterString .= " --command:" . $_GET['command'];
 			}
 			if ($_GET['parameter'] != NULL) {
-				$parameterString .= " --parameter " . $_GET['parameter'];
+				$parameterString .= " --parameter:" . $_GET['parameter'];
 			}
 			if ($_GET['commandset'] != NULL) {
-				$parameterString .= " --commandset " . $_GET['commandset'];
+				$parameterString .= " --commandset:" . $_GET['commandset'];
 			}
 			//echo "$syscall --update-trigger$parameterString";
 			executeCommand("$syscall --update-trigger$parameterString", true);

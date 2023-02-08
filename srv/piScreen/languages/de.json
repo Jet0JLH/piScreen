@@ -35,6 +35,7 @@
         "display-protocol": "Displayprotokoll",
         "cec": "CEC",
         "ddc": "DDC/CI",
+        "manually": "Manuell",
         "display-orientation": "Displayausrichtung",
         "horizontal": "Horizontal",
         "vertical": "Vertikal",
@@ -59,9 +60,9 @@
         "update-available": "Eine neue Version von piScreen ist nun verfügbar",
         "info-text": " <h4><i class='bi bi-file-earmark-code'></i> piScreen Versionsinfo</h4><br>piScreen ist ein kleines Bastelprojekt von zwei befreundeten Hobbyentwicklern und ist <a href='https://github.com/Jet0JLH/piScreen' target='popup'>hier</a> zu finden.<br><br>piScreen befindet sich auf Version ",
 
-        "timeschedule-tile-header": "Zeitplan",
+        "timeschedule": "Zeitplan",
         "ignore-timeschedule": "Zeitplan ignorieren",
-        "new-entry": "Neuer Eintrag",
+        "new-entry": "Eintrag hinzufügen",
         "delete-entry": "Eintrag löschen",
         "help": "Hilfe",
         "cronHelpText": "Erklärung des Croneintrags<br>Ein Croneintrag wird in 5 Abschnitte unterteilt, die durch Leerzeichen getrennt sind.<br>Abschnitt 1: Minute (0-59)<br>Abschnitt 2: Stunde (0-59)<br>Abschnitt 3: Tag (1-31)<br>Abschnitt 4: Monat (1-12)<br>Abschnitt 5: Tag der Woche (0-6)<br><br>Möchte man einen Befehl z.B. um 8 Uhr auslösen, so wird dies wie folgt erstellt:<br>0 8 * * *<br>Die Sterne sind Platzhalter und bedeuten, dass der Tag, der Monat und der Wochentag egal sind.<br><br>Möchte man, dass der Befehl nur Freitags um 8 Uhr ausgeführt wird, so ändert man den Eintrag auf Folgendes ab:<br>0 8 * * 4<br><br>Möchte man, dass der Befehl von Montag bis Freitag um 8 Uhr ausgeführt wird, so muss dieser wie folgt angepasst werden:<br>0 8 * * 0-4<br>Der Bindestrich sorgt für eine Zeitspanne.<br><br>Soll der Befehl zu jeder zweiten vollen Stunde ausgeführt werden, so lautet der Croneintrag wie folgt:<br>0 */2 * * *<br>Der Schrägstrich sorgt für eine Unterteilung.<br><br>Soll der Befehl zu jeder zweiten vollen Stunde zwischen 8 und 16 Uhr ausgeführt werden, so lautet der Befehl wie folgt:<br>0 8-16/2 * * *<br>Bindestriche und Schrägstriche lassen sich kombinieren.<br><br>Soll ein Befehl um 8 Uhr, um 15 Uhr und 16 Uhr ausgeführt werden, so ist der Croneintrag wie folgt zu bauen:<br>0 8,15,16 * * *<br>Das Komma sorgt für eine Aufzählung.<br><br>Soll ein Befehl zwischen 8 und 12 Uhr, um 15 und 16 Uhr ausgeführt werden, so ist der Croneintrag wie folgt zu bauen:<br>0 8-12,15,16 * * *<br>Komma und Bindestrich lassen sich kombinieren.",
@@ -86,7 +87,7 @@
         "cancel": "Abbrechen",
         "alright": "Danke für die Info 😊",
 
-        "trigger-tile-header": "Startauslöser",
+        "startup-trigger": "Startauslöser",
         "trigger": "Auslöser",
         "choose-trigger": "Auslöser auswählen",
         "triggerHelpText": "Dieser Befehl wird direkt ausgeführt, nachdem das System hochgefahren ist.<br><br>Es wird Eingang des Anzeigegerätes automatisch auf den von piScreen gestellt.<br>Das Display wird außerdem automatisch eingeschalten.",
@@ -98,12 +99,15 @@
 
         "description": "Beschreibung",
         "commandset": "Befehlssatz",
+        "commandsets": "Befehlssätze",
         "command": "Befehl",
         "edit-commandsets": "Befehlssätze bearbeiten",
         "new-commandset": "Befehlssatz hinzufügen",
         "new-command": "Befehl hinzufügen",
         "delete-commandset": "Befehlssatz löschen",
         "choose-commandset": "Befehlssatz auswählen",
+
+        "planner": "Eregnisplaner",
 
         "---": "---",
         "sleep": "Warten",
