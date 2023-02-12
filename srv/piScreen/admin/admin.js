@@ -30,6 +30,7 @@ var modalActionBtn = getElement("modal-actionBtn");
 //modals
 var cronModal = new bootstrap.Modal(getElement("cronModal"));
 var commandsetModal = new bootstrap.Modal(getElement("commandsetModal"));
+var cronEntryModal = new bootstrap.Modal(getElement("cronEntryModal"));
 //tooltip
 var tooltipTriggerList;
 var tooltipList;
@@ -37,6 +38,12 @@ var tooltipList;
 var currentLanguage = null;
 var languageStrings = null;
 var prevItemsEnabled = null;
+//cron entry limitations
+const hourLowerLimit = 0, hourUpperLimit = 59;
+const minuteLowerLimit = 0, minuteUpperLimit = 59;
+const dayOfMonthLowerLimit = 1, dayOfMonthUpperLimit = 31;
+const monthLowerLimit = 1, monthUpperLimit = 12;
+const dayOfWeekLowerLimit = 0, dayOfWeekUpperLimit = 6;
 //general functions
 function addLeadingZero (input) {
 	intInput = parseInt(input);
@@ -360,9 +367,9 @@ function showCronModal(scheduleEntryId) {
 		</tr>
 		<tr>
 			<td>
-				<div class='form-floating'>
-					<input type='text' class='disableOnDisconnect form-control border border-secondary' name='cronentry' id='cronentry' value='${pattern}' onkeyup='checkCronEntryValidity(this);'>
-					<label for='cronentry' lang-data="cron-entry">${getLanguageAsText("cron-entry")}</label>
+				<div class="input-group mb-3">
+					<button class='disableOnDisconnect btn btn-outline-primary border-secondary border-end-0' onclick='showCronEntryModal(); cronModal.hide();'><i class='bi bi-pencil-square pe-2'></i><span lang-data='edit-cron-entry'>${getLanguageAsText("edit-cron-entry")}</span></button>
+					<input id='cronentry' type="text" class="disableOnDisconnect form-control border-secondary border-start-0" value='${pattern}' onkeyup='checkCronEntryValidity(this);'>
 				</div>
 			</td>
 			<td>
@@ -445,6 +452,10 @@ function showCronModal(scheduleEntryId) {
 	getElement("scheduleEntryButtonDelete").onclick = () => deleteScheduleEntry(scheduleEntryId);
 	cronModal.show();
 	enableElements(prevItemsEnabled);
+}
+
+function showCronEntryModal() {
+	cronEntryModal.show();
 }
 
 function isInDarkmode() {
@@ -658,10 +669,111 @@ getElement("collapseMainSettings").addEventListener("shown.bs.collapse", event =
 getElement("collapseLoginSettings").addEventListener("shown.bs.collapse", event => {
 	rearrangeGui();
 });
-//slide.bs.carousel
+
 getElement("timeActionsCarousel").addEventListener("slide.bs.carousel", event => {
 	plannerSwitchRadio(event.to);
 });
+
+getElement("cronEntryModal").addEventListener("hidden.bs.modal", event => {
+	cronModal.show();
+});
+
+function cronEntryOnChange(activeValue) {
+	switch (activeValue) {
+		case "1":
+			getElement("cronEntryDailyRow").hidden = false;
+			getElement("cronEntryMonthlyRow").hidden = true;
+			getElement("cronEntryPeriodicRow").hidden = true;
+			break;
+		case "2":
+			getElement("cronEntryDailyRow").hidden = true;
+			getElement("cronEntryMonthlyRow").hidden = false;
+			getElement("cronEntryPeriodicRow").hidden = true;
+			break;
+		case "3":
+			getElement("cronEntryDailyRow").hidden = true;
+			getElement("cronEntryMonthlyRow").hidden = true;
+			getElement("cronEntryPeriodicRow").hidden = false;
+			break;
+	}
+}
+
+function cronEntryOk() {
+	let cronString = parseCronEntry();
+	if (cronString) {
+		getElement("cronentry").value = cronString;
+		cronEntryModal.hide();
+	} else showModal(getLanguageAsText("error"), "Invalid input.", true, true, getLanguageAsText("ok"));
+}
+
+function parseCronEntry() {
+	let result = "";
+	if (getElement("dailyCronRadio").checked) {
+		if (getElement("cronEntryDailyTime").value.split(":")[1] == undefined) return false;//no valid time
+		else result += parseInt(getElement("cronEntryDailyTime").value.split(":")[1]);//parse to int to remove leading zeros
+		result += " ";
+
+		if (getElement("cronEntryDailyTime").value.split(":")[0] == undefined) return false;
+		else result += parseInt(getElement("cronEntryDailyTime").value.split(":")[0]);
+		result += " * * ";
+
+		for (let i = 0; i < document.getElementsByClassName("dailyDayCheck").length; i++) {
+			if (document.getElementsByClassName("dailyDayCheck")[i].checked) {
+				result += document.getElementsByClassName("dailyDayCheck")[i].value + ",";
+			}
+		}
+		if (result.endsWith(",")) result = result.substring(0, result.length - 1);
+		else return false;//no days checked
+
+	} else if (getElement("monthlyCronRadio").checked) {
+		if (getElement("cronEntryMonthlyTime").value.split(":")[1] == undefined) return false;//no valid time
+		else result += parseInt(getElement("cronEntryMonthlyTime").value.split(":")[1]);//parse to int to remove leading zeros
+		result += " ";
+
+		if (getElement("cronEntryMonthlyTime").value.split(":")[0] == undefined) return false;
+		else result += parseInt(getElement("cronEntryMonthlyTime").value.split(":")[0]);
+		result += " ";
+
+		for (let i = 0; i < document.getElementsByClassName("monthlyDayCheck").length; i++) {
+			if (document.getElementsByClassName("monthlyDayCheck")[i].checked) {
+				result += document.getElementsByClassName("monthlyDayCheck")[i].value + ",";
+			}
+		}
+		if (result.endsWith(",")) result = result.substring(0, result.length - 1);
+		else return false;//no days checked
+
+		result += " * *";
+
+	} else if (getElement("periodicCronRadio").checked) {
+		let val = getElement("cronEntryPeriodicTimeSelect").value;
+		switch (getElement("cronEntryPeriodicTimeSpanSelect").value) {
+			case "1"://minutes
+			if (val == 1) result += "* 0"; 
+			else result += "* */" + val;
+			result += " * * *";
+			break;
+
+			case "2"://hours
+			if (val == 1) result += "*"; 
+			else result += "*/" + val;
+			result += " 0 * * *";
+			break;
+
+			case "3"://days
+			if (val == 1) result += "0 0 *"; 
+			else result += "0 0 */" + val;
+			result += " * *";
+			break;
+
+			case "4"://months
+			if (val == 1) result += "0 0 1 *"; 
+			else result += "0 0 1 */" + val;
+			result += " *";
+			break;
+		}
+	}
+	return result;
+}
 
 function showServerError(text, request, details=null) {
 	if (details == null || details == undefined) {
@@ -940,12 +1052,12 @@ function prepareScheduleString() {
 function checkCronEntryValidity(scheduleCronEntry) {
 	let acceptetChars = "0123456789,/-* "
 	let validity = true;
-	let tempString = scheduleCronEntry.value;
-	tempString = tempString.trim();
-	while (tempString.includes("  ")) tempString = tempString.replaceAll("  ", " ");
-	if (tempString.split(" ").length != 5) validity = false;
+	let cronEntryString = ""+ scheduleCronEntry.value;
+	cronEntryString = cronEntryString.trim();
+	while (cronEntryString.includes("  ")) cronEntryString = cronEntryString.replaceAll("  ", " ");//removes whitespace
+	if (cronEntryString.split(" ").length != 5) validity = false;
 
-	for (let i = 0; i < scheduleCronEntry.value.length; i++) {
+	for (let i = 0; i < scheduleCronEntry.value.length; i++) { // check if all used chars are valid
 		let hasChar = false;
 		for (let chars = 0; chars < acceptetChars.length; chars++) {
 			if (scheduleCronEntry.value[i] == acceptetChars[chars]) {
@@ -957,13 +1069,180 @@ function checkCronEntryValidity(scheduleCronEntry) {
 		}
 	}
 
+	for (let i = 0; i < ",/- ".length; i++) {//checks if starts or ends with operator
+		if (cronEntryString.startsWith(",/- "[i]) || cronEntryString.endsWith(",/- "[i])) {
+			validity = false;
+		}
+	}
+
+	if (validity) {
+		for (let i = 1; i < cronEntryString.length - 1; i++) {//checks that operators are surrounded by values
+			if (",/-".includes(cronEntryString[i])) {
+				if (!"0123456789*".includes(cronEntryString[i-1]) || !"0123456789".includes(cronEntryString[i+1])) {
+					validity = false;
+				}
+			}
+		}
+	}
+
+	let varArray = cronEntryString.split(" ");
+	for (let i = 0; i < varArray.length; i++) {
+		switch (i) {
+			case 0://hours
+				try {
+					if (parseInt(varArray[i]) < hourLowerLimit || parseInt(varArray[i]) > hourUpperLimit) validity = false;
+				} catch (error) {}
+				if (varArray[i].includes(",")) {
+					const subArray = varArray[i].split(",");
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < hourLowerLimit || subArray[j] > hourUpperLimit) {
+							validity = false;
+						}
+					}
+				}
+				if (varArray[i].includes("-")) {
+					const subArray = varArray[i].split("-");
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < hourLowerLimit || subArray[j] > hourUpperLimit) {
+							validity = false;
+						}
+					}
+				}
+				if (varArray[i].includes("/")) {
+					const subArray = varArray[i].split("/");
+					if (subArray.length > 1) validity = false;//only one / allowed
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < hourLowerLimit || subArray[j] > hourUpperLimit) validity = false;
+						if (",/- ".includes(subArray[j])) validity = false;
+					}
+				}
+				break;
+			case 1://minutes
+				try {
+					if (parseInt(varArray[i]) < minuteLowerLimit || parseInt(varArray[i]) > minuteUpperLimit) validity = false;
+				} catch (error) {}
+				if (varArray[i].includes(",")) {
+					const subArray = varArray[i].split(",");
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < minuteLowerLimit || subArray[j] > minuteUpperLimit) {
+							validity = false;
+						}
+					}
+				}
+				if (varArray[i].includes("-")) {
+					const subArray = varArray[i].split("-");
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < minuteLowerLimit || subArray[j] > minuteUpperLimit) {
+							validity = false;
+						}
+					}
+				}
+				if (varArray[i].includes("/")) {
+					const subArray = varArray[i].split("/");
+					if (subArray.length > 1) validity = false;//only one / allowed
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < minuteLowerLimit || subArray[j] > minuteUpperLimit) validity = false;
+						if (",/- ".includes(subArray[j])) validity = false;
+					}
+				}
+				break;
+			case 2://days in month
+				try {
+					if (parseInt(varArray[i]) < dayOfMonthLowerLimit || parseInt(varArray[i]) > dayOfMonthUpperLimit) validity = false;
+				} catch (error) {}
+				if (varArray[i].includes(",")) {
+					const subArray = varArray[i].split(",");
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < dayOfMonthLowerLimit || subArray[j] > dayOfMonthUpperLimit) {
+							validity = false;
+						}
+					}
+				}
+				if (varArray[i].includes("-")) {
+					const subArray = varArray[i].split("-");
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < dayOfMonthLowerLimit || subArray[j] > dayOfMonthUpperLimit) {
+							validity = false;
+						}
+					}
+				}
+				if (varArray[i].includes("/")) {
+					const subArray = varArray[i].split("/");
+					if (subArray.length > 1) validity = false;//only one / allowed
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < dayOfMonthLowerLimit || subArray[j] > dayOfMonthUpperLimit) validity = false;
+						if (",/- ".includes(subArray[j])) validity = false;
+					}
+				}
+				break;
+			case 3://months
+				try {
+					if (parseInt(varArray[i]) < monthLowerLimit || parseInt(varArray[i]) > monthUpperLimit) validity = false;
+				} catch (error) {}
+				if (varArray[i].includes(",")) {
+					const subArray = varArray[i].split(",");
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < monthLowerLimit || subArray[j] > monthUpperLimit) {
+							validity = false;
+						}
+					}
+				}
+				if (varArray[i].includes("-")) {
+					const subArray = varArray[i].split("-");
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < monthLowerLimit || subArray[j] > monthUpperLimit) {
+							validity = false;
+						}
+					}
+				}
+				if (varArray[i].includes("/")) {
+					const subArray = varArray[i].split("/");
+					if (subArray.length > 1) validity = false;//only one / allowed
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < monthLowerLimit || subArray[j] > monthUpperLimit) validity = false;
+						if (",/- ".includes(subArray[j])) validity = false;
+					}
+				}
+				break;
+			case 4://days in week
+				try {
+					if (parseInt(varArray[i]) < dayOfWeekLowerLimit || parseInt(varArray[i]) > dayOfWeekUpperLimit) validity = false;
+				} catch (error) {}
+				if (varArray[i].includes(",")) {
+					const subArray = varArray[i].split(",");
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < dayOfWeekLowerLimit || subArray[j] > dayOfWeekUpperLimit) {
+							validity = false;
+						}
+					}
+				}
+				if (varArray[i].includes("-")) {
+					const subArray = varArray[i].split("-");
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < dayOfWeekLowerLimit || subArray[j] > dayOfWeekUpperLimit) {
+							validity = false;
+						}
+					}
+				}
+				if (varArray[i].includes("/")) {
+					const subArray = varArray[i].split("/");
+					if (subArray.length > 1) validity = false;//only one / allowed
+					for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
+						if (subArray[j] < dayOfWeekLowerLimit || subArray[j] > dayOfWeekUpperLimit) validity = false;
+						if (",/- ".includes(subArray[j])) validity = false;
+					}
+				}
+				break;
+		}
+	}
+
 	let saveButton = getElement("scheduleEntryButtonSave");
 	if (validity) {
-		saveButton.className = "disableOnDisconnect btn btn-outline-success mt-2"
+		saveButton.className = "disableOnDisconnect btn btn-outline-success m-1"
 		saveButton.disabled = false;
 		scheduleCronEntry.className = "disableOnDisconnect form-control border border-secondary text-body"
 	} else {
-		saveButton.className = "btn btn-outline-success mt-2"
+		saveButton.className = "btn btn-outline-success m-1"
 		saveButton.disabled = true;
 		scheduleCronEntry.className = "disableOnDisconnect form-control border border-danger text-danger"
 	}

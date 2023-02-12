@@ -195,15 +195,15 @@
 					<table class="pb-3" style="width: 100%;">
 						<tr class="text-center">
 							<td style="width: 33%;">
-								<button type="radio" id="option1" name="options" class='disableOnDisconnect btn-check' data-bs-target="#timeActionsCarousel" data-bs-slide-to="0" style="cursor: pointer;" checked></button>
+								<button type="radio" id="option1" name="options" class='btn-check' data-bs-target="#timeActionsCarousel" data-bs-slide-to="0" style="cursor: pointer;" checked></button>
 								<label id="plannerOption0" class="btn btn-primary w-100 m-2 mb-4" for="option1"><i class='bi bi-calendar2-day bigIcon px-2'></i><span lang-data='timeschedule'>Zeitplan</label>
 							</td>
 							<td style="width: 33%;">
-								<button type="radio" id="option2" name="options" class='disableOnDisconnect btn-check' data-bs-target="#timeActionsCarousel" data-bs-slide-to="1" style="cursor: pointer;"></button>
+								<button type="radio" id="option2" name="options" class='btn-check' data-bs-target="#timeActionsCarousel" data-bs-slide-to="1" style="cursor: pointer;"></button>
 								<label id="plannerOption1" class="btn btn-secondary w-100 m-2 mb-4" for="option2"><i class='bi bi-terminal bigIcon px-2'></i><span lang-data='commandsets'>Commandsets</label>
 							</td>
 							<td style="width: 33%;">
-								<button type="radio" id="option3" name="options" class='disableOnDisconnect btn-check' data-bs-target="#timeActionsCarousel" data-bs-slide-to="2" style="cursor: pointer;"></button>
+								<button type="radio" id="option3" name="options" class='btn-check' data-bs-target="#timeActionsCarousel" data-bs-slide-to="2" style="cursor: pointer;"></button>
 								<label id="plannerOption2" class="btn btn-secondary w-100 m-2 mb-4" for="option3"><i class='bi bi-lightning-charge bigIcon px-2'></i><span lang-data='trigger'>Trigger</span></label>
 							</td>
 						</tr>
@@ -253,6 +253,156 @@
 							</td>
 						</tr>
 					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id='cronEntryModal' class='modal fade' tabindex='-1'>
+		<div class='modal-xl modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-xl-down'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<h5 id='cronEntryModalTitle' class='modal-title'></h5>
+					<button class='btn-close btn-close-white' data-bs-dismiss='modal'></button>
+				</div>
+				<div id='cronEntryModalBody' class='modal-body'>
+					<div class="form-check m-0">
+						<table class="w-100">
+							<tr>
+								<td colspan="4" class="border-top border-primary py-2">
+									<input type="radio" name="cronRadio" class="btn-check" id="dailyCronRadio" onclick="cronEntryOnChange(value)" value="1" checked>
+									<label for="dailyCronRadio" class="btn btn-outline-primary"><h5 class="m-0" lang-data="daily">Täglich</h5></label>
+								</td>
+							</tr>
+							<tr id="cronEntryDailyRow">
+								<td style="width: 15%; text-align: center;">
+									<span lang-data="at-this-time">Zu dieser Zeit</span>
+								</td>
+								<td style="width: 20%; text-align: center;">
+									<input id='cronEntryDailyTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center;" value="12:00">
+								</td>
+								<td style="width: 20%; text-align: center;">
+									<span lang-data="at-these-days">An diesen Tagen</span>
+								</td>
+								<td style="width: 45%; text-align: center;">
+									<div class="form-check form-check-inline">
+										<input class="form-check-input dailyDayCheck" type="checkbox" value="0" id="dailyDayCheck0">
+										<label class="form-check-label" for="dailyDayCheck0" lang-data="mon">Mo</label>
+									</div>
+									<div class="form-check form-check-inline">
+										<input class="form-check-input dailyDayCheck" type="checkbox" value="1" id="dailyDayCheck1">
+										<label class="form-check-label" for="dailyDayCheck1" lang-data="tue">Di</label>
+									</div>
+									<div class="form-check form-check-inline">
+										<input class="form-check-input dailyDayCheck" type="checkbox" value="2" id="dailyDayCheck2">
+										<label class="form-check-label" for="dailyDayCheck2" lang-data="wed">Mi</label>
+									</div>
+									<div class="form-check form-check-inline">
+										<input class="form-check-input dailyDayCheck" type="checkbox" value="3" id="dailyDayCheck3">
+										<label class="form-check-label" for="dailyDayCheck3" lang-data="thu">Do</label>
+									</div>
+									<div class="form-check form-check-inline">
+										<input class="form-check-input dailyDayCheck" type="checkbox" value="4" id="dailyDayCheck4">
+										<label class="form-check-label" for="dailyDayCheck4" lang-data="fri">Fr</label>
+									</div>
+									<div class="form-check form-check-inline">
+										<input class="form-check-input dailyDayCheck" type="checkbox" value="5" id="dailyDayCheck5">
+										<label class="form-check-label" for="dailyDayCheck5" lang-data="sat">Sa</label>
+									</div>
+									<div class="form-check form-check-inline">
+										<input class="form-check-input dailyDayCheck" type="checkbox" value="6" id="dailyDayCheck6">
+										<label class="form-check-label" for="dailyDayCheck6" lang-data="sun">So</label>
+									</div>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="4" class="border-top border-primary py-2">
+									<input type="radio" name="cronRadio" class="btn-check" id="monthlyCronRadio" onclick="cronEntryOnChange(value)" value="2">
+									<label for="monthlyCronRadio" class="btn btn-outline-primary"><h5 class="m-0" lang-data="mothly">Monatlich</h5></label>
+								</td>
+							</tr>
+							<tr id="cronEntryMonthlyRow" hidden>
+								<td style="width: 15%; text-align: center;">
+									<span lang-data="at-this-time">Zu dieser Zeit</span>
+								</td>
+								<td style="width: 20%; text-align: center;">
+									<input id='cronEntryMonthlyTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center;" value="12:00">
+								</td>
+								<td style="width: 20%; text-align: center;">
+									<span lang-data="at-these-days">An diesen Tagen</span>
+								</td>
+								<td style="width: 45%; text-align: center;" id="monthlyDayChecks">
+									<script>
+for (let i = 1; i <= 31; i++) {
+	let div = document.createElement("div");
+	div.className = "form-check form-check-inline";
+
+	let input = document.createElement("input");
+	input.className = "form-check-input monthlyDayCheck";
+	input.type = "checkbox";
+	input.value = i;
+	input.id = "monthlyDayCheck" + i;
+	div.appendChild(input);
+
+	let label = document.createElement("label");
+	label.className = "form-check-label";
+	label.htmlFor = "monthlyDayCheck" + i;
+	label.innerText = i;
+	div.appendChild(label);
+
+	document.getElementById("monthlyDayChecks").appendChild(div);
+}
+									</script>
+								</td>
+							</tr>
+							<tr>
+								<td colspan="4" class="border-top border-primary py-2">
+									<input type="radio" name="cronRadio" class="btn-check" id="periodicCronRadio" onclick="cronEntryOnChange(value)" value="3">
+									<label for="periodicCronRadio" class="btn btn-outline-primary"><h5 class="m-0" lang-data="periodically">Periodisch</h5></label>
+								</td>
+							</tr>
+							<tr id="cronEntryPeriodicRow" hidden>
+								<td style="width: 15%; text-align: center;">
+									<span lang-data="every">Alle</span>
+								</td>
+								<td style="width: 20%; text-align: center;">
+									<select id='cronEntryPeriodicTimeSelect' class='disableOnDisconnect form-select border-secondary'>
+										<option id='periodicTimeOption1' value='1'>1</option>
+										<option id='periodicTimeOption2' value='2'>2</option>
+										<option id='periodicTimeOption3' value='3'>3</option>
+										<option id='periodicTimeOption4' value='4'>4</option>
+										<option id='periodicTimeOption5' value='5'>5</option>
+										<option id='periodicTimeOption6' value='6'>6</option>
+										<option id='periodicTimeOption10' value='10'>10</option>
+										<option id='periodicTimeOption15' value='15'>15</option>
+										<option id='periodicTimeOption20' value='20'>20</option>
+										<option id='periodicTimeOption30' value='30'>30</option>
+										<option id='periodicTimeOption45' value='45'>45</option>
+										<option id='periodicTimeOption60' value='60'>60</option>
+									</select>
+								</td>
+								<td style="width: 20%; text-align: center;">
+									<select id='cronEntryPeriodicTimeSpanSelect' class='disableOnDisconnect form-select border-secondary'>
+										<option id='periodicTimeOptionMinutes' value='1' lang-data="minutes">Minuten</option>
+										<option id='periodicTimeOptionHours' value='2' lang-data="hours">Stunden</option>
+										<option id='periodicTimeOptionDays' value='3' lang-data="days">Tage</option>
+										<option id='periodicTimeOptionMonths' value='4' lang-data="months">Monate</option>
+									</select>
+
+								</td>
+								<td style="width: 45%; text-align: center;">
+								</td>
+							</tr>
+							<tr>
+								<td colspan="4" class="border-top border-primary pt-2"> </td>
+							</tr>
+						</table>
+
+					</div>
+				</div>
+				<hr>
+				<div class='modal-footer'>
+					<button id='cronEntryButtonCancel' class='btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
+					<button id='cronEntryButtonOk' class='disableOnDisconnect btn btn-outline-success m-1' onclick='cronEntryOk();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="ok">Ok</span></button>
 				</div>
 			</div>
 		</div>
