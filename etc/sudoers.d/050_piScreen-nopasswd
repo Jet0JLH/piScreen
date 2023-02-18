@@ -1,0 +1,2 @@
+www-data	ALL=(ALL:ALL)	NOPASSWD:/home/pi/piScreen/piScreenCmd.py
+www-data	ALL=(ALL:ALL)	NOPASSWD:/usr/bin/hostnamectl

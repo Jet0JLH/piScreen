@@ -1,5 +1,5 @@
 {
-	"structureVersion":"0.1",
+	"structureVersion":"0.2",
 	"commandsets":[
 		{
 			"id":1,
@@ -22,10 +22,12 @@
 		{
 			"enabled": true,
             "trigger": 1,
-			"true":{
-				"command": 40,
-				"parameter": "https://localhost",
-				"commandset": 1
+			"cases": {
+				"true":{
+					"command": 40,
+					"parameter": "https://localhost",
+					"commandset": 1
+				}
 			}
 		}
 	]

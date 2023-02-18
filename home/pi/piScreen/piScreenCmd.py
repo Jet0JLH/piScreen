@@ -296,7 +296,7 @@ def getStatus():
 	jsonData["uptime"]["mins"] = int((upTime / 60) % 60)
 	jsonData["uptime"]["hours"] = int((upTime / 60 / 60) % 24)
 	jsonData["uptime"]["days"] = int(upTime / 60 / 60 / 24)
-	jsonData["displayState"] = open(piScreenUtils.paths.displayStatus,"r").read().strip()
+	if os.path.exists(piScreenUtils.paths.displayStatus): jsonData["displayState"] = open(piScreenUtils.paths.displayStatus,"r").read().strip()
 	jsonData["cpuTemp"] = cpuTemp
 	jsonData["cpuLoad"] = cpuLoad
 	jsonData["ramTotal"] = ramTotal
