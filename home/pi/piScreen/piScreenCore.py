@@ -47,7 +47,7 @@ while True:
 			parameter = open(piScreenUtils.paths.modeFirefox,"r").read()
 			piScreenUtils.logging.info(f"Start firefox ({parameter})")
 			modeFileModify = os.path.getmtime(piScreenUtils.paths.modeFirefox)
-			os.system(f'firefox-esr -kiosk "{parameter}" &')
+			os.system(f'firefox-esr --marionette -kiosk "{parameter}" &')
 		else:
 			if modeFileModify != os.path.getmtime(piScreenUtils.paths.modeFirefox):
 				piScreenUtils.logging.info("Firefox parameter has changed")

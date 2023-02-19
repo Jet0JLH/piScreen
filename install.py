@@ -15,7 +15,7 @@ aptPackages = {
 	"deprecated": {}
 }
 pipPackages = {
-	"current": {"cec", "monitorcontrol"},
+	"current": {"cec", "monitorcontrol", "marionette_driver"},
 	"deprecated": {}
 }
 piScreenFiles = {

@@ -156,7 +156,16 @@ def endAllModes():
 
 def startBrowser(parameter):
 	piScreenUtils.logging.info("Start browser")
-	endAllModes()
+	import telnetlib
+	try:
+		telnetlib.Telnet("127.0.0.1",2828)
+		piScreenUtils.logging.info("Navigate browser over marionette")
+		from marionette_driver.marionette import Marionette
+		client = Marionette(host='127.0.0.1', port=2828)
+		client.start_session()
+		client.navigate(parameter)
+	except:
+		endAllModes()
 	f = open(piScreenUtils.paths.modeFirefox,"w")
 	f.write(parameter)
 	f.close()
@@ -928,6 +937,18 @@ for i, origItem in enumerate(sys.argv):
 			verbose and print("Not enough arguments")
 	elif item == "--restart-browser":
 		restartBrowser()
+	elif item == "--refresh-browser":
+		import telnetlib
+		try:
+			telnetlib.Telnet("127.0.0.1",2828)
+			piScreenUtils.logging.info("Refresh browser over marionette")
+			from marionette_driver.marionette import Marionette
+			client = Marionette(host='127.0.0.1', port=2828)
+			client.start_session()
+			client.refresh()
+		except:
+			piScreenUtils.logging.warning("Unable to refresh browser. Restart browser instead of this")
+			restartBrowser()
 	elif item == "--stop-browser":
 		stopBrowser()
 	elif item == "--start-vlc":
