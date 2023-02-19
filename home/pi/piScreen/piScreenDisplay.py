@@ -216,18 +216,26 @@ class settingsWatcher(threading.Thread):
 	def run(self):
 		while enabled:
 			fileModify = os.path.getmtime(piScreenUtils.paths.settings)
-			if fileModify == self.fileModify: continue
+			if fileModify != self.fileModify:
+				try:
+					piScreenUtils.logging.info("Config seems to be changed")
+					self.config = json.load(open(piScreenUtils.paths.settings))
+					self.fileModify = fileModify
+					if "settings" in self.config and "display" in self.config["settings"]:
+						if "protocol" in self.config["settings"]["display"]: self.values.protocol = self.config["settings"]["display"]["protocol"]
+						if "orientation" in self.config["settings"]["display"]: self.values.orientation = self.config["settings"]["display"]["orientation"]
+						if "force" in self.config["settings"]["display"]: self.values.force = self.config["settings"]["display"]["force"]
+				except:
+					piScreenUtils.logging.critical("Settingsfile seems to be demaged and could not be loaded as JSON object")
 			try:
-				piScreenUtils.logging.info("Config seems to be changed")
-				self.config = json.load(open(piScreenUtils.paths.settings))
-				self.fileModify = fileModify
-				if "settings" in self.config and "display" in self.config["settings"]:
-					if "protocol" in self.config["settings"]["display"]: self.values.protocol = self.config["settings"]["display"]["protocol"]
-					if "orientation" in self.config["settings"]["display"]: self.values.orientation = self.config["settings"]["display"]["orientation"]
-					if "force" in self.config["settings"]["display"]: self.values.force = self.config["settings"]["display"]["force"]
+				#check screen orientation
+				if piScreenUtils.isInt(self.values.orientation):
+					if subprocess.check_output(f"{piScreenUtils.paths.syscall} --get-display-orientation",shell=True).decode("utf-8").replace("\n","") != str(self.values.orientation):
+						piScreenUtils.logging.info("Change display orientation")
+						os.system(f"{piScreenUtils.paths.syscall} --set-display-orientation --no-save {self.values.orientation}")
 			except:
-				piScreenUtils.logging.critical("Settingsfile seems to be demaged and could not be loaded as JSON object")
-			time.sleep(5)
+				piScreenUtils.logging.error("Unable to set display orientation")
+			time.sleep(2)
 
 if __name__ == "__main__":
 	piScreenUtils.logging.info("Startup")

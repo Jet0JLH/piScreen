@@ -84,12 +84,6 @@ while True:
 			configModify = os.path.getmtime(piScreenUtils.paths.settings)
 		except:
 			piScreenUtils.logging.error("settings.json seems to be damaged")
-	#check screen orientation
-	if "orientation" in conf["display"]:
-		if piScreenUtils.isInt(conf["display"]["orientation"]):
-			if subprocess.check_output(f"{piScreenUtils.paths.syscall} --get-display-orientation",shell=True).decode("utf-8").replace("\n","") != str(conf['display']['orientation']):
-				piScreenUtils.logging.info("Change display orientation")
-				os.system(f"{piScreenUtils.paths.syscall} --set-display-orientation --no-save {conf['display']['orientation']}")
 	#createScreenshot
 	try:
 		os.system(f"scrot -z {piScreenUtils.paths.screenshot}.png")
