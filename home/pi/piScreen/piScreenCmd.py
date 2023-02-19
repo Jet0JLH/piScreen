@@ -13,11 +13,13 @@ def printHelp():
 -v
 	Shows detailed informations during execution
 --start-browser <URL>
-	Starts the Browser
+	Starts the Browser or navigate it to new location if already open
 --stop-browser
 	Stops the Browser when active
 --restart-browser
 	Restart the Browser when active
+--refresh-browser
+	Refresh browser when active
 --start-vlc <file>
 	Starts VLC Player
 --stop-vlc
@@ -158,7 +160,7 @@ def startBrowser(parameter):
 	piScreenUtils.logging.info("Start browser")
 	import telnetlib
 	try:
-		telnetlib.Telnet("127.0.0.1",2828)
+		telnetlib.Telnet("127.0.0.1",2828) #Check if marionette port is open
 		piScreenUtils.logging.info("Navigate browser over marionette")
 		from marionette_driver.marionette import Marionette
 		client = Marionette(host='127.0.0.1', port=2828)
@@ -940,7 +942,7 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--refresh-browser":
 		import telnetlib
 		try:
-			telnetlib.Telnet("127.0.0.1",2828)
+			telnetlib.Telnet("127.0.0.1",2828) #Check if marionette port is open
 			piScreenUtils.logging.info("Refresh browser over marionette")
 			from marionette_driver.marionette import Marionette
 			client = Marionette(host='127.0.0.1', port=2828)

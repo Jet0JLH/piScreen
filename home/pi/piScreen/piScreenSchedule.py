@@ -507,7 +507,7 @@ def commandInterpreter(cmd:int, parameter:str):
 	elif cmd == 41: #RestartBrowser
 		os.system(f'{piScreenUtils.paths.syscall} --restart-browser')
 	elif cmd == 42: #ReloadBrowser
-		pass
+		os.system(f'{piScreenUtils.paths.syscall} --refresh-browser')
 	elif cmd == 43: #CloseBrowser
 		os.system(f"{piScreenUtils.paths.syscall} --stop-browser")
 	elif cmd == 50: #StartVLC
