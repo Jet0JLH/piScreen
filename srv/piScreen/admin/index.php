@@ -216,6 +216,7 @@
 								</div>
 								<div>
 									<button id='newScheduleEntry' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showCronModal(Math.floor(Math.random() * 9999) - 10000 );'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-entry'>Neuer Eintrag</span></button>
+									<button id='lastCronButton' class='disableOnDisconnect btn btn-outline-warning mt-2 px-2' onclick="sendHTTPRequest('GET', 'cmd.php?id=22', true);"><i class='bi bi-play pe-2'></i><span lang-data='lastcron'>Letzter Eintrag ausführen</span></button>
 								</div>
 							</div>
 							<div class="carousel-item">
@@ -240,12 +241,11 @@
 				<div id='cronModalBody' class='modal-body'>
 
 				</div>
-				<hr>
 				<div class='modal-footer'>
 					<table style="width: 100%;">
 						<tr>
 							<td style="width: 50%;">
-								<button id="scheduleEntryButtonDelete" class="disableOnDisconnect btn btn-outline-danger m-1" onclick='deleteScheduleEntry();'><i class='bi bi-trash pe-2'></i><span lang-data='delete-commandset'></span></button>
+								<button id="scheduleEntryButtonDelete" class="disableOnDisconnect btn btn-outline-danger m-1" onclick='deleteScheduleEntry();'><i class='bi bi-trash pe-2'></i><span lang-data='delete-entry'></span></button>
 							</td>
 							<td>
 								<button id='scheduleEntryButtonSave' class='btn btn-outline-success m-1' onclick='saveScheduleEntry();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
@@ -261,29 +261,31 @@
 		<div class='modal-xl modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-xl-down'>
 			<div class='modal-content'>
 				<div class='modal-header'>
-					<h5 id='cronEntryModalTitle' class='modal-title'></h5>
+					<h5 id='cronEntryModalTitle' class='modal-title'>
+						<i class="bi bi-pencil-square pe-2"></i><span lang-data="edit-cron-entry">Croneintrag bearbeiten</span>
+					</h5>
 					<button class='btn-close btn-close-white' data-bs-dismiss='modal'></button>
 				</div>
 				<div id='cronEntryModalBody' class='modal-body'>
-					<div class="form-check m-0">
+					<div class="form-check m-0 p-0">
 						<table class="w-100">
 							<tr>
-								<td colspan="4" class="border-top border-primary py-2">
+								<td colspan="4" class="border-top border-primary py-3">
 									<input type="radio" name="cronRadio" class="btn-check" id="dailyCronRadio" onclick="cronEntryOnChange(value)" value="1" checked>
 									<label for="dailyCronRadio" class="btn btn-outline-primary"><h5 class="m-0" lang-data="daily">Täglich</h5></label>
 								</td>
 							</tr>
 							<tr id="cronEntryDailyRow">
-								<td style="width: 15%; text-align: center;">
+								<td style="width: 15%; text-align: center;" class="pb-3">
 									<span lang-data="at-this-time">Zu dieser Zeit</span>
 								</td>
-								<td style="width: 20%; text-align: center;">
+								<td style="width: 20%; text-align: center;" class="pb-3">
 									<input id='cronEntryDailyTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center;" value="12:00">
 								</td>
-								<td style="width: 20%; text-align: center;">
+								<td style="width: 20%; text-align: center;" class="pb-3">
 									<span lang-data="at-these-days">An diesen Tagen</span>
 								</td>
-								<td style="width: 45%; text-align: center;">
+								<td style="width: 45%; text-align: center;" class="pb-3">
 									<div class="form-check form-check-inline">
 										<input class="form-check-input dailyDayCheck" type="checkbox" value="0" id="dailyDayCheck0">
 										<label class="form-check-label" for="dailyDayCheck0" lang-data="mon">Mo</label>
@@ -315,56 +317,67 @@
 								</td>
 							</tr>
 							<tr>
-								<td colspan="4" class="border-top border-primary py-2">
+								<td colspan="4" class="border-top border-primary py-3">
 									<input type="radio" name="cronRadio" class="btn-check" id="monthlyCronRadio" onclick="cronEntryOnChange(value)" value="2">
 									<label for="monthlyCronRadio" class="btn btn-outline-primary"><h5 class="m-0" lang-data="mothly">Monatlich</h5></label>
 								</td>
 							</tr>
 							<tr id="cronEntryMonthlyRow" hidden>
-								<td style="width: 15%; text-align: center;">
+								<td style="width: 15%; text-align: center;" class="pb-3">
 									<span lang-data="at-this-time">Zu dieser Zeit</span>
 								</td>
-								<td style="width: 20%; text-align: center;">
+								<td style="width: 20%; text-align: center;" class="pb-3">
 									<input id='cronEntryMonthlyTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center;" value="12:00">
 								</td>
-								<td style="width: 20%; text-align: center;">
+								<td style="width: 20%; text-align: center;" class="pb-3">
 									<span lang-data="at-these-days">An diesen Tagen</span>
 								</td>
-								<td style="width: 45%; text-align: center;" id="monthlyDayChecks">
-									<script>
-for (let i = 1; i <= 31; i++) {
-	let div = document.createElement("div");
-	div.className = "form-check form-check-inline";
+								<td style="width: 45%; text-align: center;" id="monthlyDayChecks" class="pb-3">
+									<table id="cronEntryDayTable">
+										<script>
+let table = document.getElementById("cronEntryDayTable");
+for (let w = 0; w < 5; w++) {
+	let row = document.createElement("tr");
+	for (let d = 1; d <= 7; d++) {
+		let cell = document.createElement("td");
+		let i = 7 * w + d;
+		if (i > 31) break;
+		let div = document.createElement("div");
+		div.className = "form-check form-check-inline";
+		div.style.float = "left";
 
-	let input = document.createElement("input");
-	input.className = "form-check-input monthlyDayCheck";
-	input.type = "checkbox";
-	input.value = i;
-	input.id = "monthlyDayCheck" + i;
-	div.appendChild(input);
+		let input = document.createElement("input");
+		input.className = "form-check-input monthlyDayCheck";
+		input.type = "checkbox";
+		input.value = i;
+		input.id = "monthlyDayCheck" + i;
+		div.appendChild(input);
 
-	let label = document.createElement("label");
-	label.className = "form-check-label";
-	label.htmlFor = "monthlyDayCheck" + i;
-	label.innerText = i;
-	div.appendChild(label);
-
-	document.getElementById("monthlyDayChecks").appendChild(div);
+		let label = document.createElement("label");
+		label.className = "form-check-label";
+		label.htmlFor = "monthlyDayCheck" + i;
+		label.innerText = i;
+		div.appendChild(label);
+		cell.appendChild(div);
+		row.appendChild(cell);
+	}
+	table.appendChild(row);
 }
-									</script>
+										</script>
+									</table>
 								</td>
 							</tr>
 							<tr>
-								<td colspan="4" class="border-top border-primary py-2">
+								<td colspan="4" class="border-top border-primary py-3">
 									<input type="radio" name="cronRadio" class="btn-check" id="periodicCronRadio" onclick="cronEntryOnChange(value)" value="3">
 									<label for="periodicCronRadio" class="btn btn-outline-primary"><h5 class="m-0" lang-data="periodically">Periodisch</h5></label>
 								</td>
 							</tr>
 							<tr id="cronEntryPeriodicRow" hidden>
-								<td style="width: 15%; text-align: center;">
+								<td style="width: 15%; text-align: center;" class="pb-3">
 									<span lang-data="every">Alle</span>
 								</td>
-								<td style="width: 20%; text-align: center;">
+								<td style="width: 20%; text-align: center;" class="pb-3">
 									<select id='cronEntryPeriodicTimeSelect' class='disableOnDisconnect form-select border-secondary'>
 										<option id='periodicTimeOption1' value='1'>1</option>
 										<option id='periodicTimeOption2' value='2'>2</option>
@@ -380,26 +393,24 @@ for (let i = 1; i <= 31; i++) {
 										<option id='periodicTimeOption60' value='60'>60</option>
 									</select>
 								</td>
-								<td style="width: 20%; text-align: center;">
+								<td style="width: 20%; text-align: center;" class="pb-3">
 									<select id='cronEntryPeriodicTimeSpanSelect' class='disableOnDisconnect form-select border-secondary'>
 										<option id='periodicTimeOptionMinutes' value='1' lang-data="minutes">Minuten</option>
 										<option id='periodicTimeOptionHours' value='2' lang-data="hours">Stunden</option>
 										<option id='periodicTimeOptionDays' value='3' lang-data="days">Tage</option>
 										<option id='periodicTimeOptionMonths' value='4' lang-data="months">Monate</option>
 									</select>
-
 								</td>
-								<td style="width: 45%; text-align: center;">
+								<td style="width: 45%; text-align: center;" class="pb-3">
 								</td>
 							</tr>
 							<tr>
-								<td colspan="4" class="border-top border-primary pt-2"> </td>
+								<td colspan="4" class="border-top border-primary pt-3"> </td>
 							</tr>
 						</table>
 
 					</div>
 				</div>
-				<hr>
 				<div class='modal-footer'>
 					<button id='cronEntryButtonCancel' class='btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
 					<button id='cronEntryButtonOk' class='disableOnDisconnect btn btn-outline-success m-1' onclick='cronEntryOk();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="ok">Ok</span></button>
@@ -417,7 +428,6 @@ for (let i = 1; i <= 31; i++) {
 				<div id='commandsetModalBody' class='modal-body'>
 
 				</div>
-				<hr>
 				<div class='modal-footer'>
 					<table style="width: 100%;">
 						<tr>
