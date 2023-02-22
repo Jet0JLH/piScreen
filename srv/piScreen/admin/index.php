@@ -215,7 +215,7 @@
 
 								</div>
 								<div>
-									<button id='newScheduleEntry' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showCronModal(Math.floor(Math.random() * 9999) - 10000 );'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-entry'>Neuer Eintrag</span></button>
+									<button id='newScheduleEntry' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showScheduleModal(Math.floor(Math.random() * 9999) - 10000 );'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-entry'>Neuer Eintrag</span></button>
 									<button id='lastCronButton' class='disableOnDisconnect btn btn-outline-warning mt-2 px-2' onclick="sendHTTPRequest('GET', 'cmd.php?id=22', true);"><i class='bi bi-play pe-2'></i><span lang-data='lastcron'>Letzter Eintrag ausführen</span></button>
 								</div>
 							</div>
@@ -231,14 +231,14 @@
 			</div>
 		</div>
 	</main>
-	<div id='cronModal' class='modal fade' tabindex='-1'>
+	<div id='scheduleModal' class='modal fade' tabindex='-1'>
 		<div class='modal-xl modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-xl-down'>
 			<div class='modal-content'>
 				<div class='modal-header'>
-					<h5 id='cronModalTitle' class='modal-title'></h5>
+					<h5 id='scheduleModalTitle' class='modal-title'></h5>
 					<button class='btn-close btn-close-white' data-bs-dismiss='modal'></button>
 				</div>
-				<div id='cronModalBody' class='modal-body'>
+				<div id='scheduleModalBody' class='modal-body'>
 
 				</div>
 				<div class='modal-footer'>
@@ -257,30 +257,30 @@
 			</div>
 		</div>
 	</div>
-	<div id='cronEntryModal' class='modal fade' tabindex='-1'>
+	<div id='cronEditorModal' class='modal fade' tabindex='-1'>
 		<div class='modal-xl modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-xl-down'>
 			<div class='modal-content'>
 				<div class='modal-header'>
-					<h5 id='cronEntryModalTitle' class='modal-title'>
+					<h5 id='cronEditorModalTitle' class='modal-title'>
 						<i class="bi bi-pencil-square pe-2"></i><span lang-data="edit-cron-entry">Croneintrag bearbeiten</span>
 					</h5>
 					<button class='btn-close btn-close-white' data-bs-dismiss='modal'></button>
 				</div>
-				<div id='cronEntryModalBody' class='modal-body'>
+				<div id='cronEditorModalBody' class='modal-body'>
 					<div class="form-check m-0 p-0">
 						<table class="w-100">
 							<tr>
 								<td colspan="4" class="border-top border-primary py-3">
-									<input type="radio" name="cronRadio" class="btn-check" id="dailyCronRadio" onclick="cronEntryOnChange(value)" value="1" checked>
+									<input type="radio" name="cronRadio" class="btn-check" id="dailyCronRadio" onclick="cronEditorOnChange(value)" value="1" checked>
 									<label for="dailyCronRadio" class="btn btn-outline-primary"><h5 class="m-0" lang-data="daily">Täglich</h5></label>
 								</td>
 							</tr>
-							<tr id="cronEntryDailyRow">
+							<tr id="cronEditorDailyRow">
 								<td style="width: 15%; text-align: center;" class="pb-3">
 									<span lang-data="at-this-time">Zu dieser Zeit</span>
 								</td>
 								<td style="width: 20%; text-align: center;" class="pb-3">
-									<input id='cronEntryDailyTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center;" value="12:00">
+									<input id='cronEditorDailyTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center;" value="12:00">
 								</td>
 								<td style="width: 20%; text-align: center;" class="pb-3">
 									<span lang-data="at-these-days">An diesen Tagen</span>
@@ -318,24 +318,24 @@
 							</tr>
 							<tr>
 								<td colspan="4" class="border-top border-primary py-3">
-									<input type="radio" name="cronRadio" class="btn-check" id="monthlyCronRadio" onclick="cronEntryOnChange(value)" value="2">
+									<input type="radio" name="cronRadio" class="btn-check" id="monthlyCronRadio" onclick="cronEditorOnChange(value)" value="2">
 									<label for="monthlyCronRadio" class="btn btn-outline-primary"><h5 class="m-0" lang-data="mothly">Monatlich</h5></label>
 								</td>
 							</tr>
-							<tr id="cronEntryMonthlyRow" hidden>
+							<tr id="cronEditorMonthlyRow" hidden>
 								<td style="width: 15%; text-align: center;" class="pb-3">
 									<span lang-data="at-this-time">Zu dieser Zeit</span>
 								</td>
 								<td style="width: 20%; text-align: center;" class="pb-3">
-									<input id='cronEntryMonthlyTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center;" value="12:00">
+									<input id='cronEditorMonthlyTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center;" value="12:00">
 								</td>
 								<td style="width: 20%; text-align: center;" class="pb-3">
 									<span lang-data="at-these-days">An diesen Tagen</span>
 								</td>
 								<td style="width: 45%; text-align: center;" id="monthlyDayChecks" class="pb-3">
-									<table id="cronEntryDayTable">
+									<table id="cronEditorDayTable">
 										<script>
-let table = document.getElementById("cronEntryDayTable");
+let table = document.getElementById("cronEditorDayTable");
 for (let w = 0; w < 5; w++) {
 	let row = document.createElement("tr");
 	for (let d = 1; d <= 7; d++) {
@@ -369,16 +369,16 @@ for (let w = 0; w < 5; w++) {
 							</tr>
 							<tr>
 								<td colspan="4" class="border-top border-primary py-3">
-									<input type="radio" name="cronRadio" class="btn-check" id="periodicCronRadio" onclick="cronEntryOnChange(value)" value="3">
+									<input type="radio" name="cronRadio" class="btn-check" id="periodicCronRadio" onclick="cronEditorOnChange(value)" value="3">
 									<label for="periodicCronRadio" class="btn btn-outline-primary"><h5 class="m-0" lang-data="periodically">Periodisch</h5></label>
 								</td>
 							</tr>
-							<tr id="cronEntryPeriodicRow" hidden>
+							<tr id="cronEditorPeriodicRow" hidden>
 								<td style="width: 15%; text-align: center;" class="pb-3">
 									<span lang-data="every">Alle</span>
 								</td>
 								<td style="width: 20%; text-align: center;" class="pb-3">
-									<select id='cronEntryPeriodicTimeSelect' class='disableOnDisconnect form-select border-secondary'>
+									<select id='cronEditorPeriodicTimeSelect' class='disableOnDisconnect form-select border-secondary'>
 										<option id='periodicTimeOption1' value='1'>1</option>
 										<option id='periodicTimeOption2' value='2'>2</option>
 										<option id='periodicTimeOption3' value='3'>3</option>
@@ -394,7 +394,7 @@ for (let w = 0; w < 5; w++) {
 									</select>
 								</td>
 								<td style="width: 20%; text-align: center;" class="pb-3">
-									<select id='cronEntryPeriodicTimeSpanSelect' class='disableOnDisconnect form-select border-secondary'>
+									<select id='cronEditorPeriodicTimeSpanSelect' class='disableOnDisconnect form-select border-secondary'>
 										<option id='periodicTimeOptionMinutes' value='1' lang-data="minutes">Minuten</option>
 										<option id='periodicTimeOptionHours' value='2' lang-data="hours">Stunden</option>
 										<option id='periodicTimeOptionDays' value='3' lang-data="days">Tage</option>
@@ -412,8 +412,8 @@ for (let w = 0; w < 5; w++) {
 					</div>
 				</div>
 				<div class='modal-footer'>
-					<button id='cronEntryButtonCancel' class='btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
-					<button id='cronEntryButtonOk' class='disableOnDisconnect btn btn-outline-success m-1' onclick='cronEntryOk();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="ok">Ok</span></button>
+					<button id='cronEditorButtonCancel' class='btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
+					<button id='cronEditorButtonOk' class='disableOnDisconnect btn btn-outline-success m-1' onclick='cronEditorOk();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="ok">Ok</span></button>
 				</div>
 			</div>
 		</div>
