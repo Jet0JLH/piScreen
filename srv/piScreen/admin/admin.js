@@ -173,10 +173,10 @@ function addParameterToScheduleEntry(commandId, parameter) {
 	if (commandCollection[commandId][1] == false) {
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
-		div.innerHTML = `<input id='scheduleEntryParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary' value='${parameter}' lang-data='parameter'>`;
+		div.innerHTML = `<input id='scheduleEntryParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary' onkeyup='scheduleEntrySaved(false);' value='${parameter}' lang-data='parameter'>`;
 		if (parameter == undefined) parameter = "";
 	} else if (Array.isArray(commandCollection[commandId][1])) {
-		let htmlSelect = `<select id='scheduleEntryParameterInput' class='disableOnDisconnect form-select border border-secondary'>\n`;
+		let htmlSelect = `<select id='scheduleEntryParameterInput' class='disableOnDisconnect form-select border border-secondary' onchange='scheduleEntrySaved(false);'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
 			htmlSelect += `<option value='${commandCollection[commandId][1][i][0]}' lang-data='${commandCollection[commandId][1][i][1]}'>${getLanguageAsText(commandCollection[commandId][1][i][1])}</option>\n`;
 		}
@@ -357,7 +357,7 @@ function showCronModal(scheduleEntryId) {
 		<tr>
 			<td style='width: 50%;'>
 				<div class="form-check form-switch">
-					<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="scheduleEntryEnabledSwitchCheck" ${enabled ? "checked" : ""}>
+					<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="scheduleEntryEnabledSwitchCheck" onchange="scheduleEntrySaved(false);" ${enabled ? "checked" : ""}>
 					<label class="form-check-label" for="scheduleEntryEnabledSwitchCheck" lang-data="active">${getLanguageAsText("active")}</label>
 				</div>
 			</td>
@@ -369,7 +369,7 @@ function showCronModal(scheduleEntryId) {
 			<td>
 				<div class="input-group mb-3">
 					<button class='disableOnDisconnect btn btn-outline-primary border-secondary border-end-0' onclick='showCronEntryModal(); cronModal.hide();'><i class='bi bi-pencil-square pe-2'></i><span lang-data='edit-cron-entry'>${getLanguageAsText("edit-cron-entry")}</span></button>
-					<input id='cronentry' type="text" class="disableOnDisconnect form-control border-secondary border-start-0" value='${pattern}' onkeyup='cronEntryError(this);'>
+					<input id='cronentry' type="text" class="disableOnDisconnect form-control border-secondary border-start-0" value='${pattern}' onkeyup='scheduleEntrySaved(false); cronEntryError(this);'>
 				</div>
 			</td>
 			<td>
@@ -379,7 +379,7 @@ function showCronModal(scheduleEntryId) {
 		<tr>
 			<td>
 				<div class='form-floating'>
-					<select id='scheduleEntryCommandSelect' class='disableOnDisconnect form-select border border-secondary' onchange='addParameterToScheduleEntry(value);'>
+					<select id='scheduleEntryCommandSelect' class='disableOnDisconnect form-select border border-secondary' onchange='scheduleEntrySaved(false); addParameterToScheduleEntry(value);'>
 					</select>
 					<label for="scheduleEntryCommandSelect" lang-data="choose-command">${getLanguageAsText("choose-command")}</label>
 				</div>
@@ -390,7 +390,7 @@ function showCronModal(scheduleEntryId) {
 		<tr>
 			<td colspan="2">
 				<div class='form-floating'>
-					<select id='scheduleEntryCommandsetSelect' class='disableOnDisconnect commandsetDropdown form-select border border-secondary' value='${commandset}'>
+					<select id='scheduleEntryCommandsetSelect' class='disableOnDisconnect commandsetDropdown form-select border border-secondary' onchange="scheduleEntrySaved(false);" value='${commandset}'>
 					</select>
 					<label for="scheduleEntryCommandsetSelect" lang-data="choose-commandset">${getLanguageAsText("choose-commandset")}</label>
 				</div>
@@ -402,13 +402,13 @@ function showCronModal(scheduleEntryId) {
 					<tr>
 						<td colspan='2' class='p-2'>
 							<div class="form-check form-switch">
-								<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="scheduleEntryValiditySwitchCheckFrom" onchange='toggleValidityFrom(checked);' ${start != undefined ? "checked" : ""}>
+								<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="scheduleEntryValiditySwitchCheckFrom" onchange='scheduleEntrySaved(false); toggleValidityFrom(checked);' ${start != undefined ? "checked" : ""}>
 								<label class="form-check-label" for="scheduleEntryValiditySwitchCheckFrom" lang-data="valid-from">${getLanguageAsText("valid-from")}</label>
 							</div>
 						</td>
 						<td colspan='2' class='p-2'>
 							<div class="form-check form-switch">
-								<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="scheduleEntryValiditySwitchCheckTo" onchange='toggleValidityTo(checked);' ${end != undefined ? "checked" : ""}>
+								<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="scheduleEntryValiditySwitchCheckTo" onchange='scheduleEntrySaved(false); toggleValidityTo(checked);' ${end != undefined ? "checked" : ""}>
 								<label class="form-check-label" for="scheduleEntryValiditySwitchCheckTo" lang-data="valid-to">${getLanguageAsText("valid-to")}</label>
 							</div>
 						</td>
@@ -419,8 +419,8 @@ function showCronModal(scheduleEntryId) {
 						</td>
 						<td id='scheduleEntryValidityTimeSpanFrom2'>
 							<div class='input-group'>
-								<input id='scheduleEntryStartTime' name='scheduleEntryStartDateTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 40%;" value="${startTime}">
-								<input id='scheduleEntryStartDate' type="date" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 60%;" value="${startDate}">
+								<input id='scheduleEntryStartTime' name='scheduleEntryStartDateTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 40%;" onchange='scheduleEntrySaved(false);' value="${startTime}">
+								<input id='scheduleEntryStartDate' type="date" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 60%;" onchange='scheduleEntrySaved(false);' value="${startDate}">
 							</div>
 						</td>
 						<td id='scheduleEntryValidityTimeSpanTo1' class='px-2' lang-data='to'>
@@ -428,8 +428,8 @@ function showCronModal(scheduleEntryId) {
 						</td>
 						<td id='scheduleEntryValidityTimeSpanTo2'>
 							<div class='input-group'>
-								<input id='scheduleEntryEndTime' name='scheduleEntryEndDateTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 40%;" value="${endTime}">
-								<input id='scheduleEntryEndDate' type="date" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 60%;" value="${endDate}">
+								<input id='scheduleEntryEndTime' name='scheduleEntryEndDateTime' type="time" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 40%;" onchange='scheduleEntrySaved(false);' value="${endTime}">
+								<input id='scheduleEntryEndDate' type="date" class="disableOnDisconnect form-control border border-secondary p-1" style="text-align: center; width: 60%;" onchange='scheduleEntrySaved(false);' value="${endDate}">
 							</div>
 						</td>
 					</tr>
@@ -452,6 +452,7 @@ function showCronModal(scheduleEntryId) {
 	getElement("scheduleEntryButtonDelete").onclick = () => deleteScheduleEntry(scheduleEntryId);
 	cronModal.show();
 	enableElements(prevItemsEnabled);
+	scheduleEntrySaved(scheduleEntryId >= 0);
 }
 
 function showCronEntryModal() {
@@ -707,6 +708,7 @@ function cronEntryOk() {
 	if (cronString) {
 		getElement("cronentry").value = cronString;
 		cronEntryModal.hide();
+		scheduleEntrySaved(false);
 	} else showModal(getLanguageAsText("error"), "Invalid input.", true, true, getLanguageAsText("ok"));
 }
 
@@ -922,6 +924,28 @@ function executeStartupTrigger() {
 function executeLastCron() {
 	getElement("executeLastCronSpinner").hidden = false;
 	sendHTTPRequest('GET', 'cmd.php?id=22', true, () => getElement("executeLastCronSpinner").hidden = true);
+}
+
+function scheduleEntrySaved(saved) {
+	let scheduleEntryButtonElement = getElement("scheduleEntryButtonExecute");
+	if (saved) {
+		scheduleEntryButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2";
+		scheduleEntryButtonElement.disabled = false;
+	} else {
+		scheduleEntryButtonElement.className = "btn btn-outline-warning mt-2";
+		scheduleEntryButtonElement.disabled = true;
+	}
+}
+
+function commandsetEntrySaved(saved) {
+	let commandsetEntryButtonElement = getElement("commandsetEntryButtonExecute");
+	if (saved) {
+		commandsetEntryButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2";
+		commandsetEntryButtonElement.disabled = false;
+	} else {
+		commandsetEntryButtonElement.className = "btn btn-outline-warning mt-2";
+		commandsetEntryButtonElement.disabled = true;
+	}
 }
 
 function showScheduleEntryHeader(scheduleEntryId) {
@@ -1231,23 +1255,24 @@ function showCommandsetModal(commandsetId=0) {
 		<tr>
 			<td style='width: 50%;'>
 				<div class='form-floating mb-3'>
-					<input id='commandsetEntryName' type='text' class='disableOnDisconnect form-control border border-secondary' value='${obj.name}' onkeyup='showCommandsetEntryTitle();'>
+					<input id='commandsetEntryName' type='text' class='disableOnDisconnect form-control border border-secondary' value='${obj.name}' onkeyup='commandsetEntrySaved(false); showCommandsetEntryTitle();'>
 					<label for='commandsetEntryName' lang-data='description'>${getLanguageAsText("description")}</label>
 				</div>
 			</td>
 			<td colspan="2" style='width: 50%;'>
 				<span class='ms-2'>ID: </span><span id='commandsetId'>${commandsetId}</span>
-				<button id="commandsetEntry${commandsetId}ButtonExecute" class="disableOnDisconnect btn btn-outline-warning mb-3" onclick='executeCommandsetEntry(${commandsetId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='commandsetEntry${commandsetId}ButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
+				<button id="commandsetEntryButtonExecute" class="disableOnDisconnect btn btn-outline-warning mb-3" onclick='executeCommandsetEntry(${commandsetId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='commandsetEntry${commandsetId}ButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
 			</td>
 		</tr>
 	</table>
-<button id='commandEntry${commandsetId}ButtonNew' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='addCommandToCommandset(${commandsetId});'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-command'>${getLanguageAsText("new-command")}</span></button>`;
+<button id='commandEntry${commandsetId}ButtonNew' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='commandsetEntrySaved(false); addCommandToCommandset(${commandsetId});'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-command'>${getLanguageAsText("new-command")}</span></button>`;
 	
 	for (let i = 0; i < obj.commands.length; i++) {
 		addCommandToCommandset(commandsetId, obj.commands[i].command, obj.commands[i].parameter == undefined ? "" : obj.commands[i].parameter);
 	}
 	commandsetModal.show();
 	enableElements(prevItemsEnabled);
+	commandsetEntrySaved(commandsetId >= 0);
 }
 
 function plannerSwitchRadio(id) {
@@ -1261,7 +1286,7 @@ function addCommandToCommandset(commandsetEntryId, command=0, parameter="") {
 	newCommandEntryObj.className = "border-top border-bottom border-primary commandrow";
 	newCommandEntryObj.innerHTML = `<td class='p-2' style='width: 50%;'>
 	<div class='form-floating'>
-		<select id='commandsetEntry${commandsetEntryId}CommandSelect${commandId}' class='disableOnDisconnect form-select border border-secondary commandSelect' onchange='addParameterToCommandsetEntryCommand(${commandsetEntryId}, ${commandId}, value);'>
+		<select id='commandsetEntry${commandsetEntryId}CommandSelect${commandId}' class='disableOnDisconnect form-select border border-secondary commandSelect' onchange='commandsetEntrySaved(false); addParameterToCommandsetEntryCommand(${commandsetEntryId}, ${commandId}, value);'>
 		</select>
 		<label for="commandsetEntry${commandsetEntryId}CommandSelect${commandId}" lang-data="choose-command">${getLanguageAsText("choose-command")}</label>
 	</div>
@@ -1269,7 +1294,7 @@ function addCommandToCommandset(commandsetEntryId, command=0, parameter="") {
 <td id='commandsetEntry${commandsetEntryId}Command${commandId}ParameterCell' class='p-2' style='width: 40%;'>
 </td>
 <td class='p-2' style='width: 10%;'>
-	<button id="commandsetEntry${commandsetEntryId}CommandButtonDelete" class="disableOnDisconnect btn btn-danger" onclick='deleteCommandFromCommandset(this);' style='float: right;'><i class='bi bi-trash'></i></button>
+	<button id="commandsetEntry${commandsetEntryId}CommandButtonDelete" class="disableOnDisconnect btn btn-danger" onclick='commandsetEntrySaved(false); deleteCommandFromCommandset(this);' style='float: right;'><i class='bi bi-trash'></i></button>
 </td>
 `;
 	//Adding element to document
@@ -1298,9 +1323,9 @@ function addParameterToCommandsetEntryCommand(commandsetEntryId, commandEntryId,
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
 		if (parameter == undefined) parameter = "";
-		div.innerHTML = `<input id='commandsetEntry${commandsetEntryId}Command${commandEntryId}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandParameter' onkeyup='' value='${parameter}' lang-data='parameter'>`;
+		div.innerHTML = `<input id='commandsetEntry${commandsetEntryId}Command${commandEntryId}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandParameter' onkeyup='commandsetEntrySaved(false);' value='${parameter}' lang-data='parameter'>`;
 	} else if (Array.isArray(commandCollection[commandId][1])) {
-		let htmlSelect = `<select id='commandsetEntry${commandsetEntryId}Command${commandEntryId}ParameterInput' onchange='' class='disableOnDisconnect form-select border border-secondary commandParameter' value='${commandCollection[commandId][1][0][1]}'>\n`;
+		let htmlSelect = `<select id='commandsetEntry${commandsetEntryId}Command${commandEntryId}ParameterInput' onchange='commandsetEntrySaved(false);' class='disableOnDisconnect form-select border border-secondary commandParameter' value='${commandCollection[commandId][1][0][1]}'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
 			htmlSelect += `<option value='${commandCollection[commandId][1][i][0]}' lang-data='${commandCollection[commandId][1][i][1]}'>${getLanguageAsText(commandCollection[commandId][1][i][1])}</option>\n`;
 		}
