@@ -557,8 +557,8 @@ function checkCronEntrySubsequenceValidity(subsequence, lowerLimit, upperLimit) 
 		if (hasDuplicates(subsequence, "/")) return false;
 		const subArray = subsequence.split("/");
 		if (subArray.length > 2) return false;//only one / allowed
-		for (let j = 0; j < "*-,".length; j++) {//check for valid character behind /
-			if (subArray[1].includes("*-,"[j])) return false;
+		for (let j = 0; j < "*-,0".length; j++) {//check for valid character behind /
+			if (subArray[1].includes("*-,0"[j])) return false;
 		}
 		for (let j = 0; j < subArray.length; j++) {//check if number is in valid range
 			if (subArray[j] < lowerLimit || subArray[j] > upperLimit) return false;
@@ -586,6 +586,11 @@ function hasDuplicates(str, separator) {
 		singleArr.push(arr[i]);
 	}
 	return false;
+}
+
+function cronEditorCarouselSwitchRadio(id) {
+	for (let i = 0; i < 3; i++) getElement("cronEditorCarouselOptionLabel" + i).className = "btn btn-secondary w-100 mb-4";
+	getElement("cronEditorCarouselOptionLabel" + id).className = "btn btn-primary w-100 mb-4";
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -618,12 +623,12 @@ function cronEditorOk() {
 		getElement("cronentry").value = cronString;
 		cronEditorModal.hide();
 		scheduleEntrySaved(false);
-	} else showModal(getLanguageAsText("error"), "Invalid input.", true, true, getLanguageAsText("ok"));
+	} else showModal(getLanguageAsText("error"), "Invalid input.<br>" + cronString, true, true, getLanguageAsText("ok"));
 }
 
 function parseCronEntry() {
 	let result = "";
-	if (getElement("dailyCronRadio").checked) {
+	if (getElement("cronEditorCarouselOptionLabel0").className.includes("btn-primary")) {
 		if (getElement("cronEditorDailyTime").value.split(":")[1] == undefined) return false;//no valid time
 		else result += parseInt(getElement("cronEditorDailyTime").value.split(":")[1]);//parse to int to remove leading zeros
 		result += " ";
@@ -640,7 +645,7 @@ function parseCronEntry() {
 		if (result.endsWith(",")) result = result.substring(0, result.length - 1);
 		else return false;//no days checked
 
-	} else if (getElement("monthlyCronRadio").checked) {
+	} else if (getElement("cronEditorCarouselOptionLabel1").className.includes("btn-primary")) {
 		if (getElement("cronEditorMonthlyTime").value.split(":")[1] == undefined) return false;//no valid time
 		else result += parseInt(getElement("cronEditorMonthlyTime").value.split(":")[1]);//parse to int to remove leading zeros
 		result += " ";
@@ -659,18 +664,18 @@ function parseCronEntry() {
 
 		result += " * *";
 
-	} else if (getElement("periodicCronRadio").checked) {
+	} else if (getElement("cronEditorCarouselOptionLabel2").className.includes("btn-primary")) {
 		let val = getElement("cronEditorPeriodicTimeSelect").value;
 		switch (getElement("cronEditorPeriodicTimeSpanSelect").value) {
 			case "1"://minutes
 			if (val == 1) result += "*"; 
 			else result += "*/" + val;
-			result += " 0 * * *";
+			result += " * * * *";
 			break;
 
 			case "2"://hours
-			if (val == 1) result += "* 0"; 
-			else result += "* */" + val;
+			if (val == 1) result += "0 *"; 
+			else result += "0 */" + val;
 			result += " * * *";
 			break;
 
@@ -688,6 +693,42 @@ function parseCronEntry() {
 		}
 	}
 	return result;
+}
+
+function cronEditorDaysSelectAll() {
+	for (let i = 0; i < document.getElementsByClassName("dailyDayCheck").length; i++) {
+		document.getElementsByClassName("dailyDayCheck")[i].checked = true;
+	}
+}
+
+function cronEditorDaysInvert() {
+	for (let i = 0; i < document.getElementsByClassName("dailyDayCheck").length; i++) {
+		document.getElementsByClassName("dailyDayCheck")[i].checked = !document.getElementsByClassName("dailyDayCheck")[i].checked;
+	}
+}
+
+function cronEditorDaysUnselectAll() {
+	for (let i = 0; i < document.getElementsByClassName("dailyDayCheck").length; i++) {
+		document.getElementsByClassName("dailyDayCheck")[i].checked = false;
+	}
+}
+
+function cronEditorMonthsSelectAll() {
+	for (let i = 0; i < document.getElementsByClassName("monthlyDayCheck").length; i++) {
+		document.getElementsByClassName("monthlyDayCheck")[i].checked = true;
+	}
+}
+
+function cronEditorMonthsInvert() {
+	for (let i = 0; i < document.getElementsByClassName("monthlyDayCheck").length; i++) {
+		document.getElementsByClassName("monthlyDayCheck")[i].checked = !document.getElementsByClassName("monthlyDayCheck")[i].checked;
+	}
+}
+
+function cronEditorMonthsUnselectAll() {
+	for (let i = 0; i < document.getElementsByClassName("monthlyDayCheck").length; i++) {
+		document.getElementsByClassName("monthlyDayCheck")[i].checked = false;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1199,6 +1240,10 @@ getElement("timeActionsCarousel").addEventListener("slide.bs.carousel", event =>
 	organizerSwitchRadio(event.to);
 });
 
+getElement("cronEditorCarousel").addEventListener("slide.bs.carousel", event => {
+	cronEditorCarouselSwitchRadio(event.to);
+});
+
 getElement("cronEditorModal").addEventListener("hidden.bs.modal", event => {
 	scheduleModal.show();
 });
@@ -1308,8 +1353,8 @@ function settingSaved(elementId, saved) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function organizerSwitchRadio(id) {
-	for (let i = 0; i < 3; i++) getElement("plannerOption" + i).className = "btn btn-secondary w-100 m-2 mb-4";
-	getElement("plannerOption" + id).className = "btn btn-primary w-100 m-2 mb-4";
+	for (let i = 0; i < 3; i++) getElement("plannerOption" + i).className = "btn btn-secondary w-100 mb-4";
+	getElement("plannerOption" + id).className = "btn btn-primary w-100 mb-4";
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

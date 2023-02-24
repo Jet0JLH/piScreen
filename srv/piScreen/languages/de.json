@@ -78,8 +78,11 @@
         "at-these-days": "An diesen Tagen",
         "every": "Alle",
         "daily": "Täglich",
-        "mothly": "Monatlich",
+        "monthly": "Monatlich",
         "periodically": "Periodisch",
+        "select-all": "Alle auswählen",
+        "invert-selection": "Auswahl umkehren",
+        "select-nothing": "Nichts auswählen",
         "edit-timeschedule": "Zeitplan bearbeiten",
 
         "saved": "Gespeichert",

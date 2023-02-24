@@ -78,8 +78,11 @@
         "at-these-days": "At these days",
         "every": "Every",
         "daily": "Daily",
-        "mothly": "Monthly",
+        "monthly": "Monthly",
         "periodically": "Periodically",
+        "select-all": "Select all",
+        "invert-selection": "Invert selection",
+        "select-nothing": "Select nothing",
         "edit-timeschedule": "Edit schedule",
 
         "saved": "Saved",
