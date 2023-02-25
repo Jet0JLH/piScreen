@@ -81,6 +81,10 @@ class vlcHandler(threading.Thread):
 						self.vlcMediaPlayer.set_media(self.vlcMedia)
 						self.vlcMediaPlayer.play()
 						lastParameter = parameter
+					self.info["source"] = self.vlcMedia.get_mrl()
+					self.info["state"] = str(self.vlcMediaPlayer.get_state())
+					self.info["time"] = self.vlcMediaPlayer.get_time()
+					self.info["length"] = self.vlcMediaPlayer.get_length()
 				except:
 					self.info = {}
 					piScreenUtils.logging.error("Unable to control VLC")
@@ -106,10 +110,12 @@ class impressHandler(threading.Thread):
 					piScreenUtils.logging.info(f"Start Impress ({parameter})")
 					os.system(f'soffice --nolockcheck --norestore --nologo --show "{parameter}" &')
 					lastParameter = parameter
+					self.info["file"] = parameter
 					time.sleep(10)
 				if lastParameter != parameter:
 					piScreenUtils.logging.info("Impress parameter has been changed")
 					lastParameter = parameter
+					self.info["file"] = parameter
 					if checkIfProcessRunning("soffice.bin"): os.system("killall soffice.bin")
 					time.sleep(2)
 				time.sleep(1)
@@ -139,6 +145,7 @@ def cmdInterpreter(data:dict) -> dict:
 	global active
 	global mode
 	global parameter
+	global status
 	if "cmd" not in data:
 		piScreenUtils.logging.error("Recived data has no cmd field in it")
 		return {"code":2} #Package format is wrong
@@ -152,6 +159,7 @@ def cmdInterpreter(data:dict) -> dict:
 		active = False
 		return returnValue
 	elif cmd == 2: #Get Status
+		returnValue["data"] = status
 		return returnValue
 	elif cmd == 3: #Change Mode
 		if "parameter" not in data: 
@@ -180,6 +188,7 @@ bufferSize = 1024
 active = True
 mode = 0
 parameter = None
+status = {}
 
 if __name__ == "__main__":
 	piScreenUtils.logging.info("Start piScreen")
@@ -187,16 +196,6 @@ if __name__ == "__main__":
 	skriptPath = os.path.dirname(os.path.abspath(__file__))
 	os.chdir(skriptPath)
 	os.environ["DISPLAY"] = ":0"
-	piScreenUtils.logging.info("Load settings")
-	try:
-		conf = json.load(open(piScreenUtils.paths.settings))
-		configModify = os.path.getmtime(piScreenUtils.paths.settings)
-		#Next line is tmp
-		conf = conf["settings"]
-
-	except ValueError as err:
-		piScreenUtils.logging.critical(err)
-		sys.exit(1)
 
 	os.system("touch " + piScreenUtils.paths.scheduleActive)
 	piScreenUtils.logging.info("Start subprocesses")
@@ -220,16 +219,32 @@ if __name__ == "__main__":
 
 	piScreenUtils.logging.info("Start observation")
 	while active:
-		#check if settings has changed
-		if configModify != os.path.getmtime(piScreenUtils.paths.settings):
-			try:
-				piScreenUtils.logging.info("settings.json seems to be changed")
-				conf = json.load(open(piScreenUtils.paths.settings))
-				#Next line is tmp
-				conf = conf["settings"]
-				configModify = os.path.getmtime(piScreenUtils.paths.settings)
-			except:
-				piScreenUtils.logging.error("settings.json seems to be damaged")
+		#readStatus
+		upTime = time.time() - psutil.boot_time()
+		status["cpuLoad"] = round(psutil.getloadavg()[0] / psutil.cpu_count() * 100,2)
+		status["ramTotal"] = round(psutil.virtual_memory().total / 1024)
+		status["ramUsed"] = round(status["ramTotal"] - psutil.virtual_memory().available / 1024)
+		status["cpuTemp"] = round(psutil.sensors_temperatures()["cpu_thermal"][0].current * 1000)
+		if os.path.isfile(piScreenUtils.paths.screenshot):
+			status["screenshotTime"] = os.path.getctime(piScreenUtils.paths.screenshot)
+		status["uptime"] = {}
+		status["uptime"]["secs"] = int(upTime % 60)
+		status["uptime"]["mins"] = int((upTime / 60) % 60)
+		status["uptime"]["hours"] = int((upTime / 60 / 60) % 24)
+		status["uptime"]["days"] = int(upTime / 60 / 60 / 24)
+		if os.path.exists(piScreenUtils.paths.displayStatus): status["displayState"] = open(piScreenUtils.paths.displayStatus,"r").read().strip()
+		status["display"] = {}
+		status["display"]["standbySet"] = os.path.isfile(piScreenUtils.paths.displayStandby)
+		status["display"]["onSet"] = os.path.isfile(piScreenUtils.paths.displayOn)
+		status["modeInfo"] = {}
+		status["modeInfo"]["mode"] = mode
+		if mode == 1:
+			status["modeInfo"]["info"] = firefoxMode.info
+		elif mode == 2:
+			status["modeInfo"]["info"] = vlcMode.info
+		elif mode == 3:
+			status["modeInfo"]["info"] = impressMode.info
+
 		#createScreenshot
 		try:
 			os.system(f"scrot -z {piScreenUtils.paths.screenshot}.png")

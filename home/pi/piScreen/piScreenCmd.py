@@ -1,5 +1,5 @@
 #!/usr/bin/python3 -u
-import json, sys, os, time, datetime, piScreenUtils
+import json, sys, os, time, datetime, socket, piScreenUtils
 
 skriptPath = os.path.dirname(os.path.abspath(__file__))
 os.chdir(skriptPath)
@@ -125,6 +125,20 @@ def printHelp():
 	Changes website language
 	""")
 
+def sendToCore(data:dict) -> dict:
+	bufferSize = 1024
+	SOCKET = 28888
+	try:
+		s = socket.socket(family=socket.AF_INET,type=socket.SOCK_DGRAM)
+		s.settimeout(5)
+		s.sendto(str.encode(json.dumps(data)),("127.0.0.1",SOCKET))
+		msg = s.recvfrom(bufferSize)
+		return json.loads(msg[0].decode("utf-8"))
+	except:
+		piScreenUtils.logging.error("Unable to reach core")
+		verbose and print("Unable to reach core")
+		return {"code":-1}
+
 def checkForRootPrivileges():
 	if os.geteuid() != 0:
 		verbose and print("Please run this function with root privileges.")
@@ -157,55 +171,36 @@ def endAllModes():
 	
 
 def startBrowser(parameter):
-	piScreenUtils.logging.info("Start browser")
-	import telnetlib
-	try:
-		telnetlib.Telnet("127.0.0.1",2828) #Check if marionette port is open
-		piScreenUtils.logging.info("Navigate browser over marionette")
-		from marionette_driver.marionette import Marionette
-		client = Marionette(host='127.0.0.1', port=2828)
-		client.start_session()
-		client.navigate(parameter)
-	except:
-		endAllModes()
-	f = open(piScreenUtils.paths.modeFirefox,"w")
-	f.write(parameter)
-	f.close()
+	piScreenUtils.logging.info(f"Navigate browser to {parameter}")
+	sendToCore({"cmd":3,"parameter":{"mode":1,"parameter":parameter}})
 
 def stopBrowser():
 	piScreenUtils.logging.info("Stop browser")
-	endAllModes()
+	sendToCore({"cmd":3,"parameter":{"mode":0,"parameter":""}})
 
 def restartBrowser():
 	piScreenUtils.logging.info("Restart browser")
 	os.system("killall -q -SIGTERM firefox-esr")
 
 def startVLC(parameter,soft=False):
-	piScreenUtils.logging.info("Start VLC")
-	if not soft:
-		endAllModes()
-	f = open(piScreenUtils.paths.modeVLC,"w")
-	f.write(parameter)
-	f.close()
+	piScreenUtils.logging.info(f"Load VLC file {parameter}")
+	sendToCore({"cmd":3,"parameter":{"mode":2,"parameter":parameter}})
 
 def stopVLC():
 	piScreenUtils.logging.info("Stop VLC")
-	endAllModes()
+	sendToCore({"cmd":3,"parameter":{"mode":0,"parameter":""}})
 
 def restartVLC():
 	piScreenUtils.logging.info("Restart VLC")
 	os.system("killall -q -SIGTERM vlc")
 
 def startImpress(parameter):
-	piScreenUtils.logging.info("Start impress")
-	endAllModes()
-	f = open(piScreenUtils.paths.modeImpress,"w")
-	f.write(parameter)
-	f.close()
+	piScreenUtils.logging.info(f"Load Impress file {parameter}")
+	sendToCore({"cmd":3,"parameter":{"mode":3,"parameter":parameter}})
 
 def stopImpress():
 	piScreenUtils.logging.info("Stop impress")
-	endAllModes()
+	sendToCore({"cmd":3,"parameter":{"mode":0,"parameter":""}})
 
 def restartImpress():
 	piScreenUtils.logging.info("Restart impress")
@@ -291,83 +286,9 @@ def getDekstopConfig():
 	print(json.dumps(desktopJson))
 
 def getStatus():
-	import psutil
-	verbose and print("Collect data")
-	cpuLoad = round(psutil.getloadavg()[0] / psutil.cpu_count() * 100,2)
-	ramTotal = round(psutil.virtual_memory().total / 1024)
-	ramUsed = round(ramTotal - psutil.virtual_memory().available / 1024)
-	upTime = time.time() - psutil.boot_time()
-	cpuTemp = round(psutil.sensors_temperatures()["cpu_thermal"][0].current * 1000)
-	screenshotTime = 0
-	if os.path.isfile(piScreenUtils.paths.screenshot):
-		screenshotTime = os.path.getctime(piScreenUtils.paths.screenshot)
-	jsonData = {}
-	jsonData["uptime"] = {}
-	jsonData["uptime"]["secs"] = int(upTime % 60)
-	jsonData["uptime"]["mins"] = int((upTime / 60) % 60)
-	jsonData["uptime"]["hours"] = int((upTime / 60 / 60) % 24)
-	jsonData["uptime"]["days"] = int(upTime / 60 / 60 / 24)
-	if os.path.exists(piScreenUtils.paths.displayStatus): jsonData["displayState"] = open(piScreenUtils.paths.displayStatus,"r").read().strip()
-	jsonData["cpuTemp"] = cpuTemp
-	jsonData["cpuLoad"] = cpuLoad
-	jsonData["ramTotal"] = ramTotal
-	jsonData["ramUsed"] = ramUsed
-	jsonData["display"] = {}
-	jsonData["display"]["standbySet"] = os.path.isfile(piScreenUtils.paths.displayStandby)
-	jsonData["display"]["onSet"] = os.path.isfile(piScreenUtils.paths.displayOn)
-	jsonData["screenshotTime"] = screenshotTime
-	jsonData["modeInfo"] = {}
-	jsonData["modeInfo"]["mode"] = getMode()
-	if jsonData["modeInfo"]["mode"] == "firefox":
-		try:
-			if os.path.exists(piScreenUtils.paths.modeFirefox): jsonData["modeInfo"]["url"] = open(piScreenUtils.paths.modeFirefox,"r").read()
-		except:
-			piScreenUtils.logging.error("Error while reading firefox data")
-			verbose and print("Error while reading Firefox data")
-	elif jsonData["modeInfo"]["mode"] == "vlc":
-		try:
-			import telnetlib
-			telnetClient = telnetlib.Telnet("127.0.0.1",9999)
-			time.sleep(0.05)
-			telnetClient.read_very_eager()
-			
-			telnetClient.write(b'status\n')
-			time.sleep(0.05)
-			result = telnetClient.read_very_eager().decode("utf-8")
-			result = result.split("\r")
-			if len(result) == 4:
-				result1 = result[0][result[0].find("(")+2:result[0].find(")")-1]
-				result2 = result[1][result[1].find("(")+2:result[1].find(")")-1]
-				jsonData["modeInfo"]["source"] = result1[-len(result1)+result1.index(":")+2:]
-				jsonData["modeInfo"]["volume"] = int(result2[-len(result2)+result2.index(":")+2:])
-				jsonData["modeInfo"]["state"] = result[2][result[2].find("(")+2:result[2].find(")")-1].split(" ")[1]
-			elif len(result) == 3:
-				result1 = result[0][result[0].find("(")+2:result[0].find(")")-1]
-				result2 = result[1][result[1].find("(")+2:result[1].find(")")-1]
-				jsonData["modeInfo"]["volume"] = int(result1[-len(result1)+result1.index(":")+2:])
-				jsonData["modeInfo"]["state"] = result[1][result[1].find("(")+2:result[1].find(")")-1].split(" ")[1]
-
-			telnetClient.write(b'get_time\n')
-			time.sleep(0.05)
-			result = telnetClient.read_very_eager().decode("utf-8")
-			result = result[:result.index("\r")]
-			if piScreenUtils.isInt(result): jsonData["modeInfo"]["time"] = int(result)
-			telnetClient.write(b'get_length\n')
-			time.sleep(0.05)
-			result = telnetClient.read_very_eager().decode("utf-8")
-			result = result[:result.index("\r")]
-			if piScreenUtils.isInt(result): jsonData["modeInfo"]["length"] = int(result)
-
-		except:
-			piScreenUtils.logging.error("Error while reading VLC data")
-			verbose and print("Error while reading VLC data")
-	elif jsonData["modeInfo"]["mode"] == "impress":
-		try:
-			if os.path.exists(piScreenUtils.paths.modeImpress): jsonData["modeInfo"]["file"] = open(piScreenUtils.paths.modeImpress,"r").read()
-		except:
-			piScreenUtils.logging.error("Error while reading impress data")
-			verbose and print("Error while reading Impress data")
-	return json.dumps(jsonData)
+	status = sendToCore({"cmd":2})
+	if "data" in status: return json.dumps(status["data"])
+	else: return json.dumps({})
 
 def getWebsite():
 	if os.path.exists(piScreenUtils.paths.modeFirefox): print(open(piScreenUtils.paths.modeFirefox,"r").read())
@@ -940,58 +861,27 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--restart-browser":
 		restartBrowser()
 	elif item == "--refresh-browser":
-		import telnetlib
-		try:
-			telnetlib.Telnet("127.0.0.1",2828) #Check if marionette port is open
-			piScreenUtils.logging.info("Refresh browser over marionette")
-			from marionette_driver.marionette import Marionette
-			client = Marionette(host='127.0.0.1', port=2828)
-			client.start_session()
-			client.refresh()
-		except:
-			piScreenUtils.logging.warning("Unable to refresh browser. Restart browser instead of this")
-			restartBrowser()
+		#Not implemented. Need core function
+		pass
 	elif item == "--stop-browser":
 		stopBrowser()
 	elif item == "--start-vlc":
 		if i + 1 < len(sys.argv):
-			if getMode() == "vlc":
-				try:
-					import telnetlib
-					piScreenUtils.logging.info("Change VLC source")
-					telnetClient = telnetlib.Telnet("127.0.0.1",9999)
-					telnetClient.write(bytes(f"clear\nadd {sys.argv[i + 1]}\n","utf-8"))
-					startVLC(sys.argv[i + 1],True)
-				except:
-					piScreenUtils.logging.error("Not able to control VLC by telnet")
-					verbose and print("Not able to control VLC by telnet")
-					startVLC(sys.argv[i + 1])
-			else:
-				piScreenUtils.logging.info("Start VLC")
-				startVLC(sys.argv[i + 1])
+			startVLC(sys.argv[i + 1])
 		else:
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 	elif item == "--restart-vlc":
-		restartVLC()
+		#Not implemented. Need core function
+		pass
 	elif item == "--stop-vlc":
 		stopVLC()
 	elif item == "--pause-vlc":
-		if getMode() == "vlc":
-			import telnetlib
-			telnetClient = telnetlib.Telnet("127.0.0.1",9999)
-			telnetClient.write(b'pause\n')
-		else:
-			piScreenUtils.logging.warning("Mode is not VLC")
-			verbose and print("Mode is not VLC")
+		#Not implemented. Need core function
+		pass
 	elif item == "--play-vlc":
-		if getMode() == "vlc":
-			import telnetlib
-			telnetClient = telnetlib.Telnet("127.0.0.1",9999)
-			telnetClient.write(b'play\n')
-		else:
-			piScreenUtils.logging.warning("Mode is not VLC")
-			verbose and print("Mode is not VLC")
+		#Not implemented. Need core function
+		pass
 	elif item == "--start-impress":
 		if i + 1 < len(sys.argv):
 			startImpress(sys.argv[i + 1])
