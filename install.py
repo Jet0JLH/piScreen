@@ -77,7 +77,7 @@ def install():
 	configureScreensaver()
 	configureDesktop()
 	printInfo("Create symlink for screenshot")
-	exitCode = info["dry"] or os.system(f"ln -s {piScreenUtils.paths.ramdisk}piScreenScreenshot.png /srv/piScreen/admin/")
+	exitCode = info["dry"] or os.system(f"ln -s {piScreenUtils.paths.screenshot} /srv/piScreen/admin/")
 	if exitCode != True and exitCode != 0: printError("Unable to create symlink for screenshot")
 
 def uninstall():

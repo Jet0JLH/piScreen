@@ -8,7 +8,7 @@ class paths:
 	schedule = f"{softwareDir}schedule.json"
 	manifest = f"{softwareDir}manifest.json"
 	syscall = f"{softwareDir}piScreenCmd.py"
-	screenshot = f"{ramdisk}piScreenScreenshot.png"
+	screenshot = f"{ramdisk}piScreenScreenshot.jpg"
 	displayStatus = f"{ramdisk}piScreenDisplay.txt"
 	displayOff = f"{ramdisk}piScreenDisplayOff"
 	displayOn = f"{ramdisk}piScreenDisplayOn"

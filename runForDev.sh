@@ -22,8 +22,8 @@ ln -s "$parent_path/etc/apache2/sites-available/piScreen.conf" /etc/apache2/site
 mkdir -p /home/pi/.config/autostart/
 ln -s "$parent_path/home/pi/.config/autostart/piScreenCore.desktop" /home/pi/.config/autostart/piScreenCore.desktop
 chown -R pi:pi /home/pi/.config/autostart/
-ln -s "$parent_path/defaults/firefoxPiScreen.js" /etc/firefox-esr/piScreen.js
-ln -s /media/ramdisk/piScreenScreenshot.png /srv/piScreen/admin/
+ln -s "$parent_path/etc/firefox-esr/piScreen.js" /etc/firefox-esr/piScreen.js
+ln -s /media/ramdisk/piScreenScreenshot.jpg /srv/piScreen/admin/
 
 
 setfacl -Rm d:u:www-data:rwx /home/pi/piScreen
@@ -38,7 +38,7 @@ setfacl -Rm u:pi:rwx ./srv/piScreen/
 
 git update-index --skip-worktree home/pi/piScreen/settings.json
 git update-index --skip-worktree home/pi/piScreen/schedule.json
-git update-index --skip-worktree srv/piScreen/admin/piScreenScreenshot.png
+git update-index --skip-worktree srv/piScreen/admin/piScreenScreenshot.jpg
 
 if test -f "./home/pi/piScreen/settings.json"; then
 	echo "[Ignore] Settings already exists"

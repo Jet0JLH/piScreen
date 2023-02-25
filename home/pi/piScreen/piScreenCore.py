@@ -270,8 +270,8 @@ if __name__ == "__main__":
 
 		#createScreenshot
 		try:
-			os.system(f"scrot -z {piScreenUtils.paths.screenshot}.png")
-			os.system(f"mv {piScreenUtils.paths.screenshot}.png {piScreenUtils.paths.screenshot}")
+			os.system(f"scrot -z -o -t 50 {piScreenUtils.paths.screenshot}.jpg")
+			os.system(f"mv {piScreenUtils.paths.screenshot}-thumb.jpg {piScreenUtils.paths.screenshot}")
 		except:
 			piScreenUtils.logging.error("Error while creating screenshot")
 		if not checkIfProcessRunning("piScreenDisplay"):
