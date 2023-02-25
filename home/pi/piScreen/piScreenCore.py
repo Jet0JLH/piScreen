@@ -23,7 +23,8 @@ class firefoxHandler(threading.Thread):
 	client = Marionette(host='127.0.0.1', port=2828)
 	client.timeout = 2
 
-	info = {"url":""}
+	info = {}
+	actions = []
 	
 	def __init__(self):
 		threading.Thread.__init__(self)
@@ -44,25 +45,29 @@ class firefoxHandler(threading.Thread):
 					os.system("killall crashreporter")
 				try:
 					self.info["url"] = self.client.get_url()
+					for item in self.actions:
+						if item == "refresh": piScreenUtils.logging.info("Refresh firefox") ; self.client.refresh()
+					self.actions.clear()
 					if lastParameter != parameter:
 						lastParameter = parameter
 						piScreenUtils.logging.info(f"Navigate browser to {parameter}")
 						self.client.navigate(parameter)
 				except:
 					try:
-						self.info["url"] = ""
+						self.info = {}
 						self.client.start_session()
 					except:
 						piScreenUtils.logging.error("Unable to create marionette session")
 				time.sleep(1)
 			if checkIfProcessRunning("firefox-esr"): os.system("killall firefox-esr")
-			self.info["url"] = ""
+			self.info = {}
 			time.sleep(1)
 		piScreenUtils.logging.info("End firefox handler")
 
 class vlcHandler(threading.Thread):
 
 	info = {}
+	actions = []
 	vlcPlayer = vlc.Instance('--video-wallpaper','--input-repeat=999999999')
 	vlcMediaPlayer = vlcPlayer.media_player_new()
 	vlcMedia = vlc.Media("")
@@ -85,6 +90,11 @@ class vlcHandler(threading.Thread):
 					self.info["state"] = str(self.vlcMediaPlayer.get_state())
 					self.info["time"] = self.vlcMediaPlayer.get_time()
 					self.info["length"] = self.vlcMediaPlayer.get_length()
+					for item in self.actions:
+						if item == "play": piScreenUtils.logging.info("Play VLC") ; self.vlcMediaPlayer.play()
+						elif item == "pause": piScreenUtils.logging.info("Pause VLC") ; self.vlcMediaPlayer.pause()
+						elif item == "restart": piScreenUtils.logging.info("Restart VLC") ; self.vlcMediaPlayer.set_position(0)
+					self.actions.clear()
 				except:
 					self.info = {}
 					piScreenUtils.logging.error("Unable to control VLC")
@@ -97,6 +107,7 @@ class vlcHandler(threading.Thread):
 
 class impressHandler(threading.Thread):
 	info = {}
+	actions = []
 
 	def __init__(self):
 		threading.Thread.__init__(self)
@@ -161,7 +172,7 @@ def cmdInterpreter(data:dict) -> dict:
 	elif cmd == 2: #Get Status
 		returnValue["data"] = status
 		return returnValue
-	elif cmd == 3: #Change Mode
+	elif cmd == 3 or cmd == 4: #Change mode and configure mode
 		if "parameter" not in data: 
 			piScreenUtils.logging.error("Recived data has no needed parameter field in it")
 			return {"code":2} #Package format is wrong
@@ -174,9 +185,21 @@ def cmdInterpreter(data:dict) -> dict:
 		if "parameter" not in data["parameter"]:
 			piScreenUtils.logging.error("Recived data has no needed parameter field in parameter field")
 			return {"code":2} #Package format is wrong
-		mode = int(data["parameter"]["mode"])
-		parameter = data["parameter"]["parameter"]
-		return returnValue
+		if cmd == 3:
+			mode = int(data["parameter"]["mode"])
+			parameter = data["parameter"]["parameter"]
+			return returnValue
+		elif cmd == 4:
+			if int(data["parameter"]["mode"]) == mode:
+				if mode == 1: #Firefox
+					firefoxMode.actions.append(data["parameter"]["parameter"])
+				elif mode == 2: #VLC
+					vlcMode.actions.append(data["parameter"]["parameter"])
+				elif mode == 3: #Impress
+					impressMode.actions.append(data["parameter"]["parameter"])
+			else:
+				return {"code":3} #Wrong mode
+
 	else:
 		piScreenUtils.logging.warning("Recived cmd is unknown")
 		returnValue["code"] = 1

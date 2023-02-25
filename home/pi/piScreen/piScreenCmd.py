@@ -25,7 +25,7 @@ def printHelp():
 --stop-vlc
 	Stops VLC Player when active
 --restart-vlc
-	Restarts the VLC Player when active
+	Restarts the media in VLC Player when active
 --pause-vlc
 	Pause/Play the video if mode ist VLC
 --play-vlc
@@ -861,8 +861,7 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--restart-browser":
 		restartBrowser()
 	elif item == "--refresh-browser":
-		#Not implemented. Need core function
-		pass
+		sendToCore({"cmd":4,"parameter":{"mode":1,"parameter":"refresh"}})
 	elif item == "--stop-browser":
 		stopBrowser()
 	elif item == "--start-vlc":
@@ -872,15 +871,14 @@ for i, origItem in enumerate(sys.argv):
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 	elif item == "--restart-vlc":
-		#Not implemented. Need core function
-		pass
+		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"restart"}})
 	elif item == "--stop-vlc":
 		stopVLC()
 	elif item == "--pause-vlc":
-		#Not implemented. Need core function
+		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"pause"}})
 		pass
 	elif item == "--play-vlc":
-		#Not implemented. Need core function
+		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"play"}})
 		pass
 	elif item == "--start-impress":
 		if i + 1 < len(sys.argv):
