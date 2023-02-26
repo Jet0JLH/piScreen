@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import os, json, sys, time, psutil, subprocess, threading, socket, vlc, piScreenUtils
+import os, json, sys, time, psutil, subprocess, threading, socket, vlc, fcntl, piScreenUtils
 from marionette_driver.marionette import Marionette
 
 def checkIfProcessRunning(processName):
@@ -16,7 +16,6 @@ def killAllSubprocesses():
 	os.system("killall -q piScreenDisplay")
 	os.system("killall -q piScreenSchedule")
 	os.system("killall -q firefox-esr")
-	os.system("killall -q vlc")
 	os.system("killall -q soffice.bin")
 
 class firefoxHandler(threading.Thread):
@@ -125,8 +124,6 @@ class impressHandler(threading.Thread):
 					time.sleep(10)
 				if lastParameter != parameter:
 					piScreenUtils.logging.info("Impress parameter has been changed")
-					lastParameter = parameter
-					self.info["file"] = parameter
 					if checkIfProcessRunning("soffice.bin"): os.system("killall soffice.bin")
 					time.sleep(2)
 				time.sleep(1)
@@ -215,18 +212,16 @@ status = {}
 
 if __name__ == "__main__":
 	piScreenUtils.logging.info("Start piScreen")
+	try:
+		lockFile = open(piScreenUtils.paths.lockCore,"w")
+		fcntl.lockf(lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)
+	except IOError:
+		piScreenUtils.logging.critical("There is a piScreenCore instance already running")
+		exit(1)
 	piScreenUtils.logging.debug("Set environment setting")
 	skriptPath = os.path.dirname(os.path.abspath(__file__))
 	os.chdir(skriptPath)
 	os.environ["DISPLAY"] = ":0"
-
-	os.system("touch " + piScreenUtils.paths.scheduleActive)
-	piScreenUtils.logging.info("Start subprocesses")
-	killAllSubprocesses()
-	os.system("unclutter -idle 5 &")
-	os.system("./piScreenDisplay.py &")
-	time.sleep(5)
-	os.system("./piScreenSchedule.py &")
 
 	piScreenUtils.logging.info("Start mode threads")
 	firefoxMode = firefoxHandler()
@@ -240,8 +235,30 @@ if __name__ == "__main__":
 	sH = socketHandler()
 	sH.start()
 
+	os.system("touch " + piScreenUtils.paths.scheduleActive)
+	piScreenUtils.logging.info("Start subprocesses")
+	killAllSubprocesses()
+	os.system("unclutter -idle 5 &")
+	os.system("./piScreenDisplay.py &")
+	time.sleep(5)
+	os.system("./piScreenSchedule.py &")
+
 	piScreenUtils.logging.info("Start observation")
 	while active:
+		#check if threads active
+		if not firefoxMode.is_alive():
+			piScreenUtils.logging.critical("Firefox handler thread is down!")
+			firefoxMode.run()
+		if not vlcMode.is_alive():
+			piScreenUtils.logging.critical("VLC handler thread is down!")
+			vlcMode.run()
+		if not impressMode.is_alive():
+			piScreenUtils.logging.critical("Impress handler thread is down!")
+			impressMode.run()
+		if not sH.is_alive():
+			piScreenUtils.logging.critical("Socket handler thread is down!")
+			sH.run()
+			
 		#readStatus
 		upTime = time.time() - psutil.boot_time()
 		status["cpuLoad"] = round(psutil.getloadavg()[0] / psutil.cpu_count() * 100,2)
@@ -281,5 +298,8 @@ if __name__ == "__main__":
 			piScreenUtils.logging.warning("piScreenSchedule.py skript is not running")
 			os.system("./piScreenSchedule.py &")
 		time.sleep(5)
+
+	piScreenUtils.logging.info("Stop core")
 	active = False
 	killAllSubprocesses()
+	os.unlink(piScreenUtils.paths.lockCore)

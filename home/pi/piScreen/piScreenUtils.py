@@ -22,6 +22,7 @@ class paths:
 	scheduleDoLastCron = f"{ramdisk}piScreenScheduleLastCron"
 	scheduleDoManually = f"{ramdisk}piScreenScheduleManually"
 	log = f"{ramdisk}piScreen.log"
+	lockCore = f"{ramdisk}piScreenCore.lock"
 
 def isInt(s):
 	if s == None: return False
