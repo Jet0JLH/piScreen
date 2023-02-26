@@ -137,6 +137,11 @@
         "sat": "Sa",
         "sun": "So",
 
+        "file-explorer": "Dateimanager",
+        "upload": "Hochladen",
+        "delete": "Löschen",
+        "rename": "Umbenennen",
+
         "lastcron": "Zuletzt ausgeführten Eintrag ausführen",
         "connection-lost": "Verbindung zum Server unterbrochen!",
         "fill-required-fields": "Bitte alle Pflichtfelder ausfüllen!",

@@ -189,6 +189,12 @@
 					</div>
 				</div>
 			</div>
+			<div class='col-sm-12 col-lg-6 mb-4'>
+				<div class='card p-3 shadow'>
+					<h1 class='pb-2'><i class='bi bi-folder bigIcon px-2'></i><span lang-data='file-explorer'>file explorer</span></h1>
+					<button class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showFileExplorerModal(3);'><i class='bi bi-folder pe-2'></i><span lang-data='file-explorer'></span></button>
+				</div>
+			</div>
 			<div class='col-lg-12 col-xl-6 mb-4'>
 				<div class='card p-3 shadow'>
 					<h1 class='pb-2'><i class='bi bi-calendar-check bigIcon px-2'></i><span lang-data='planner'>Planer</span></h1>
@@ -468,7 +474,70 @@ for (let w = 0; w < 5; w++) {
 			</div>
 		</div>
 	</div>
+	<div id='fileExplorerModal' class='modal fade' tabindex='-1'>
+		<div class='modal-xl modal-dialog modal-dialog-centered modal-fullscreen-xl-down'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<h5 class='modal-title'>
+						<i class="bi bi-folder pe-2"></i><span lang-data="file-explorer">fileexplorer</span>
+					</h5>
+					<button class='btn-close btn-close-white' data-bs-dismiss='modal'></button>
+				</div>
+				<div class='modal-body'>
+					<table class="w-100">
+						<tr>
+							<td rowspan="2" style="width: 30%;" class="border border-primary p-2">
+								<div class="list-group">
+									<button type="button" id="fileExplorerMode2" value="2" class="fileExplorerModeButton bg-transparent list-group-item list-group-item-action active" onclick="changeFileExplorerMode(value);">VLC</button>
+									<button type="button" id="fileExplorerMode3" value="3" class="fileExplorerModeButton bg-transparent list-group-item list-group-item-action" onclick="changeFileExplorerMode(value);">Impress</button>
+								</div>
+							</td>
+							<td style="width: 70%;" class="border border-primary p-3">
+								<div class="d-inline">
+									<h5 class="d-inline"><span id="fileExplorerRootFolder" class="badge rounded-pill bg-secondary">Ordner</span></h5>
+								</div>
+								<div class="d-inline" style="float: right;">
+									<button class='btn btn-sm btn-outline-danger m-1' onclick='deleteSelectedFiles();'><i class='bi bi-trash pe-2'></i><span lang-data="delete">Löschen</span></button>
+									<button class='btn btn-sm btn-outline-success m-1' onclick='selectFileToUpload();'><i class='bi bi-upload pe-2'></i><span lang-data="upload">Hochladen</span></button>
+								</div>
+							</td>
+						</tr>
+						<tr>
+							<td class="border border-primary p-3">
+								<div id="fileExplorerFileCollection" class="row row-cols-1 row-cols-md-6 g-2" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
 
+								</div>
+							</td>
+						</tr>
+					</table>
+				</div>
+				<div class='modal-footer'>
+					<button class='btn btn-secondary' data-bs-dismiss='modal' lang-data='ok'>OK</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id='renameModal' class='modal fade' tabindex='-1'>
+		<div class='modal-lg modal-dialog modal-dialog-centered'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<h5 class='modal-title'><span lang-data="rename">Umbenennen</span>: <span id="renameOldName">alter name</span></h5>
+					<button class='btn-close btn-close-white' data-bs-dismiss='modal'></button>
+				</div>
+				<div class='modal-body'>
+					<div class='form-floating mb-3'>
+						<input type='text' id='renameTextfield' class='form-control border-secondary'>
+						<label for='renameTextfield' lang-data='rename'>Umbenennen</label>
+					</div>
+				</div>
+				<hr>
+				<div class='modal-footer'>
+					<button id='renameButtonCancel' class='btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
+					<button id='renameButtonSave' class='btn btn-outline-success m-1' onclick='saveFileRename();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
+				</div>
+			</div>
+		</div>
+	</div>
 	<div id='modal' class='modal fade' tabindex='-1'>
 		<div class='modal-lg modal-dialog modal-dialog-centered'>
 			<div class='modal-content'>

@@ -34,6 +34,8 @@ var modalActionBtn = getElement("modal-actionBtn");
 var scheduleModal = new bootstrap.Modal(getElement("scheduleModal"));
 var commandsetModal = new bootstrap.Modal(getElement("commandsetModal"));
 var cronEditorModal = new bootstrap.Modal(getElement("cronEditorModal"));
+var fileExplorerModal = new bootstrap.Modal(getElement("fileExplorerModal"));
+var renameModal = new bootstrap.Modal(getElement("renameModal"));
 //language
 var currentLanguage = null;
 var languageStrings = null;
@@ -44,7 +46,13 @@ const hourLowerLimit = 0, hourUpperLimit = 59;
 const dayOfMonthLowerLimit = 1, dayOfMonthUpperLimit = 31;
 const monthLowerLimit = 1, monthUpperLimit = 12;
 const dayOfWeekLowerLimit = 0, dayOfWeekUpperLimit = 6;
-
+//file explorer
+const modeFirefox = 1;
+const modeVLC = 2;
+const modeImpress = 3;
+var currentFileExplorerMode = 2;
+const modes = ["", "firefox", "vlc", "impress"]; //there is no mode 0 
+var currentRenameFile;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////   general schedule functions   ///////////////////////////////////
@@ -1179,6 +1187,123 @@ function saveEntireSchedule(jsonString) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////   file explorer functions   ////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function showFileExplorerModal(selectedMode=modeVLC) {
+	getElement("fileExplorerMode" + selectedMode).click();
+	fileExplorerModal.show();
+}
+
+function changeFileExplorerMode(mode) {
+	currentFileExplorerMode = mode;
+	for (let i = 0; i < document.getElementsByClassName("fileExplorerModeButton").length; i++) document.getElementsByClassName("fileExplorerModeButton")[i].classList.remove("active");
+	getElement("fileExplorerMode" + mode).classList.add("active");
+	getElement("fileExplorerRootFolder").innerText = modes[mode];
+
+	getFilesInFolder();
+}
+
+function getFilesInFolder() {
+	let requestedUrl = "cmd.php?id=24&mode=" + currentFileExplorerMode;
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
+	xmlhttp.onloadend = function() {
+		if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
+			showServerError("Error while getting display protocol", requestedUrl);
+			return;
+		}
+		getElement("fileExplorerFileCollection").innerHTML = "";
+		let files = parseReturnValuesFromServer(xmlhttp.responseText);
+		if (files + "+" == "+") return;
+		for (let i = 0; i < files.length; i++) {
+			let fileItem = document.createElement("div");
+			fileItem.className = "col";
+			fileItem.innerHTML = `<div class='card border-0' fileexplorerfileselected='false' onclick='selectFileItem(this)' ondblclick="showRenameModal(this);" onmouseover='this.style.opacity = 0.7;' onmouseleave='this.style.opacity = 1;'>
+	<img class='card-img-top' src='/piScreen.svg' alt='Logo' width='100%' height='100%'>
+	<figcaption class='text-center mt-1 card-text' style='cursor: default;'>
+		${files[i]}
+	</figcaption>
+</div>`;
+			getElement("fileExplorerFileCollection").appendChild(fileItem);
+		}
+	}
+	xmlhttp.open('GET', requestedUrl, true);
+	xmlhttp.send();
+}
+
+function selectFileItem(element) {
+	if (element.getAttribute("fileexplorerfileselected") == "true") {
+		element.classList.add("border-0");
+		element.classList.remove("border");
+		element.classList.remove("border-primary");
+		element.setAttribute("fileexplorerfileselected", "false");
+	} else {
+		element.classList.remove("border-0");
+		element.classList.add("border");
+		element.classList.add("border-primary");
+		element.setAttribute("fileexplorerfileselected", "true");
+	}
+}
+
+function selectFileToUpload() {
+	let input = document.createElement('input');
+	input.type = 'file';
+	input.onchange = e => {
+		let file = e.target.files[0];
+		var formData = new FormData();
+		formData.append("file", file);
+		var xmlhttp = new XMLHttpRequest();
+		xmlhttp.onloadend = () => {getFilesInFolder(currentFileExplorerMode)};
+		xmlhttp.open("POST", 'cmd.php?id=25&mode=' + currentFileExplorerMode, true);
+		xmlhttp.send(formData);
+	}
+	input.click();
+}
+
+function deleteSelectedFiles() {
+	let fileElements = document.querySelectorAll("[fileexplorerfileselected='true']");
+	for (let i = 0; i < fileElements.length; i++) deleteFile(fileElements[i].children[1].innerText);
+}
+
+function deleteFile(filename) {
+	sendHTTPRequest("GET", 'cmd.php?id=26&mode=' + currentFileExplorerMode + '&filename=' + filename, true, () => {getFilesInFolder(currentFileExplorerMode)});
+}
+
+function showRenameModal(element) {
+	currentRenameFile = element;
+	let filename = element.children[1].innerText;
+	getElement("renameTextfield").value = filename;
+	getElement("renameOldName").innerText = filename;
+	renameModal.show();
+	//getElement("renameTextfield").focus();
+}
+
+function saveFileRename() {
+	let oldName = getElement("renameOldName").innerText;
+	if (oldName == getElement("renameTextfield").value) {
+		renameModal.hide();
+		return;
+	}
+
+	let requestedUrl = 'cmd.php?id=27&mode=' + currentFileExplorerMode + '&oldfilename=' + oldName + '&newfilename=' + getElement("renameTextfield").value;
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
+	xmlhttp.onloadend = () => {
+		if (serverExecutedSuccessfully(xmlhttp.responseText)) {
+			currentRenameFile.children[1].innerText = getElement("renameTextfield").value;
+			renameModal.hide();
+		}
+		else showServerError(parseReturnValuesFromServer(xmlhttp.responseText), requestedUrl);
+	}
+	xmlhttp.open('GET', requestedUrl, true);
+	xmlhttp.send();
+
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////   click events   //////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1539,7 +1664,12 @@ function setLanguageOnSite() {
 	tags.forEach(element => {
 		let key = element.getAttribute('lang-data');
 		if (key) {
-			element.textContent = languageStrings[currentLanguage][key];
+			try {
+				element.textContent = languageStrings[currentLanguage][key];
+			} catch (error) {
+				console.log(error);
+				console.log(key);
+			}
 		}
 	});
 }

@@ -2,6 +2,8 @@
 	umask(0); // to execute with www-data
 	$sudoSyscall = 'sudo /home/pi/piScreen/piScreenCmd.py';
 	$syscall = 'sudo -u pi /home/pi/piScreen/piScreenCmd.py';
+	$fileExplorerPath = "/srv/piScreen/data/";
+	$modes = ["", "firefox", "vlc", "impress"];
 
 	function executeCommand($command, $sendResponse) {
 		try {
@@ -296,4 +298,48 @@
 	elseif ($_GET['id'] == 23) { //Run firstrun
 		executeCommand("$syscall --schedule-firstrun", true);
 	}
+	elseif ($_GET['id'] == 24) { //Get files for file explorer
+		$fileArray = [];
+		switch ($_GET['mode']) {
+			case '2'://VLC
+				$fileArray = scandir("/srv/piScreen/data/vlc");
+				$fileArray = array_diff($fileArray, [".", ".."]);
+				sendResponse($fileArray, 0);
+				break;
+			case '3'://Impress
+				$fileArray = scandir("/srv/piScreen/data/impress");
+				$fileArray = array_diff($fileArray, [".", ".."]);
+				sendResponse($fileArray, 0);
+				break;
+			default://mode not existing
+				sendResponse("", 1);
+				break;
+		}
+	}
+	elseif ($_GET['id'] == 25) { //Upload files for file explorer
+		try {
+			$location = $fileExplorerPath . $modes[$_GET['mode']] . "/" . $_FILES['file']['name'];
+			move_uploaded_file($_FILES['file']['tmp_name'], $location);
+		} catch (\Throwable $th) {
+			sendResponse("Unable to upload file", 1);
+		}
+		sendResponse("", 0);
+	}
+	elseif ($_GET['id'] == 26) { //Delete files for file explorer
+		try {
+			unlink($fileExplorerPath . $modes[$_GET['mode']] . "/" . $_GET['filename']);
+		} catch (\Throwable $th) {
+			sendResponse("Unable to delete file", 1);
+		}
+		sendResponse("", 0);
+	}
+	elseif ($_GET['id'] == 27) { //Rename file for file explorer
+		try {
+			rename($fileExplorerPath . $modes[$_GET['mode']] . "/" . $_GET['oldfilename'], $fileExplorerPath . $modes[$_GET['mode']] . "/" . $_GET['newfilename']);
+		} catch (\Throwable $th) {
+			sendResponse("Unable to rename file", 1);
+		}
+		sendResponse("", 0);
+	}
+
 ?>

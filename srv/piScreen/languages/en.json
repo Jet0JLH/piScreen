@@ -137,6 +137,11 @@
         "sat": "Sat",
         "sun": "Sun",
 
+        "file-explorer": "File explorer",
+        "upload": "Upload",
+        "delete": "Delete",
+        "rename": "Rename",
+
         "lastcron": "Execute last cron entry",
         "connection-lost": "Connection to server lost!",
         "fill-required-fields": "Please fill in all required fields!",
