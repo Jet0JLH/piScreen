@@ -62,7 +62,7 @@
 				<div class='card p-3 shadow'>
 					<h1 class='pb-2'><i class='bi-info-circle bigIcon px-2'></i><span lang-data='info-tile-header'>Info</span></h1>
 					<figure class='figure mb-0'>
-						<img id='screenshot' src='piScreenScreenshot.png' style='max-width: 100%;' class='border figure-img img-fluid'></img>
+						<img id='screenshot' src='piScreenScreenshot.jpg' style='max-width: 100%;' class='border figure-img img-fluid'></img>
 						<figcaption id='screenshotTime' class='figure-caption'></figcaption>
 						<figcaption id='screenContent' class='figure-caption text-break'></figcaption>
 					</figure>

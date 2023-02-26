@@ -1564,7 +1564,7 @@ window.onload = function() {
 		if (new Date(jsonData.screenshotTime * 1000) != st) {
 			st = new Date(jsonData.screenshotTime * 1000);
 			screenshotTime.innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth() + 1)}.${1900 + st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
-			screenshot.src = "piScreenScreenshot.png?t=" + new Date().getTime();
+			screenshot.src = "piScreenScreenshot.jpg?t=" + new Date().getTime();
 		}
 		switch (jsonData.modeInfo.mode) {
 			case "firefox":
