@@ -99,16 +99,16 @@ def printHelp():
 	Runs the cron entry selected by index in schedule
 --schedule-manually-trigger <--index> <index>
 	Runs the trigger selected by index in schedule (Except startup trigger (ID=1))
---add-cron <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"YYYY-MM-DD hh:mm">] [--end <"YYYY-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>]
+--add-cron <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"YYYY-MM-DD hh:mm">] [--end <"YYYY-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>] [--comment <comment>]
 	Add a cronentry to schedule.json.
---update-cron <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["YYYY-MM-DD hh:mm"]] [--end ["YYYY-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>]
+--update-cron <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["YYYY-MM-DD hh:mm"]] [--end ["YYYY-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>] [--comment <comment>]
 	Update a cronentry by index in schedule.json.
 --delete-cron <--index <cronIndex>>
 	Delete a cronentry by index from schedule.json.
---add-trigger <--trigger <triggerID>> [--enabled <true/false>] [--first-state-dont-trigger <true/false>] [--run-once <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>]
+--add-trigger <--trigger <triggerID>> [--enabled <true/false>] [--first-state-dont-trigger <true/false>] [--run-once <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>] [--comment <comment>]
 	Add a trigger to schedule.json.
 	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
---update-trigger <--index <triggerIndex>> [--trigger <triggerID>] [--enabled <true/false>] [--first-state-dont-trigger <true/false>] [--run-once <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>]
+--update-trigger <--index <triggerIndex>> [--trigger <triggerID>] [--enabled <true/false>] [--first-state-dont-trigger <true/false>] [--run-once <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>] [--comment <comment>]
 	Update a trigger by index in schedule.json.
 	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
 --delete-trigger <--index <triggerIndex>>
@@ -534,6 +534,7 @@ def addCron():
 				changed = modifySchedule("pattern","pattern",item) or changed
 				changed = modifySchedule("command",int,item) or changed
 				changed = modifySchedule("parameter",None,item) or changed
+				changed = modifySchedule("comment",None,item) or changed
 				if changed:
 					try:
 						scheduleJson = loadSchedule()
@@ -582,6 +583,7 @@ def updateCron():
 							changed = modifySchedule("pattern","pattern",scheduleJson["cron"][index]) or changed
 							changed = modifySchedule("command",int,scheduleJson["cron"][index]) or changed
 							changed = modifySchedule("parameter",None,scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("comment",None,scheduleJson["cron"][index]) or changed
 							if changed:
 								scheduleFile = open(piScreenUtils.paths.schedule, "w")
 								scheduleFile.write(json.dumps(scheduleJson,indent=4))
@@ -625,6 +627,7 @@ def addTrigger():
 				changed = modifySchedule("trigger",int,item) or changed
 				changed = modifySchedule("first-state-dont-trigger",bool,item,"firstStateDontTrigger") or changed
 				changed = modifySchedule("run-once",bool,item,"runOnce") or changed
+				changed = modifySchedule("comment",None,item) or changed
 				for i2 in sys.argv:
 					if i2.startswith("--command:") and len(i2) > 10:
 						if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
@@ -684,6 +687,7 @@ def updateTrigger():
 							changed = modifySchedule("trigger",int,item) or changed
 							changed = modifySchedule("first-state-dont-trigger",bool,item,"firstStateDontTrigger") or changed
 							changed = modifySchedule("run-once",bool,item,"runOnce") or changed
+							changed = modifySchedule("comment",None,item) or changed
 							for i2 in sys.argv:
 								if i2.startswith("--command:") and len(i2) > 10:
 									if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
