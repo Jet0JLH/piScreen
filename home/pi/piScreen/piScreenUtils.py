@@ -9,6 +9,7 @@ class paths:
 	manifest = f"{softwareDir}manifest.json"
 	syscall = f"{softwareDir}piScreenCmd.py"
 	screenshot = f"{ramdisk}piScreenScreenshot.jpg"
+	screenshotThumbnail = f"{ramdisk}piScreenScreenshot-thumb.jpg"
 	displayStatus = f"{ramdisk}piScreenDisplay.txt"
 	displayOff = f"{ramdisk}piScreenDisplayOff"
 	displayOn = f"{ramdisk}piScreenDisplayOn"

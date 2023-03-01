@@ -24,6 +24,7 @@ ln -s "$parent_path/home/pi/.config/autostart/piScreenCore.desktop" /home/pi/.co
 chown -R pi:pi /home/pi/.config/autostart/
 ln -s "$parent_path/etc/firefox-esr/piScreen.js" /etc/firefox-esr/piScreen.js
 ln -s /media/ramdisk/piScreenScreenshot.jpg /srv/piScreen/admin/
+ln -s /media/ramdisk/piScreenScreenshot-thumb.jpg /srv/piScreen/admin/
 
 
 setfacl -Rm d:u:www-data:rwx /home/pi/piScreen
