@@ -24,8 +24,12 @@
 		}
 	}
 
-	if ($_GET['id'] == 1) { //Restart Browser
-		executeCommand("$syscall --restart-browser", true);
+	if ($_GET['id'] == 1) { //Browser
+		if ($_GET['cmd'] == "restart") {
+			executeCommand("$syscall --restart-browser", true);
+		} elseif ($_GET['cmd'] == "reload") {
+			executeCommand("$syscall --reload-browser", true);
+		}
 	}
 	elseif ($_GET['id'] == 2) { //reboot
 		//header('Location: .');
@@ -327,6 +331,18 @@
 			sendResponse("Unable to rename file", 1);
 		}
 		sendResponse("", 0);
+	}
+	elseif ($_GET['id'] == 28) { //VLC
+		if ($_GET['cmd'] == "restart") {
+			executeCommand("$syscall --restart-vlc", true);
+		} elseif ($_GET['cmd'] == "play") {
+			executeCommand("$syscall --play-vlc", true);
+		} elseif ($_GET['cmd'] == "pause") {
+			executeCommand("$syscall --pause-vlc", true);
+		}
+	}
+	elseif ($_GET['id'] == 29) { //Impress
+		executeCommand("$sudoSyscall --restart-impress", true);
 	}
 
 ?>

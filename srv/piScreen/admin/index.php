@@ -37,24 +37,25 @@
 			<div class='col-sm-12 col-lg-6 mb-4'>
 				<div class='card p-3 shadow'>
 					<h1 class='pb-2'><i class='bi-layout-wtf bigIcon px-2'></i><span lang-data='control-tile-header'>Steuern</span></h1>
-					<div class='row'>
-						<div class='col-4'>
-							<button id='reloadBrowserButton' class='disableOnDisconnect btn btn-primary w-100 my-1' onclick='reloadBrowser()'><span id='restartBrowserSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-clockwise btn-icon-xxl'></i><br><span lang-data='restart-browser'>Browser neu starten</span></button>
+					<div class='row my-2'>
+						<h5 class="m-0 mb-2" lang-data="host">Host</h5>
+						<div class='col-6'>
+							<button id='restartHostButton' class='disableOnDisconnect btn btn-warning w-100' onclick='restartHost()'><i class='bi bi-bootstrap-reboot btn-icon-xxl'></i><br><span lang-data='restart-device'>Neustarten</span></button>
 						</div>
-						<div class='col-4'>
-							<button id='restartHostButton' class='disableOnDisconnect btn btn-warning w-100 my-1' onclick='restartHost()'><i class='bi bi-bootstrap-reboot btn-icon-xxl'></i><br><span lang-data='restart-device'>Neustarten</span></button>
-						</div>
-						<div class='col-4'>
-							<button id='shutdownHostButton' class='disableOnDisconnect btn btn-danger w-100 my-1' onclick='shutdownHost()'><i class='bi bi-power btn-icon-xxl'></i><br><span lang-data='shutdown-device'>Ausschalten</span></button>
+						<div class='col-6'>
+							<button id='shutdownHostButton' class='disableOnDisconnect btn btn-danger w-100' onclick='shutdownHost()'><i class='bi bi-power btn-icon-xxl'></i><br><span lang-data='shutdown-device'>Ausschalten</span></button>
 						</div>
 					</div>
-					<div class='row'>
-						<div class='col-4'>
-							<button id='displayOnButton' class='disableOnDisconnect btn btn-success w-100 my-1' onclick='setDisplayOn()'><span id='spinnerDisplayOn' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display btn-icon-xxl'></i><br><span lang-data='display-on'>Display an</span></button>
+					<div class='row my-2'>
+						<h5 class="my-2" lang-data="display">Display</h5>
+						<div class='col-6'>
+							<button id='displayOnButton' class='disableOnDisconnect btn btn-success w-100' onclick='setDisplayOn()'><span id='spinnerDisplayOn' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display btn-icon-xxl'></i><br><span lang-data='display-on'>Display an</span></button>
 						</div>
-						<div class='col-4'>
-							<button id='displayStandbyButton' class='disableOnDisconnect btn btn-danger w-100 my-1' onclick='setDisplayStandby()'><span id='spinnerDisplayStandby' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display btn-icon-xxl'></i><br><span lang-data='display-off'>Display Standby</span></button>
+						<div class='col-6'>
+							<button id='displayStandbyButton' class='disableOnDisconnect btn btn-danger w-100' onclick='setDisplayStandby()'><span id='spinnerDisplayStandby' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display btn-icon-xxl'></i><br><span lang-data='display-off'>Display Standby</span></button>
 						</div>
+					</div>
+					<div id="modeControl" class='row my-2'>
 					</div>
 				</div>
 			</div>

@@ -25,10 +25,17 @@
 
         "control-tile-header": "Control",
         "restart-browser": "Restart browser",
+        "reload-browser-page": "Reload page",
+        "restart-impress": "Restart Impress",
+        "restart-vlc-video": "Rewind",
+        "play-vlc-video": "Play",
+        "pause-vlc-video": "Pause",
         "restart-device": "Reboot",
         "shutdown-device": "Shutdown",
         "display-on": "Display on",
         "display-off": "Display off",
+        "display": "Display",
+        "host": "Host",
 
         "settings-tile-header": "Settings",
         "hostname": "Hostname",

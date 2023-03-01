@@ -1315,9 +1315,34 @@ function saveFileRename() {
 ////////////////////////////////////////   click events   //////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-function reloadBrowser() {
+function restartBrowser() {
 	getElement("restartBrowserSpinner").hidden = false;
-	sendHTTPRequest('GET', 'cmd.php?id=1', true, () => {getElement("restartBrowserSpinner").hidden = true;});
+	sendHTTPRequest('GET', 'cmd.php?id=1&cmd=restart', true, () => {getElement("restartBrowserSpinner").hidden = true;});
+}
+
+function reloadBrowserPage() {
+	getElement("reloadBrowserPageSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=1&cmd=reload', true, () => {getElement("reloadBrowserPageSpinner").hidden = true;});
+}
+
+function restartVlcVideo() {
+	getElement("restartVlcSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=28&cmd=restart', true, () => {getElement("restartVlcSpinner").hidden = true;});
+}
+
+function playVlcVideo() {
+	getElement("playVlcSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=28&cmd=play', true, () => {getElement("playVlcSpinner").hidden = true;});
+}
+
+function pauseVlcVideo() {
+	getElement("pauseVlcSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=28&cmd=pause', true, () => {getElement("pauseVlcSpinner").hidden = true;});
+}
+
+function restartImpress() {
+	getElement("restartImpressSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=29', true, () => {getElement("restartImpressSpinner").hidden = true;});
 }
 
 function restartHost() {
@@ -1329,11 +1354,11 @@ function shutdownHost() {
 }
 
 function setDisplayOn() {
-	sendHTTPRequest('GET', 'cmd.php?id=8&cmd=1', true, () => {spinnerDisplayOn.hidden = false;});
+	sendHTTPRequest('GET', 'cmd.php?id=8&cmd=1', true, () => {getElement("spinnerDisplayOn").hidden = false;});
 }
 
 function setDisplayStandby() {
-	sendHTTPRequest('GET', 'cmd.php?id=8&cmd=0', true, () => {spinnerDisplayStandby.hidden = false;});
+	sendHTTPRequest('GET', 'cmd.php?id=8&cmd=0', true, () => {getElement("spinnerDisplayStandby").hidden = false;});
 }
 
 function showPiscreenInfo() {
@@ -1504,18 +1529,8 @@ window.onload = function() {
 	let idleBadge = getElement("idle");
 	let active = getElement("active");
 	let displayState = getElement("displayState");
-	let uptime = getElement("uptime");
-	let cpuLoad = getElement("cpuLoad");
-	let cpuTemp = getElement("cpuTemp");
-	let ramUsed = getElement("ramUsed");
-	let ramTotal = getElement("ramTotal");
-	let ramUsage = getElement("ramUsage");
 	let displayOnBtn = getElement("displayOnButton");
 	let displayStandbyBtn = getElement("displayStandbyButton");
-	let spinnerDisplayOn = getElement("spinnerDisplayOn");
-	let spinnerDisplayStandby = getElement("spinnerDisplayStandby");
-	let screenshot = getElement("screenshot");
-	let screenshotTime = getElement("screenshotTime");
 	
 	let requestedUrl = 'cmd.php?id=5';
 	let xmlhttp = new XMLHttpRequest();
@@ -1542,12 +1557,6 @@ window.onload = function() {
 				displayOnBtn.parentElement.hidden = true;
 				displayStandbyBtn.parentElement.hidden = false; 
 				break;
-			case "off":
-				displayState.classList = "badge rounded-pill bg-danger";
-				displayState.innerHTML = getLanguageAsText('off');
-				displayOnBtn.parentElement.hidden = false;
-				displayStandbyBtn.parentElement.hidden = true; 
-				break;
 			case "standby":
 				displayState.classList = "badge rounded-pill bg-danger";
 				displayState.innerHTML = getLanguageAsText('standby');
@@ -1561,31 +1570,20 @@ window.onload = function() {
 				displayStandbyBtn.parentElement.hidden = false; 
 				break;
 		}
-		uptime.innerHTML = jsonData.uptime.days + " " + getLanguageAsText('days') + ", " + jsonData.uptime.hours + " " + getLanguageAsText('hours') + ", " + jsonData.uptime.mins + " " + getLanguageAsText('minutes');
-		cpuLoad.innerHTML = jsonData.cpuLoad;
-		cpuTemp.innerHTML = Math.round(jsonData.cpuTemp / 1000) + " °C";
-		ramUsed.innerHTML = Number(jsonData.ramUsed / 1000 / 1000).toFixed(2) + " GiB";
-		ramTotal.innerHTML = Number(jsonData.ramTotal / 1000 / 1000).toFixed(2) + " GiB";
-		ramUsage.innerHTML = Number(jsonData.ramUsed / jsonData.ramTotal * 100).toFixed(2);
-		spinnerDisplayOn.hidden = !jsonData.display.onSet;
-		spinnerDisplayStandby.hidden = !jsonData.display.standbySet;
+		getElement("uptime").innerHTML = jsonData.uptime.days + " " + getLanguageAsText('days') + ", " + jsonData.uptime.hours + " " + getLanguageAsText('hours') + ", " + jsonData.uptime.mins + " " + getLanguageAsText('minutes');
+		getElement("cpuLoad").innerHTML = jsonData.cpuLoad;
+		getElement("cpuTemp").innerHTML = Math.round(jsonData.cpuTemp / 1000) + " °C";
+		getElement("ramUsed").innerHTML = Number(jsonData.ramUsed / 1000 / 1000).toFixed(2) + " GiB";
+		getElement("ramTotal").innerHTML = Number(jsonData.ramTotal / 1000 / 1000).toFixed(2) + " GiB";
+		getElement("ramUsage").innerHTML = Number(jsonData.ramUsed / jsonData.ramTotal * 100).toFixed(2);
+		getElement("spinnerDisplayOn").hidden = !jsonData.display.onSet;
+		getElement("spinnerDisplayStandby").hidden = !jsonData.display.standbySet;
 		if (new Date(jsonData.screenshotTime * 1000) != st) {
 			st = new Date(jsonData.screenshotTime * 1000);
-			screenshotTime.innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth() + 1)}.${1900 + st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
-			screenshot.src = "piScreenScreenshot.jpg?t=" + new Date().getTime();
+			getElement("screenshotTime").innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth() + 1)}.${1900 + st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
+			getElement("screenshot").src = "piScreenScreenshot.jpg?t=" + new Date().getTime();
 		}
-		switch (jsonData.modeInfo.mode) {
-			case "firefox":
-				getElement("screenContent").innerHTML = jsonData.modeInfo.url;
-				rearrangeGui();
-				break;
-			case "vlc":
-				
-				break;
-			case "impress":
-				
-				break;
-		}
+		changeMode(jsonData.modeInfo);
 		if (connectionStatusChanged(true)) enableElements(true);
 
 		rearrangeGui();
@@ -1612,6 +1610,51 @@ window.onload = function() {
 		xmlhttp.send();
 	}, 2000);
 	checkForUpdate();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////   mode change functions   /////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function changeMode(modeInfo) {
+	switch (modes[modeInfo.mode]) {
+		case "firefox":
+			getElement("screenContent").innerHTML = modeInfo.info.url;
+			getElement("modeControl").innerHTML = `<h5 class="my-2">Firefox</h5>
+<div class='col-6'>
+	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartBrowser();'><span id='restartBrowserSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-repeat btn-icon-xxl'></i><br><span lang-data='restart-browser'>Browser neu starten</span></button>
+</div>
+<div class='col-6'>
+	<button class='disableOnDisconnect btn btn-primary w-100' onclick='reloadBrowserPage();'><span id='reloadBrowserPageSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-arrow-clockwise btn-icon-xxl'></i><br><span lang-data='reload-browser-page'>Seite neu laden</span></button>
+</div>`;
+			rearrangeGui();
+			break;
+		case "vlc":
+			getElement("screenContent").innerHTML = modeInfo.info.source.split("/")[modeInfo.info.source.split("/").length - 1];
+			getElement("modeControl").innerHTML = `<h5 class="my-2">VLC</h5>
+<div class='col-6'>
+	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartVlcVideo();'><span id='restartVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-skip-backward btn-icon-xxl'></i><br><span lang-data='restart-vlc-video'>Zurückspulen</span></button>
+</div>`;
+			if (modeInfo.info.state == "State.Paused") {
+				getElement("modeControl").innerHTML += `<div class='col-6'>
+	<button class='disableOnDisconnect btn btn-success w-100' onclick='playVlcVideo();'><span id='playVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-play btn-icon-xxl'></i><br><span lang-data='play-vlc-video'>Play</span></button>
+</div>`;
+			} else if (modeInfo.info.state == "State.Playing") {
+				getElement("modeControl").innerHTML += `<div class='col-6'>
+	<button class='disableOnDisconnect btn btn-danger w-100' onclick='pauseVlcVideo();'><span id='pauseVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-pause btn-icon-xxl'></i><br><span lang-data='pause-vlc-video'>Pause</span></button>
+</div>`;
+			}
+			rearrangeGui();
+			break;
+		case "impress":
+			getElement("screenContent").innerHTML = modeInfo.info.file.split("/")[modeInfo.info.file.split("/").length - 1];
+			getElement("modeControl").innerHTML = `<h5 class="my-2">Impress</h5>
+<div class='col-6'>
+	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartImpress();'><span id='restartImpressSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-repeat btn-icon-xxl'></i><br><span lang-data='restart-impress'>Impress neu starten</span></button>
+</div>`;
+			rearrangeGui();
+			break;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -25,10 +25,17 @@
 
         "control-tile-header": "Steuerung",
         "restart-browser": "Browser neu starten",
+        "reload-browser-page": "Seite neu laden",
+        "restart-impress": "Impress neu starten",
+        "restart-vlc-video": "Zurückspulen",
+        "play-vlc-video": "Play",
+        "pause-vlc-video": "Pause",
         "restart-device": "Neu starten",
         "shutdown-device": "Herunterfahren",
         "display-on": "Display an",
         "display-off": "Display aus",
+        "display": "Display",
+        "host": "Host",
 
         "settings-tile-header": "Einstellungen",
         "hostname": "Hostname",
