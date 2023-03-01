@@ -6,6 +6,9 @@ os.chdir(skriptPath)
 active = os.path.exists(piScreenUtils.paths.scheduleActive)
 allTrigger = []
 threadLock = threading.Lock()
+dateFormate = "%d.%m.%Y %H:%M"
+ignoreCronFrom = datetime.datetime.strptime("01.01.1900 00:00",dateFormate)
+ignoreCronTo = datetime.datetime.strptime("01.01.1900 00:00",dateFormate)
 
 def firstRun(noTrigger):
 	piScreenUtils.logging.debug(f"noTrigger={noTrigger}")
@@ -117,6 +120,8 @@ class cronEntry():
 
 	def run(self, timestamp, manually):
 		if not manually:
+			if ignoreCronFrom < timestamp < ignoreCronTo:
+				return False
 			if not self.enabled:
 				return False
 			if self.start is not None:
@@ -556,6 +561,18 @@ while active:
 				print("Json File seems to be damaged")
 			else:
 				loadTrigger()
+				if "ignoreCronFrom" in globalConf.conf:
+					try: ignoreCronFrom = datetime.datetime.strptime(globalConf.conf["ignoreCronFrom"],dateFormate)
+					except:
+						piScreenUtils.logging.error("Wrong datetime format in ignoreCronFrom")
+						ignoreCronFrom = datetime.datetime.strptime("01.01.1900 00:00",dateFormate)
+				if "ignoreCronTo" in globalConf.conf:
+					try: ignoreCronTo = datetime.datetime.strptime(globalConf.conf["ignoreCronTo"],dateFormate)
+					except:
+						piScreenUtils.logging.error("Wrong datetime format in ignoreCronTo")
+						ignoreCronTo = datetime.datetime.strptime("01.01.1900 00:00",dateFormate)
+
+
 		configModify = os.path.getmtime(piScreenUtils.paths.schedule)
 		active = os.path.exists(piScreenUtils.paths.scheduleActive)
 		if os.path.exists(piScreenUtils.paths.scheduleDoFirstRun):
