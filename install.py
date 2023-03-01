@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 import json, os, sys, pwd, shutil, subprocess
-import home.pi.piScreen.piScreenUtils as piScreenUtils
 from OpenSSL.crypto import FILETYPE_PEM, load_certificate
 from base64 import b64encode
 from datetime import datetime
@@ -465,6 +464,9 @@ def killProcesses():
 	os.system("killall vlc")
 	os.system("killall soffice.bin")
 
+if os.geteuid() != 0:
+	printError("Please run this script with root privileges!",1)
+import home.pi.piScreen.piScreenUtils as piScreenUtils
 info = {"log":[]}
 if "--dry" in sys.argv: info["dry"] = True ; printInfo("Script is in dryrun")
 else: info["dry"] = False
@@ -474,8 +476,6 @@ else: info["verbose"] = False
 if __name__ == "__main__":
 	skriptPath = os.path.dirname(os.path.abspath(__file__))
 	os.chdir(skriptPath)
-	if os.geteuid() != 0:
-		printError("Please run this script with root privileges!",1)
 	printInfo("Checking for pi user",style=1)
 	try:
 		pwd.getpwnam('pi')
