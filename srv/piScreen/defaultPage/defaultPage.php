@@ -6,6 +6,7 @@
 		<title>piScreen Defaultpage</title>
     </head>
     <body>
+    <?php exec("ip route | grep default | sed -e 's/^.* src \([^ ]*\) .*$/\\1/'", $ip); ?>
         <center>
             <div>
                 <div class='imgbox'>
@@ -14,7 +15,7 @@
                 <h2>🥳 You successfully installed piScreen 🎉</h2>
             </div>
             <div class='importantInfo'>
-                <p style='margin: 0;'>To administer your screen, please visit <a href="https://<?php echo gethostname();?>/admin">https://<?php echo gethostname();?>/admin</a></p>
+                <p style='margin: 0;'>To administer your screen, please visit <a href="https://<?php echo $ip[0];?>/admin">https://<?php echo $ip[0];?>/admin</a></p>
             </div>
             <div>
                 <table>
@@ -72,7 +73,7 @@
                 </table>
             </div>
             <div class='footer'>
-                <p class="grayed smallerText"> <i class='bi-ethernet'></i> IP address: <?php echo exec("ip route | grep default | sed -e 's/^.* src \([^ ]*\) .*$/\\1/'"); ?></p>
+                <p class="grayed smallerText"> <i class='bi bi-pc-display'></i> Hostname: <?php echo gethostname(); ?></p>
                 <p class="grayed smallerText">piScreen is provided by Jet0JLH and toefde. <i class='bi-github'></i> The project can be found on GitHub: <u>https://github.com/Jet0JLH/piScreen</u>
             </div>
         </center>

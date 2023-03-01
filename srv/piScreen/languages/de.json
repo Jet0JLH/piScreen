@@ -101,7 +101,7 @@
         "startup-trigger": "Startauslöser",
         "trigger": "Auslöser",
         "choose-trigger": "Auslöser auswählen",
-        "triggerHelpText": "Dieser Befehl wird direkt ausgeführt, nachdem das System hochgefahren ist.<br><br>Es wird Eingang des Anzeigegerätes automatisch auf den von piScreen gestellt.<br>Das Display wird außerdem automatisch eingeschalten.",
+        "triggerHelpText": "Dieser Befehl wird direkt ausgeführt, nachdem das System hochgefahren ist.",
         "execute": "Ausführen",
 
         "update-button": "Update vorhanden auf Version ",

@@ -42,7 +42,7 @@ var languageStrings = null;
 var prevItemsEnabled = null;
 //cron entry limitations
 const minuteLowerLimit = 0, minuteUpperLimit = 59;
-const hourLowerLimit = 0, hourUpperLimit = 59;
+const hourLowerLimit = 0, hourUpperLimit = 23;
 const dayOfMonthLowerLimit = 1, dayOfMonthUpperLimit = 31;
 const monthLowerLimit = 1, monthUpperLimit = 12;
 const dayOfWeekLowerLimit = 0, dayOfWeekUpperLimit = 6;
@@ -51,7 +51,7 @@ const modeFirefox = 1;
 const modeVLC = 2;
 const modeImpress = 3;
 var currentFileExplorerMode = 2;
-const modes = ["", "firefox", "vlc", "impress"]; //there is no mode 0 
+const modes = ["general", "firefox", "vlc", "impress"]; //there is no mode 0 
 var currentRenameFile;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -314,10 +314,6 @@ function showScheduleModal(scheduleEntryId) {
 	scheduleEntrySaved(scheduleEntryId >= 0);
 }
 
-function showCronEditorModal() {
-	cronEditorModal.show();
-}
-
 function addCommandsToDropdown(dropdownId) {
 	//Add commands dropdown options
 	getElement(dropdownId).innerHTML = "";
@@ -511,11 +507,11 @@ function checkCronEntryValidity(cronEntryString) {
 	let varArray = cronEntryString.split(" ");
 	for (let i = 0; i < varArray.length; i++) {
 		switch (i) {
-			case 0://hours
-				if (!checkCronEntrySubsequenceValidity(varArray[i], hourLowerLimit, hourUpperLimit)) return false;
-				break;
-			case 1://minutes
+			case 0://minutes
 				if (!checkCronEntrySubsequenceValidity(varArray[i], minuteLowerLimit, minuteUpperLimit)) return false;
+				break;
+			case 1://hours
+				if (!checkCronEntrySubsequenceValidity(varArray[i], hourLowerLimit, hourUpperLimit)) return false;
 				break;
 			case 2://days in month
 				if (!checkCronEntrySubsequenceValidity(varArray[i], dayOfMonthLowerLimit, dayOfMonthUpperLimit)) return false;
@@ -605,6 +601,11 @@ function cronEditorCarouselSwitchRadio(id) {
 ////////////////////////////////////   cron editor functions   /////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
+function showCronEditorModal() {
+	updateSelectableValues(0);
+	cronEditorModal.show();
+}
+
 function cronEditorOnChange(activeValue) {
 	switch (activeValue) {
 		case "1":
@@ -675,25 +676,19 @@ function parseCronEntry() {
 	} else if (getElement("cronEditorCarouselOptionLabel2").className.includes("btn-primary")) {
 		let val = getElement("cronEditorPeriodicTimeSelect").value;
 		switch (getElement("cronEditorPeriodicTimeSpanSelect").value) {
-			case "1"://minutes
+			case "0"://minutes
 			if (val == 1) result += "*"; 
 			else result += "*/" + val;
 			result += " * * * *";
 			break;
 
-			case "2"://hours
+			case "1"://hours
 			if (val == 1) result += "0 *"; 
 			else result += "0 */" + val;
 			result += " * * *";
 			break;
 
-			case "3"://days
-			if (val == 1) result += "0 0 *"; 
-			else result += "0 0 */" + val;
-			result += " * *";
-			break;
-
-			case "4"://months
+			case "2"://months
 			if (val == 1) result += "0 0 1 *"; 
 			else result += "0 0 1 */" + val;
 			result += " *";
@@ -701,6 +696,19 @@ function parseCronEntry() {
 		}
 	}
 	return result;
+}
+
+function updateSelectableValues(value) {
+	let values = [[1, 2, 3, 4, 5, 6, 10, 15, 20, 30], [1, 2, 4, 6, 8, 12], [1, 2, 3, 4, 6]];
+	let dropdown = getElement("cronEditorPeriodicTimeSelect");
+	dropdown.innerHTML = "";
+	for (let i = 0; i < values[value].length; i++) {
+		let opt = document.createElement("option");
+		opt.id = "periodicTimeOption" + values[value][i];
+		opt.value = values[value][i];
+		opt.innerText = values[value][i];
+		dropdown.appendChild(opt);
+	}
 }
 
 function cronEditorDaysSelectAll() {
@@ -1751,31 +1759,27 @@ function toggleDarkmode() {
 }
 
 function setDarkMode(dark) {
-	let darkmodeButton = getElement("darkmodeButton");
 	let theme = getElement("theme");
 	let languageSelect = getElement("languageSelect");
-	let scheduleEntryButtonCancel = getElement("scheduleEntryButtonCancel");
-	let commandsetEntryButtonCancel = getElement("commandsetEntryButtonCancel");
-	let cronEditorButtonCancel = getElement("cronEditorButtonCancel");
-		if (dark) {
+	let buttonsToToggle = document.getElementsByClassName("toggleDarkLight");
+	let closeButtons = document.getElementsByClassName("btn-close");
+	if (dark) {
 		theme.href = "/bootstrap/darkpan-1.0.0/css/bootstrap.min.css";
-		darkmodeButton.classList.replace("btn-outline-secondary", "btn-outline-light");
-		languageSelect.classList.replace("border-secondary", "border-light");
-		scheduleEntryButtonCancel.classList.replace("btn-outline-dark", "btn-outline-light");
-		commandsetEntryButtonCancel.classList.replace("btn-outline-dark", "btn-outline-light");
-		cronEditorButtonCancel.classList.replace("btn-outline-dark", "btn-outline-light");
-		for (let i = 0; i < document.getElementsByClassName("btn-close-dark").length; i++) {
-			document.getElementsByClassName("btn-close-dark")[i].classList.replace("btn-close-dark", "btn-close-white");
+		languageSelect.classList.replace("border-dark", "border-light");
+		for (let i = 0; i < buttonsToToggle.length; i++) {
+			buttonsToToggle[i].classList.replace("btn-outline-dark", "btn-outline-light");
+		}
+		for (let i = 0; i < closeButtons.length; i++) {
+			closeButtons[i].classList.replace("btn-close-dark", "btn-close-white");
 		}
 	} else {
 		theme.href = "/bootstrap/css/bootstrap.min.css";
-		darkmodeButton.classList.replace("btn-outline-light", "btn-outline-secondary");
-		languageSelect.classList.replace("border-light", "border-secondary");
-		scheduleEntryButtonCancel.classList.replace("btn-outline-light", "btn-outline-dark");
-		commandsetEntryButtonCancel.classList.replace("btn-outline-light", "btn-outline-dark");
-		cronEditorButtonCancel.classList.replace("btn-outline-light", "btn-outline-dark");
-		for (let i = 0; i < document.getElementsByClassName("btn-close-white").length; i++) {
-			document.getElementsByClassName("btn-close-white")[i].classList.replace("btn-close-white", "btn-close-dark");
+		languageSelect.classList.replace("border-light", "border-dark");
+		for (let i = 0; i < buttonsToToggle.length; i++) {
+			buttonsToToggle[i].classList.replace("btn-outline-light", "btn-outline-dark");
+		}
+		for (let i = 0; i < closeButtons.length; i++) {
+			closeButtons[i].classList.replace("btn-close-white", "btn-close-dark");
 		}
 	}
 }

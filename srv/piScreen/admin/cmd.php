@@ -2,8 +2,8 @@
 	umask(0); // to execute with www-data
 	$sudoSyscall = 'sudo /home/pi/piScreen/piScreenCmd.py';
 	$syscall = 'sudo -u pi /home/pi/piScreen/piScreenCmd.py';
-	$fileExplorerPath = "/srv/piScreen/data/";
-	$modes = ["", "firefox", "vlc", "impress"];
+	$fileExplorerPath = "/srv/piScreen/admin/data/";
+	$modes = ["general", "firefox", "vlc", "impress"];
 
 	function executeCommand($command, $sendResponse) {
 		try {
@@ -299,22 +299,9 @@
 		executeCommand("$syscall --schedule-firstrun", true);
 	}
 	elseif ($_GET['id'] == 24) { //Get files for file explorer
-		$fileArray = [];
-		switch ($_GET['mode']) {
-			case '2'://VLC
-				$fileArray = scandir("/srv/piScreen/data/vlc");
-				$fileArray = array_diff($fileArray, [".", ".."]);
-				sendResponse($fileArray, 0);
-				break;
-			case '3'://Impress
-				$fileArray = scandir("/srv/piScreen/data/impress");
-				$fileArray = array_diff($fileArray, [".", ".."]);
-				sendResponse($fileArray, 0);
-				break;
-			default://mode not existing
-				sendResponse("", 1);
-				break;
-		}
+		$fileArray = scandir($fileExplorerPath . $modes[$_GET['mode']]);
+		$fileArray = array_diff($fileArray, [".", ".."]);
+		sendResponse($fileArray, 0);
 	}
 	elseif ($_GET['id'] == 25) { //Upload files for file explorer
 		try {

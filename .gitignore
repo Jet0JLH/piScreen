@@ -4,5 +4,6 @@ home/pi/piScreen/schedule.json
 home/pi/piScreen/settings.json
 srv/piScreen/admin/piScreenScreenshot.jpg
 srv/piScreen/admin/piScreenScreenshot-thumb.jpg
+srv/piScreen/admin/data
 __pycache__/
 *.py[cod]

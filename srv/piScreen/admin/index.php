@@ -11,8 +11,8 @@
 <body>
 	<main class='container'>
 		<div class='px-4 py-5 my-2 text-center'>
-			<button class='btn btn-outline-secondary' id='darkmodeButton' onclick='toggleDarkmode();'><i class='bi bi-moon'></i></button>
-			<select id='languageSelect' onchange='changeLanguage(value)' class='disableOnDisconnect form-select border-secondary'>
+			<button class='toggleDarkLight btn btn-outline-dark' id='darkmodeButton' onclick='toggleDarkmode();'><i class='bi bi-moon'></i></button>
+			<select id='languageSelect' onchange='changeLanguage(value)' class='disableOnDisconnect form-select border-dark'>
 				<option id='de' value='de'>🇩🇪 Deutsch</option>
 				<option id='en' value='en'>🇬🇧 English</option>
 			</select>
@@ -254,8 +254,8 @@
 								<button id="scheduleEntryButtonDelete" class="disableOnDisconnect btn btn-outline-danger m-1" onclick='deleteScheduleEntry();'><i class='bi bi-trash pe-2'></i><span lang-data='delete-entry'></span></button>
 							</td>
 							<td>
-								<button id='scheduleEntryButtonSave' class='btn btn-outline-success m-1' onclick='saveScheduleEntry();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
-								<button id='scheduleEntryButtonCancel' class='btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
+								<button id='scheduleEntryButtonSave' class='disableOnDisconnect btn btn-outline-success m-1' onclick='saveScheduleEntry();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
+								<button id='scheduleEntryButtonCancel' class='toggleDarkLight btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
 							</td>
 						</tr>
 					</table>
@@ -338,9 +338,9 @@
 										<tr>
 											<td colspan="3"></td>
 											<td>
-												<button class='btn btn-sm btn-outline-light m-1' onclick='cronEditorDaysSelectAll();'><i class='bi bi-check-square-fill pe-2'></i><span lang-data="select-all">Alle auswählen</span></button>
-												<button class='btn btn-sm btn-outline-light m-1' onclick='cronEditorDaysInvert();'><i class='bi bi-slash-square-fill pe-2'></i><span lang-data="invert-selection">Auswahl invertieren</span></button>
-												<button class='btn btn-sm btn-outline-light m-1' onclick='cronEditorDaysUnselectAll();'><i class='bi bi-square pe-2'></i><span lang-data="select-nothing">Keines auswählen</span></button>
+												<button class='toggleDarkLight btn btn-sm btn-outline-light m-1' onclick='cronEditorDaysSelectAll();'><i class='bi bi-check-square-fill pe-2'></i><span lang-data="select-all">Alle auswählen</span></button>
+												<button class='toggleDarkLight btn btn-sm btn-outline-light m-1' onclick='cronEditorDaysInvert();'><i class='bi bi-slash-square-fill pe-2'></i><span lang-data="invert-selection">Auswahl invertieren</span></button>
+												<button class='toggleDarkLight btn btn-sm btn-outline-light m-1' onclick='cronEditorDaysUnselectAll();'><i class='bi bi-square pe-2'></i><span lang-data="select-nothing">Keines auswählen</span></button>
 											</td>
 										</tr>
 									</table>	
@@ -395,9 +395,9 @@ for (let w = 0; w < 5; w++) {
 										<tr>
 											<td colspan="3"></td>
 											<td>
-												<button class='btn btn-sm btn-outline-light m-1' onclick='cronEditorMonthsSelectAll();'><i class='bi bi-check-square-fill pe-2'></i><span lang-data="select-all">Alle auswählen</span></button>
-												<button class='btn btn-sm btn-outline-light m-1' onclick='cronEditorMonthsInvert();'><i class='bi bi-slash-square-fill pe-2'></i><span lang-data="invert-selection">Auswahl invertieren</span></button>
-												<button class='btn btn-sm btn-outline-light m-1' onclick='cronEditorMonthsUnselectAll();'><i class='bi bi-square pe-2'></i><span lang-data="select-nothing">Keines auswählen</span></button>
+												<button class='toggleDarkLight btn btn-sm btn-outline-light m-1' onclick='cronEditorMonthsSelectAll();'><i class='bi bi-check-square-fill pe-2'></i><span lang-data="select-all">Alle auswählen</span></button>
+												<button class='toggleDarkLight btn btn-sm btn-outline-light m-1' onclick='cronEditorMonthsInvert();'><i class='bi bi-slash-square-fill pe-2'></i><span lang-data="invert-selection">Auswahl invertieren</span></button>
+												<button class='toggleDarkLight btn btn-sm btn-outline-light m-1' onclick='cronEditorMonthsUnselectAll();'><i class='bi bi-square pe-2'></i><span lang-data="select-nothing">Keines auswählen</span></button>
 											</td>
 										</tr>
 									</table>
@@ -410,26 +410,14 @@ for (let w = 0; w < 5; w++) {
 											</td>
 											<td style="width: 20%; text-align: center;" class="pb-3">
 												<select id='cronEditorPeriodicTimeSelect' class='disableOnDisconnect form-select border-secondary'>
-													<option id='periodicTimeOption1' value='1'>1</option>
-													<option id='periodicTimeOption2' value='2'>2</option>
-													<option id='periodicTimeOption3' value='3'>3</option>
-													<option id='periodicTimeOption4' value='4'>4</option>
-													<option id='periodicTimeOption5' value='5'>5</option>
-													<option id='periodicTimeOption6' value='6'>6</option>
-													<option id='periodicTimeOption10' value='10'>10</option>
-													<option id='periodicTimeOption15' value='15'>15</option>
-													<option id='periodicTimeOption20' value='20'>20</option>
-													<option id='periodicTimeOption30' value='30'>30</option>
-													<option id='periodicTimeOption45' value='45'>45</option>
-													<option id='periodicTimeOption60' value='60'>60</option>
+
 												</select>
 											</td>
 											<td style="width: 20%; text-align: center;" class="pb-3">
-												<select id='cronEditorPeriodicTimeSpanSelect' class='disableOnDisconnect form-select border-secondary'>
-													<option id='periodicTimeOptionMinutes' value='1' lang-data="minutes">Minuten</option>
-													<option id='periodicTimeOptionHours' value='2' lang-data="hours">Stunden</option>
-													<option id='periodicTimeOptionDays' value='3' lang-data="days">Tage</option>
-													<option id='periodicTimeOptionMonths' value='4' lang-data="months">Monate</option>
+												<select id='cronEditorPeriodicTimeSpanSelect' class='disableOnDisconnect form-select border-secondary' onchange="updateSelectableValues(value);">
+													<option id='periodicTimeOptionMinutes' value='0' lang-data="minutes">Minuten</option>
+													<option id='periodicTimeOptionHours' value='1' lang-data="hours">Stunden</option>
+													<option id='periodicTimeOptionMonths' value='2' lang-data="months">Monate</option>
 												</select>
 											</td>
 											<td style="width: 45%; text-align: center;" class="pb-3">
@@ -442,7 +430,7 @@ for (let w = 0; w < 5; w++) {
 					</div>
 				</div>
 				<div class='modal-footer'>
-					<button id='cronEditorButtonCancel' class='btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
+					<button id='cronEditorButtonCancel' class='toggleDarkLight btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
 					<button id='cronEditorButtonOk' class='disableOnDisconnect btn btn-outline-success m-1' onclick='cronEditorOk();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="ok">Ok</span></button>
 				</div>
 			</div>
@@ -465,8 +453,8 @@ for (let w = 0; w < 5; w++) {
 								<button id="commandsetEntryButtonDelete" class="disableOnDisconnect btn btn-outline-danger m-1" onclick='deleteCommandsetEntry();'><i class='bi bi-trash pe-2'></i><span lang-data='delete-commandset'></span></button>
 							</td>
 							<td>
-								<button id='commandsetEntryButtonSave' class='btn btn-outline-success m-1' onclick='saveCommandsetEntry();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
-								<button id='commandsetEntryButtonCancel' class='btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
+								<button id='commandsetEntryButtonSave' class='disableOnDisconnect btn btn-outline-success m-1' onclick='saveCommandsetEntry();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
+								<button id='commandsetEntryButtonCancel' class='toggleDarkLight btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
 							</td>
 						</tr>
 					</table>
@@ -488,7 +476,9 @@ for (let w = 0; w < 5; w++) {
 						<tr>
 							<td rowspan="2" style="width: 30%;" class="border border-primary p-2">
 								<div class="list-group">
-									<button type="button" id="fileExplorerMode2" value="2" class="fileExplorerModeButton bg-transparent list-group-item list-group-item-action active" onclick="changeFileExplorerMode(value);">VLC</button>
+									<button type="button" id="fileExplorerMode0" value="0" class="fileExplorerModeButton bg-transparent list-group-item list-group-item-action active" onclick="changeFileExplorerMode(value);">Allgemein</button>
+									<button type="button" id="fileExplorerMode1" value="1" class="fileExplorerModeButton bg-transparent list-group-item list-group-item-action" onclick="changeFileExplorerMode(value);">Firefox</button>
+									<button type="button" id="fileExplorerMode2" value="2" class="fileExplorerModeButton bg-transparent list-group-item list-group-item-action" onclick="changeFileExplorerMode(value);">VLC</button>
 									<button type="button" id="fileExplorerMode3" value="3" class="fileExplorerModeButton bg-transparent list-group-item list-group-item-action" onclick="changeFileExplorerMode(value);">Impress</button>
 								</div>
 							</td>
@@ -497,8 +487,8 @@ for (let w = 0; w < 5; w++) {
 									<h5 class="d-inline"><span id="fileExplorerRootFolder" class="badge rounded-pill bg-secondary">Ordner</span></h5>
 								</div>
 								<div class="d-inline" style="float: right;">
-									<button class='btn btn-sm btn-outline-danger m-1' onclick='deleteSelectedFiles();'><i class='bi bi-trash pe-2'></i><span lang-data="delete">Löschen</span></button>
-									<button class='btn btn-sm btn-outline-success m-1' onclick='selectFileToUpload();'><i class='bi bi-upload pe-2'></i><span lang-data="upload">Hochladen</span></button>
+									<button class='disableOnDisconnect btn btn-sm btn-outline-danger m-1' onclick='deleteSelectedFiles();'><i class='bi bi-trash pe-2'></i><span lang-data="delete">Löschen</span></button>
+									<button class='disableOnDisconnect btn btn-sm btn-outline-success m-1' onclick='selectFileToUpload();'><i class='bi bi-upload pe-2'></i><span lang-data="upload">Hochladen</span></button>
 								</div>
 							</td>
 						</tr>
@@ -532,7 +522,7 @@ for (let w = 0; w < 5; w++) {
 				</div>
 				<hr>
 				<div class='modal-footer'>
-					<button id='renameButtonCancel' class='btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
+					<button id='renameButtonCancel' class='toggleDarkLight btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
 					<button id='renameButtonSave' class='btn btn-outline-success m-1' onclick='saveFileRename();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
 				</div>
 			</div>
