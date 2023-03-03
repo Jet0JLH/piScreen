@@ -1272,3 +1272,11 @@ for i, origItem in enumerate(sys.argv):
 		else:
 			verbose and print("Not enough arguments")
 			piScreenUtils.logging.warning("Not enough arguments")
+	elif item == "--core-stop":
+		#Secret command to send stop message to piScreenCore.py
+		if sendToCore({"cmd":1})["code"] == 0:
+			verbose and print("Core will stop")
+			piScreenUtils.logging.info("Core will stop")
+		else:
+			verbose and print("Core doesn't seem to responde")
+			piScreenUtils.logging.info("Core doesn't seem to responde")
