@@ -123,6 +123,9 @@ def printHelp():
 	Writes a logentry.
 --set-language <countryCode>
 	Changes website language
+--set-ignore-cron [%d.%m.%Y %H:%M %d.%m.%Y %H:%M]
+	Set ignore time from date <-> to date.
+	If no parameter is set, the ignore time will be deleted.
 	""")
 
 def sendToCore(data:dict) -> dict:
@@ -1227,4 +1230,45 @@ for i, origItem in enumerate(sys.argv):
 		if i + 1 < len(sys.argv):
 			changeLanguage(sys.argv[i + 1])
 		else:
+			piScreenUtils.logging.warning("Not enough arguments")
+	elif item == "--set-ignore-cron":
+		index = sys.argv.index("--set-ignore-cron") + 1
+		tmp = ""
+		for i in range(index,len(sys.argv)):
+			if tmp == "": tmp = sys.argv[i]
+			else: tmp = tmp + " " + sys.argv[i]
+		splitedString = tmp.split(" ")
+		if len(splitedString) == 4:
+			dateFormate = "%d.%m.%Y %H:%M"
+			try:
+				piScreenUtils.logging.info("Set cron ignore time")
+				ignoreCronFrom = datetime.datetime.strptime(splitedString[0] + " " + splitedString[1],dateFormate)
+				ignoreCronTo = datetime.datetime.strptime(splitedString[2] + " " + splitedString[3],dateFormate)
+				try:
+					scheduleJson = loadSchedule()
+					scheduleJson["ignoreCronFrom"] = ignoreCronFrom.strftime(dateFormate)
+					scheduleJson["ignoreCronTo"] = ignoreCronTo.strftime(dateFormate)
+					scheduleFile = open(piScreenUtils.paths.schedule, "w")
+					scheduleFile.write(json.dumps(scheduleJson,indent=4))
+					scheduleFile.close()
+				except:
+					verbose and print("Unable to change schedule")
+					piScreenUtils.logging.error("Unable to change schedule")
+			except:
+				verbose and print(f"Datetime string not in right format: {dateFormate}")
+				piScreenUtils.logging.error(f"Datetime string not in right format: {dateFormate}")
+		elif splitedString[0] == "":
+			try:
+				piScreenUtils.logging.info("Delete cron ignore time")
+				scheduleJson = loadSchedule()
+				del scheduleJson["ignoreCronFrom"]
+				del scheduleJson["ignoreCronTo"]
+				scheduleFile = open(piScreenUtils.paths.schedule, "w")
+				scheduleFile.write(json.dumps(scheduleJson,indent=4))
+				scheduleFile.close()
+			except:
+				verbose and print("Unable to change schedule")
+				piScreenUtils.logging.error("Unable to change schedule")
+		else:
+			verbose and print("Not enough arguments")
 			piScreenUtils.logging.warning("Not enough arguments")
