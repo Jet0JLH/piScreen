@@ -91,7 +91,8 @@ class vlcHandler(threading.Thread):
 					self.info["length"] = self.vlcMediaPlayer.get_length()
 					for item in self.actions:
 						if item == "play": piScreenUtils.logging.info("Play VLC") ; self.vlcMediaPlayer.play()
-						elif item == "pause": piScreenUtils.logging.info("Pause VLC") ; self.vlcMediaPlayer.pause()
+						elif item == "play/pause": piScreenUtils.logging.info("Play / Pause VLC") ; self.vlcMediaPlayer.pause()
+						elif item == "pause": piScreenUtils.logging.info("Pause VLC") ; self.vlcMediaPlayer.set_pause(1)
 						elif item == "restart": piScreenUtils.logging.info("Restart VLC") ; self.vlcMediaPlayer.set_position(0)
 					self.actions.clear()
 				except:

@@ -525,9 +525,11 @@ def commandInterpreter(cmd:int, parameter:str):
 	elif cmd == 52: #StopVLC
 		os.system(f"{piScreenUtils.paths.syscall} --stop-vlc")
 	elif cmd == 53: #Pause/PlayVLC
-		os.system(f"{piScreenUtils.paths.syscall} --pause-vlc")
+		os.system(f"{piScreenUtils.paths.syscall} --play-pause-vlc")
 	elif cmd == 54: #PlayVLC
 		os.system(f"{piScreenUtils.paths.syscall} --play-vlc")
+	elif cmd == 55: #PauseVLC
+		os.system(f"{piScreenUtils.paths.syscall} --pause-vlc")
 	elif cmd == 60: #StartImpress
 		if parameter:
 			os.system(f'{piScreenUtils.paths.syscall} --start-impress "{parameter}"')

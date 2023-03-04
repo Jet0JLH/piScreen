@@ -26,8 +26,10 @@ def printHelp():
 	Stops VLC Player when active
 --restart-vlc
 	Restarts the media in VLC Player when active
+--play-pause-vlc
+	Pause/Play the video if mode is VLC
 --pause-vlc
-	Pause/Play the video if mode ist VLC
+	Pause the video if mode is VLC
 --play-vlc
 	Play the video if mode is VLC
 --start-impress <file>
@@ -881,6 +883,9 @@ for i, origItem in enumerate(sys.argv):
 		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"restart"}})
 	elif item == "--stop-vlc":
 		stopVLC()
+	elif item == "--play-pause-vlc":
+		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"play/pause"}})
+		pass
 	elif item == "--pause-vlc":
 		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"pause"}})
 		pass
