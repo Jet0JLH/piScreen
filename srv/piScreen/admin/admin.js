@@ -7,13 +7,13 @@ var timeoutTime = 1994;
 let commandsetCommandCount = 0;
 var commandsetEntryCount = 0;
 const commandCollection = [//text, parameter
-		["---", false], ["sleep", "text"], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["---", false], ["sleep", "text"], ["lastcron", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["universal", "text"], ["restart-device", false], ["shutdown-device", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["display-state", [[0, "display-off"], [1, "display-on"]]], ["switch-display-input", false], ["change-display-protocol", [[0, "cec"], [1, "ddc"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["start-browser", "text"], ["", false], ["", false], ["stop-browser", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["display-state", [[0, "display-off"], [1, "display-on"], [2, "manually"]]], ["switch-display-input", false], ["change-display-protocol", [[0, "cec"], [1, "ddc"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["start-browser", "text"], ["restart-browser", false], ["reload-browser-page", false], ["stop-browser", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["start-vlc-video", "text"], ["restart-vlc-video", false], ["stop-vlc", false], ["play-pause-vlc-video", false], ["play-vlc-video", false], ["pause-vlc-video", false], ["", false], ["", false], ["", false], ["", false],
+		["start-impress", "text"], ["restart-impress", false], ["stop-impress", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],

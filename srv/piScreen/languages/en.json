@@ -26,11 +26,15 @@
         "control-tile-header": "Control",
         "restart-browser": "Restart browser",
         "reload-browser-page": "Reload page",
+        "start-impress": "Start Impress",
         "restart-impress": "Restart Impress",
+        "stop-impress": "Stop Impress",
         "start-vlc-video": "Play video",
         "restart-vlc-video": "Rewind",
         "play-vlc-video": "Play",
         "pause-vlc-video": "Pause",
+        "play-pause-vlc-video": "Play / Pause",
+        "stop-vlc": "Stop VLC",
         "restart-device": "Reboot",
         "shutdown-device": "Shutdown",
         "display-on": "Display on",
@@ -129,6 +133,12 @@
         "choose-commandset": "Choose commandset",
 
         "planner": "Event organizer",
+
+        "general": "General",
+        "display-control": "Display control",
+        "browser": "Web browser",
+        "vlc": "VLC",
+        "impress": "Impress",
 
         "---": "---",
         "sleep": "Sleep",
