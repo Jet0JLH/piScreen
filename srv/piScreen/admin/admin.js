@@ -1622,10 +1622,10 @@ function changeMode(modeInfo) {
 			getElement("screenContent").innerHTML = modeInfo.info.url;
 			getElement("modeControl").innerHTML = `<h5 class="my-2">Firefox</h5>
 <div class='col-6'>
-	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartBrowser();'><span id='restartBrowserSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-repeat btn-icon-xxl'></i><br><span lang-data='restart-browser'>Browser neu starten</span></button>
+	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartBrowser();'><span id='restartBrowserSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-repeat btn-icon-xxl'></i><br><span lang-data='restart-browser'>${getLanguageAsText("restart-browser")}</span></button>
 </div>
 <div class='col-6'>
-	<button class='disableOnDisconnect btn btn-primary w-100' onclick='reloadBrowserPage();'><span id='reloadBrowserPageSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-arrow-clockwise btn-icon-xxl'></i><br><span lang-data='reload-browser-page'>Seite neu laden</span></button>
+	<button class='disableOnDisconnect btn btn-primary w-100' onclick='reloadBrowserPage();'><span id='reloadBrowserPageSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-arrow-clockwise btn-icon-xxl'></i><br><span lang-data='reload-browser-page'>${getLanguageAsText("reload-browser-page")}</span></button>
 </div>`;
 			rearrangeGui();
 			break;
@@ -1633,15 +1633,15 @@ function changeMode(modeInfo) {
 			getElement("screenContent").innerHTML = modeInfo.info.source.split("/")[modeInfo.info.source.split("/").length - 1];
 			getElement("modeControl").innerHTML = `<h5 class="my-2">VLC</h5>
 <div class='col-6'>
-	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartVlcVideo();'><span id='restartVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-skip-backward btn-icon-xxl'></i><br><span lang-data='restart-vlc-video'>Zurückspulen</span></button>
+	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartVlcVideo();'><span id='restartVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-skip-backward btn-icon-xxl'></i><br><span lang-data='restart-vlc-video'>${getLanguageAsText("restart-vlc-video")}</span></button>
 </div>`;
 			if (modeInfo.info.state == "State.Paused") {
 				getElement("modeControl").innerHTML += `<div class='col-6'>
-	<button class='disableOnDisconnect btn btn-success w-100' onclick='playVlcVideo();'><span id='playVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-play btn-icon-xxl'></i><br><span lang-data='play-vlc-video'>Play</span></button>
+	<button class='disableOnDisconnect btn btn-success w-100' onclick='playVlcVideo();'><span id='playVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-play btn-icon-xxl'></i><br><span lang-data='play-vlc-video'>${getLanguageAsText("play-vlc-video")}</span></button>
 </div>`;
 			} else if (modeInfo.info.state == "State.Playing") {
 				getElement("modeControl").innerHTML += `<div class='col-6'>
-	<button class='disableOnDisconnect btn btn-danger w-100' onclick='pauseVlcVideo();'><span id='pauseVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-pause btn-icon-xxl'></i><br><span lang-data='pause-vlc-video'>Pause</span></button>
+	<button class='disableOnDisconnect btn btn-danger w-100' onclick='pauseVlcVideo();'><span id='pauseVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-pause btn-icon-xxl'></i><br><span lang-data='pause-vlc-video'>${getLanguageAsText("pause-vlc-video")}</span></button>
 </div>`;
 			}
 			rearrangeGui();
@@ -1650,7 +1650,7 @@ function changeMode(modeInfo) {
 			getElement("screenContent").innerHTML = modeInfo.info.file.split("/")[modeInfo.info.file.split("/").length - 1];
 			getElement("modeControl").innerHTML = `<h5 class="my-2">Impress</h5>
 <div class='col-6'>
-	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartImpress();'><span id='restartImpressSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-repeat btn-icon-xxl'></i><br><span lang-data='restart-impress'>Impress neu starten</span></button>
+	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartImpress();'><span id='restartImpressSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-repeat btn-icon-xxl'></i><br><span lang-data='restart-impress'>${getLanguageAsText("restart-impress")}</span></button>
 </div>`;
 			rearrangeGui();
 			break;
