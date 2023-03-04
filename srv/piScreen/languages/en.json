@@ -27,6 +27,7 @@
         "restart-browser": "Restart browser",
         "reload-browser-page": "Reload page",
         "restart-impress": "Restart Impress",
+        "start-vlc-video": "Play video",
         "restart-vlc-video": "Rewind",
         "play-vlc-video": "Play",
         "pause-vlc-video": "Pause",
@@ -36,6 +37,8 @@
         "display-off": "Display off",
         "display": "Display",
         "host": "Host",
+
+        "displayed-content": "Displayed content",
 
         "settings-tile-header": "Settings",
         "hostname": "Hostname",

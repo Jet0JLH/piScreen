@@ -36,6 +36,7 @@ var commandsetModal = new bootstrap.Modal(getElement("commandsetModal"));
 var cronEditorModal = new bootstrap.Modal(getElement("cronEditorModal"));
 var fileExplorerModal = new bootstrap.Modal(getElement("fileExplorerModal"));
 var renameModal = new bootstrap.Modal(getElement("renameModal"));
+var screenshotModal = new bootstrap.Modal(getElement("screenshotModal"));
 //language
 var currentLanguage = null;
 var languageStrings = null;
@@ -53,6 +54,8 @@ const modeImpress = 3;
 var currentFileExplorerMode = 2;
 const modes = ["general", "firefox", "vlc", "impress"]; //there is no mode 0 
 var currentRenameFile;
+//screenshot modal
+var screenshotModalShown = false;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////   general schedule functions   ///////////////////////////////////
@@ -1312,6 +1315,15 @@ function saveFileRename() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+//////////////////////////////////   screenshot modal functions   //////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function showScreenshotModal() {
+	getElement("screenshotFull").src = "piScreenScreenshot.jpg?t=" + new Date().getTime();
+	screenshotModal.show();
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////   click events   //////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -1408,6 +1420,14 @@ getElement("cronEditorModal").addEventListener("hidden.bs.modal", event => {
 
 getElement("scheduleModal").addEventListener("shown.bs.modal", event => {
 	cronEntryError(getElement("cronentry"));
+});
+
+getElement("screenshotModal").addEventListener("hidden.bs.modal", event => {
+	screenshotModalShown = false;
+});
+
+getElement("screenshotModal").addEventListener("shown.bs.modal", event => {
+	screenshotModalShown = true;
 });
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1581,7 +1601,12 @@ window.onload = function() {
 		if (new Date(jsonData.screenshotTime * 1000) != st) {
 			st = new Date(jsonData.screenshotTime * 1000);
 			getElement("screenshotTime").innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth() + 1)}.${1900 + st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
-			getElement("screenshot").src = "piScreenScreenshot.jpg?t=" + new Date().getTime();
+			getElement("screenshot").src = "piScreenScreenshot-thumb.jpg?t=" + new Date().getTime();
+			if (screenshotModalShown) {
+				getElement("screenshotFull").src = "piScreenScreenshot.jpg?t=" + new Date().getTime();
+				getElement("screenshotFullTime").innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth() + 1)}.${1900 + st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
+				getElement("screenFullContent").innerHTML = jsonData.modeInfo.info.url;
+			}
 		}
 		changeMode(jsonData.modeInfo);
 		if (connectionStatusChanged(true)) enableElements(true);

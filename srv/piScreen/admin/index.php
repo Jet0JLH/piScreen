@@ -63,7 +63,7 @@
 				<div class='card p-3 shadow'>
 					<h1 class='pb-2'><i class='bi-info-circle bigIcon px-2'></i><span lang-data='info-tile-header'>Info</span></h1>
 					<figure class='figure mb-0'>
-						<img id='screenshot' src='piScreenScreenshot.jpg' style='max-width: 100%;' class='border figure-img img-fluid'></img>
+						<img id='screenshot' src='piScreenScreenshot-thumb.jpg' style='max-width: 100%; cursor: pointer;' class='border figure-img img-fluid' onclick="showScreenshotModal();"></img>
 						<figcaption id='screenshotTime' class='figure-caption'></figcaption>
 						<figcaption id='screenContent' class='figure-caption text-break'></figcaption>
 					</figure>
@@ -525,6 +525,27 @@ for (let w = 0; w < 5; w++) {
 				<div class='modal-footer'>
 					<button id='renameButtonCancel' class='toggleDarkLight btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
 					<button id='renameButtonSave' class='btn btn-outline-success m-1' onclick='saveFileRename();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id='screenshotModal' class='modal fade' tabindex='-1'>
+		<div class='modal-xl modal-dialog modal-dialog-centered modal-fullscreen-xl-down'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<h5 class='modal-title'><i class='bi bi-tv bigIcon pe-2'></i><span lang-data="displayed-content">angezeigter Inhalt</span></h5>
+					<button class='btn-close btn-close-white' data-bs-dismiss='modal'></button>
+				</div>
+				<div class='modal-body'>
+					<figure class='figure mb-0'>
+						<img id='screenshotFull' src='piScreenScreenshot.jpg' style='max-width: 100%;' class='w-100 border figure-img img-fluid'></img>
+						<figcaption id='screenshotFullTime' class='figure-caption'></figcaption>
+						<figcaption id='screenFullContent' class='figure-caption text-break'></figcaption>
+					</figure>
+				</div>
+				<hr>
+				<div class='modal-footer'>
+					<button id='screenshotButtonCancel' class='btn btn-secondary' data-bs-dismiss='modal' lang-data='ok'>OK</button>
 				</div>
 			</div>
 		</div>
