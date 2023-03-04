@@ -19,8 +19,7 @@ def killAllSubprocesses():
 	os.system("killall -q soffice.bin")
 
 class firefoxHandler(threading.Thread):
-	client = Marionette(host='127.0.0.1', port=2828)
-	client.timeout = 2
+	client = Marionette(host='127.0.0.1', port=2828, socket_timeout=20)
 
 	info = {}
 	actions = []
@@ -29,10 +28,8 @@ class firefoxHandler(threading.Thread):
 		threading.Thread.__init__(self)
 
 	def run(self):
-		lastParameter = ""
 		while active:
-			if mode == 1:
-				piScreenUtils.logging.info("Running in firefox mode")
+			if mode == 1: piScreenUtils.logging.info("Running in firefox mode") ; lastParameter = ""
 			while mode == 1 and active:
 				if not checkIfProcessRunning("firefox-esr"):
 					piScreenUtils.logging.info(f"Start firefox ({parameter})")
@@ -54,7 +51,8 @@ class firefoxHandler(threading.Thread):
 				except:
 					try:
 						self.info = {}
-						self.client.start_session()
+						self.client.delete_session()
+						self.client.start_session(timeout=2)
 					except:
 						piScreenUtils.logging.error("Unable to create marionette session")
 				time.sleep(1)
@@ -74,10 +72,8 @@ class vlcHandler(threading.Thread):
 		threading.Thread.__init__(self)
 
 	def run(self):
-		lastParameter = ""
 		while active:
-			if mode == 2:
-				piScreenUtils.logging.info("Running in vlc mode")
+			if mode == 2: piScreenUtils.logging.info("Running in vlc mode") ; lastParameter = ""
 			while mode == 2 and active:
 				try:
 					if lastParameter != parameter:
@@ -113,9 +109,8 @@ class impressHandler(threading.Thread):
 		threading.Thread.__init__(self)
 
 	def run(self):
-		lastParameter = ""
 		while active:
-			if mode == 3: piScreenUtils.logging.info("Running in impress mode")
+			if mode == 3: piScreenUtils.logging.info("Running in impress mode") ; lastParameter = ""
 			while mode == 3 and active:
 				if not checkIfProcessRunning("soffice.bin"):
 					piScreenUtils.logging.info(f"Start Impress ({parameter})")
