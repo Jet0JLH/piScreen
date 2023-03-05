@@ -614,7 +614,8 @@ while active:
 						if "index" in manually:
 							if piScreenUtils.isInt(manually["index"]) and len(globalConf.conf["cron"]) > int(manually["index"]):
 								cronEntry(globalConf.conf["cron"][int(manually["index"])]).run(None,True)
-							piScreenUtils.logging.warning("There is something wrong in manually file")
+							else:
+								piScreenUtils.logging.warning("There is something wrong in manually file")
 						else:
 							piScreenUtils.logging.warning("There is no index attribut in manually file")
 					elif manually["type"] == "trigger":
