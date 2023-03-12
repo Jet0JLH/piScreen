@@ -10,7 +10,7 @@ const commandCollection = [//text, parameter
 		["---", false], ["sleep", "text"], ["lastcron", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["universal", "text"], ["restart-device", false], ["shutdown-device", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["display-state", [[0, "display-off"], [1, "display-on"], [2, "manually"]]], ["switch-display-input", false], ["change-display-protocol", [[0, "cec"], [1, "ddc"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["display-state", [[0, "display-off"], [1, "display-on"]]], ["switch-display-input", false], ["change-display-protocol", [[0, "cec"], [1, "ddc"], [2, "manually"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["start-browser", "text"], ["restart-browser", false], ["reload-browser-page", false], ["stop-browser", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["start-vlc-video", "text"], ["restart-vlc-video", false], ["stop-vlc", false], ["play-pause-vlc-video", false], ["play-vlc-video", false], ["pause-vlc-video", false], ["", false], ["", false], ["", false], ["", false],
 		["start-impress", "text"], ["restart-impress", false], ["stop-impress", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
@@ -374,7 +374,7 @@ function scheduleEntrySaved(saved) {
 	let scheduleEntryButtonElement = getElement("scheduleEntryButtonExecute");
 	if (saved) {
 		scheduleEntryButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2";
-		scheduleEntryButtonElement.disabled = false;
+		if (prevItemsEnabled) scheduleEntryButtonElement.disabled = false;
 	} else {
 		scheduleEntryButtonElement.className = "btn btn-outline-warning mt-2";
 		scheduleEntryButtonElement.disabled = true;
@@ -471,7 +471,7 @@ function cronEntryError(scheduleCronEntry) {
 	let saveButton = getElement("scheduleEntryButtonSave");
 	if (checkCronEntryValidity(scheduleCronEntry.value)) {
 		saveButton.className = "disableOnDisconnect btn btn-outline-success m-1"
-		saveButton.disabled = false;
+		if(prevItemsEnabled) saveButton.disabled = false;
 		scheduleCronEntry.className = "disableOnDisconnect form-control border border-secondary text-body"
 	} else {
 		saveButton.className = "btn btn-outline-success m-1"
@@ -925,7 +925,7 @@ function commandsetEntrySaved(saved) {
 	let commandsetEntryButtonElement = getElement("commandsetEntryButtonExecute");
 	if (saved) {
 		commandsetEntryButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2";
-		commandsetEntryButtonElement.disabled = false;
+		if (prevItemsEnabled) commandsetEntryButtonElement.disabled = false;
 	} else {
 		commandsetEntryButtonElement.className = "btn btn-outline-warning mt-2";
 		commandsetEntryButtonElement.disabled = true;
