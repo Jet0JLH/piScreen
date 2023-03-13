@@ -193,7 +193,7 @@
 			<div class='col-sm-12 col-lg-6 mb-4'>
 				<div class='card p-3 shadow'>
 					<h1 class='pb-2'><i class='bi bi-folder bigIcon px-2'></i><span lang-data='file-explorer'>file explorer</span></h1>
-					<button class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showFileExplorerModal(3);'><i class='bi bi-folder pe-2'></i><span lang-data='file-explorer'></span></button>
+					<button class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showFileExplorerModal(0, true, null, false);'><i class='bi bi-folder pe-2'></i><span lang-data='file-explorer'></span></button>
 				</div>
 			</div>
 			<div class='col-lg-12 col-xl-6 mb-4'>
@@ -502,8 +502,9 @@ for (let w = 0; w < 5; w++) {
 						</tr>
 					</table>
 				</div>
-				<div class='modal-footer'>
-					<button class='btn btn-secondary' data-bs-dismiss='modal' lang-data='ok'>OK</button>
+				<div id="fileExplorerFooter" class='modal-footer'>
+					<button class='btn btn-outline-light' data-bs-dismiss='modal' lang-data='cancel'>Abbruch</button>
+					<button class='btn btn-outline-success' onclick="applySelectedFile();" data-bs-dismiss='modal' lang-data='apply'>Anwenden</button>
 				</div>
 			</div>
 		</div>

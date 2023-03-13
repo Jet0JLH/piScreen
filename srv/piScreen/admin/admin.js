@@ -12,8 +12,8 @@ const commandCollection = [//text, parameter
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["display-state", [[0, "display-off"], [1, "display-on"]]], ["switch-display-input", false], ["change-display-protocol", [[0, "cec"], [1, "ddc"], [2, "manually"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["start-browser", "text"], ["restart-browser", false], ["reload-browser-page", false], ["stop-browser", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["start-vlc-video", "text"], ["restart-vlc-video", false], ["stop-vlc", false], ["play-pause-vlc-video", false], ["play-vlc-video", false], ["pause-vlc-video", false], ["", false], ["", false], ["", false], ["", false],
-		["start-impress", "text"], ["restart-impress", false], ["stop-impress", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["start-vlc-video", "filemanager", 2], ["restart-vlc-video", false], ["stop-vlc", false], ["play-pause-vlc-video", false], ["play-vlc-video", false], ["pause-vlc-video", false], ["", false], ["", false], ["", false], ["", false],
+		["start-impress", "filemanager", 3], ["restart-impress", false], ["stop-impress", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
@@ -54,6 +54,7 @@ const modeImpress = 3;
 var currentFileExplorerMode = 2;
 const modes = ["general", "firefox", "vlc", "impress"]; //there is no mode 0 
 var currentRenameFile;
+var fileExplorerReturnElement = null;
 //screenshot modal
 var screenshotModalShown = false;
 
@@ -343,6 +344,17 @@ function addParameterToScheduleEntry(commandId, parameter) {
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
 		div.innerHTML = `<input id='scheduleEntryParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary' onkeyup='scheduleEntrySaved(false);' value='${parameter}' lang-data='parameter'>`;
+		if (parameter == undefined) parameter = "";
+	} else if (commandCollection[commandId][1] == "filemanager") {
+		div.className += " w-75";
+		div.innerHTML = `<input id='scheduleEntryParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary' onkeyup='scheduleEntrySaved(false);' value='${parameter}' lang-data='parameter'>`;
+		let btn = document.createElement("button");
+		btn.id = "scheduleEntryFileManagerButtonOpen";
+		btn.onclick = () => showFileExplorerModal(commandCollection[commandId][2], false, getElement("scheduleEntryParameterInput"));
+		btn.className = "disableOnDisconnect btn btn-outline-success mt-2";
+		btn.style.float = "right";
+		btn.innerHTML = `<i class="bi bi-folder"></i>`;
+		cell.appendChild(btn);
 		if (parameter == undefined) parameter = "";
 	} else if (Array.isArray(commandCollection[commandId][1])) {
 		let htmlSelect = `<select id='scheduleEntryParameterInput' class='disableOnDisconnect form-select border border-secondary' onchange='scheduleEntrySaved(false);'>\n`;
@@ -1201,14 +1213,22 @@ function saveEntireSchedule(jsonString) {
 ///////////////////////////////////   file explorer functions   ////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-function showFileExplorerModal(selectedMode=modeVLC) {
+function showFileExplorerModal(selectedMode=modeVLC, multiselect=true, returnElement=null, forceMode=true) {
 	getElement("fileExplorerMode" + selectedMode).click();
+	if (forceMode) {
+		let modeButtons = document.getElementsByClassName("fileExplorerModeButton");
+		for (let i = 0; i < modeButtons.length; i++) modeButtons[i].disabled = true;		
+	}
+	getElement("fileExplorerModal").setAttribute("multiselect", multiselect.toString());
+	if (returnElement == null) getElement("fileExplorerFooter").innerHTML = `<button class='btn btn-secondary' data-bs-dismiss='modal' lang-data='ok'>OK</button>`;
+	fileExplorerReturnElement = returnElement;
 	fileExplorerModal.show();
 }
 
 function changeFileExplorerMode(mode) {
 	currentFileExplorerMode = mode;
-	for (let i = 0; i < document.getElementsByClassName("fileExplorerModeButton").length; i++) document.getElementsByClassName("fileExplorerModeButton")[i].classList.remove("active");
+	let modeButtons = document.getElementsByClassName("fileExplorerModeButton");
+	for (let i = 0; i < modeButtons.length; i++) modeButtons[i].classList.remove("active");
 	getElement("fileExplorerMode" + mode).classList.add("active");
 	getElement("fileExplorerRootFolder").innerText = modes[mode];
 
@@ -1231,7 +1251,7 @@ function getFilesInFolder() {
 		for (let i = 0; i < files.length; i++) {
 			let fileItem = document.createElement("div");
 			fileItem.className = "col";
-			fileItem.innerHTML = `<div class='card border-0' fileexplorerfileselected='false' onclick='selectFileItem(this)' ondblclick="showRenameModal(this);" onmouseover='this.style.opacity = 0.7;' onmouseleave='this.style.opacity = 1;'>
+			fileItem.innerHTML = `<div class='card border-0 mode${currentFileExplorerMode}' fileexplorerfileselected='false' onclick='selectFileItem(this)' ondblclick="showRenameModal(this);" onmouseover='this.style.opacity = 0.7;' onmouseleave='this.style.opacity = 1;'>
 	<img class='card-img-top' src='/piScreen.svg' alt='Logo' width='100%' height='100%'>
 	<figcaption class='text-center mt-1 card-text' style='cursor: default;'>
 		${files[i]}
@@ -1245,16 +1265,37 @@ function getFilesInFolder() {
 }
 
 function selectFileItem(element) {
-	if (element.getAttribute("fileexplorerfileselected") == "true") {
-		element.classList.add("border-0");
-		element.classList.remove("border");
-		element.classList.remove("border-primary");
-		element.setAttribute("fileexplorerfileselected", "false");
-	} else {
+	if (getElement("fileExplorerModal").getAttribute("multiselect") == "true") {
+		fileExplorerSelectSingleFile(element, element.getAttribute("fileexplorerfileselected") == "false");
+	} else if (getElement("fileExplorerModal").getAttribute("multiselect") == "false") {
+		let elementsInCurrentMode = document.getElementsByClassName("mode" + currentFileExplorerMode);
+		for (let i = 0; i < elementsInCurrentMode.length; i++) {
+			fileExplorerSelectSingleFile(elementsInCurrentMode[i], false);
+		}
+		fileExplorerSelectSingleFile(element, true);
+	}
+}
+
+function fileExplorerSelectSingleFile(element, select=true) {//when false, unselect
+	if (select) {
 		element.classList.remove("border-0");
 		element.classList.add("border");
 		element.classList.add("border-primary");
 		element.setAttribute("fileexplorerfileselected", "true");
+	} else {
+		element.classList.add("border-0");
+		element.classList.remove("border");
+		element.classList.remove("border-primary");
+		element.setAttribute("fileexplorerfileselected", "false");
+	}
+}
+
+function applySelectedFile() {
+	let elementsInCurrentMode = document.getElementsByClassName("mode" + currentFileExplorerMode);
+	for (let i = 0; i < elementsInCurrentMode.length; i++) {
+		if (elementsInCurrentMode[i].getAttribute("fileexplorerfileselected") == "true") {
+			fileExplorerReturnElement.value = "/srv/piScreen/admin/data/" + modes[currentFileExplorerMode] + "/" + elementsInCurrentMode[i].children[1].innerText;
+		}
 	}
 }
 

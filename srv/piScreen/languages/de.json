@@ -161,6 +161,7 @@
         "upload": "Hochladen",
         "delete": "Löschen",
         "rename": "Umbenennen",
+        "apply": "Anwenden",
 
         "lastcron": "Zuletzt ausgeführten Eintrag ausführen",
         "connection-lost": "Verbindung zum Server unterbrochen!",

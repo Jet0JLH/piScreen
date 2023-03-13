@@ -161,6 +161,7 @@
         "upload": "Upload",
         "delete": "Delete",
         "rename": "Rename",
+        "apply": "Apply",
 
         "lastcron": "Execute last cron entry",
         "connection-lost": "Connection to server lost!",
