@@ -204,7 +204,7 @@ bufferSize = 1024
 active = True
 mode = 0
 parameter = None
-status = {}
+status = {"hdmi0Connected":None}
 
 if __name__ == "__main__":
 	piScreenUtils.logging.info("Start piScreen")
@@ -280,6 +280,25 @@ if __name__ == "__main__":
 			status["modeInfo"]["info"] = vlcMode.info
 		elif mode == 3:
 			status["modeInfo"]["info"] = impressMode.info
+		xrandr = subprocess.Popen(["xrandr"],stdout=subprocess.PIPE).communicate()[0].decode("utf-8")
+		if "HDMI-1 connected" in xrandr:
+			if status["hdmi0Connected"] == False: piScreenUtils.logging.info("Display is connected with HDMI0")
+			status["hdmi0Connected"] = True
+		else:
+			if status["hdmi0Connected"] == True: piScreenUtils.logging.critical("Display is not connected with HDMI0!")
+			status["hdmi0Connected"] = False
+		found = ""
+		for line in xrandr.split("\n"):
+			if line.startswith("Screen 0:"): found = line
+		if found == "":
+			status["resulution"] = None
+		else:
+			try:
+				found = found[found.index("current")+8:]
+				status["resulution"] = found[:found.index(",")]
+			except:
+				status["resulution"] = None
+				
 
 		#createScreenshot
 		try:
