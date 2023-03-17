@@ -1721,6 +1721,7 @@ function changeMode(modeInfo) {
 			rearrangeGui();
 			break;
 	}
+	getElement("screenContent").innerHTML = getElement("screenContent").innerHTML.replaceAll("%20", " ");
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
