@@ -1214,13 +1214,19 @@ function saveEntireSchedule(jsonString) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function showFileExplorerModal(selectedMode=modeVLC, multiselect=true, returnElement=null, forceMode=true) {
-	getElement("fileExplorerMode" + selectedMode).click();
-	if (forceMode) {
-		let modeButtons = document.getElementsByClassName("fileExplorerModeButton");
-		for (let i = 0; i < modeButtons.length; i++) modeButtons[i].disabled = true;		
+	let modeButtons = document.getElementsByClassName("fileExplorerModeButton");
+	for (let i = 0; i < modeButtons.length; i++) modeButtons[i].disabled = false; //enable all elements, to select the correct one
+	getElement("fileExplorerMode" + selectedMode).click(); //select the correct mode
+	if (forceMode) { //disable all elements, except the correct one
+		for (let i = 0; i < modeButtons.length; i++) modeButtons[i].disabled = true;
 	}
 	getElement("fileExplorerModal").setAttribute("multiselect", multiselect.toString());
-	if (returnElement == null) getElement("fileExplorerFooter").innerHTML = `<button class='btn btn-secondary' data-bs-dismiss='modal' lang-data='ok'>OK</button>`;
+	if (returnElement == null) {
+		getElement("fileExplorerFooter").innerHTML = `<button class='btn btn-secondary' data-bs-dismiss='modal' lang-data='ok'>${getLanguageAsText("ok")}</button>`;
+	} else {
+		getElement("fileExplorerFooter").innerHTML = `<button class='btn btn-outline-light' data-bs-dismiss='modal' lang-data='cancel'>${getLanguageAsText("cancel")}</button>
+<button class='btn btn-outline-success' onclick="applySelectedFile();" data-bs-dismiss='modal' lang-data='apply'>${getLanguageAsText("apply")}</button>`;
+	}
 	fileExplorerReturnElement = returnElement;
 	fileExplorerModal.show();
 }
@@ -1878,6 +1884,7 @@ function setDarkMode(dark) {
 		languageSelect.classList.replace("border-dark", "border-light");
 		for (let i = 0; i < buttonsToToggle.length; i++) {
 			buttonsToToggle[i].classList.replace("btn-outline-dark", "btn-outline-light");
+			buttonsToToggle[i].classList.replace("text-dark", "text-light");
 		}
 		for (let i = 0; i < closeButtons.length; i++) {
 			closeButtons[i].classList.replace("btn-close-dark", "btn-close-white");
@@ -1887,6 +1894,7 @@ function setDarkMode(dark) {
 		languageSelect.classList.replace("border-light", "border-dark");
 		for (let i = 0; i < buttonsToToggle.length; i++) {
 			buttonsToToggle[i].classList.replace("btn-outline-light", "btn-outline-dark");
+			buttonsToToggle[i].classList.replace("text-light", "text-dark");
 		}
 		for (let i = 0; i < closeButtons.length; i++) {
 			closeButtons[i].classList.replace("btn-close-white", "btn-close-dark");

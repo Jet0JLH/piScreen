@@ -477,10 +477,10 @@ for (let w = 0; w < 5; w++) {
 						<tr>
 							<td rowspan="2" style="width: 30%;" class="border border-primary p-2">
 								<div class="list-group">
-									<button type="button" id="fileExplorerMode0" value="0" class="fileExplorerModeButton bg-transparent list-group-item list-group-item-action active" onclick="changeFileExplorerMode(value);">Allgemein</button>
-									<button type="button" id="fileExplorerMode1" value="1" class="fileExplorerModeButton bg-transparent list-group-item list-group-item-action" onclick="changeFileExplorerMode(value);">Firefox</button>
-									<button type="button" id="fileExplorerMode2" value="2" class="fileExplorerModeButton bg-transparent list-group-item list-group-item-action" onclick="changeFileExplorerMode(value);">VLC</button>
-									<button type="button" id="fileExplorerMode3" value="3" class="fileExplorerModeButton bg-transparent list-group-item list-group-item-action" onclick="changeFileExplorerMode(value);">Impress</button>
+									<button type="button" id="fileExplorerMode0" value="0" class="fileExplorerModeButton toggleDarkLight text-dark bg-transparent list-group-item list-group-item-action active" onclick="changeFileExplorerMode(value);">Allgemein</button>
+									<button type="button" id="fileExplorerMode1" value="1" class="fileExplorerModeButton toggleDarkLight text-dark bg-transparent list-group-item list-group-item-action" onclick="changeFileExplorerMode(value);">Firefox</button>
+									<button type="button" id="fileExplorerMode2" value="2" class="fileExplorerModeButton toggleDarkLight text-dark bg-transparent list-group-item list-group-item-action" onclick="changeFileExplorerMode(value);">VLC</button>
+									<button type="button" id="fileExplorerMode3" value="3" class="fileExplorerModeButton toggleDarkLight text-dark bg-transparent list-group-item list-group-item-action" onclick="changeFileExplorerMode(value);">Impress</button>
 								</div>
 							</td>
 							<td style="width: 70%;" class="border border-primary p-3">
