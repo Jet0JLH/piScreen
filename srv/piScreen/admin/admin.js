@@ -1652,7 +1652,18 @@ window.onload = function() {
 			if (screenshotModalShown) {
 				getElement("screenshotFull").src = "piScreenScreenshot.jpg?t=" + new Date().getTime();
 				getElement("screenshotFullTime").innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth() + 1)}.${1900 + st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
-				getElement("screenFullContent").innerHTML = jsonData.modeInfo.info.url;
+				switch (jsonData.modeInfo.mode) {
+					case modeFirefox:
+						getElement("screenFullContent").innerHTML = jsonData.modeInfo.info.url;
+						break;
+					case modeVLC:
+						getElement("screenFullContent").innerHTML = jsonData.modeInfo.info.source.split("/")[jsonData.modeInfo.info.source.split("/").length - 1];
+						break;
+					case modeImpress:
+						getElement("screenFullContent").innerHTML = jsonData.modeInfo.info.file.split("/")[jsonData.modeInfo.info.file.split("/").length - 1];
+						break;
+				}
+				getElement("screenFullContent").innerHTML = getElement("screenFullContent").innerHTML.replaceAll("%20", " ");1
 			}
 		}
 		changeMode(jsonData.modeInfo);
@@ -1689,8 +1700,8 @@ window.onload = function() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function changeMode(modeInfo) {
-	switch (modes[modeInfo.mode]) {
-		case "firefox":
+	switch (modeInfo.mode) {
+		case modeFirefox:
 			getElement("screenContent").innerHTML = modeInfo.info.url;
 			getElement("modeControl").innerHTML = `<h5 class="my-2">Firefox</h5>
 <div class='col-6'>
@@ -1701,7 +1712,7 @@ function changeMode(modeInfo) {
 </div>`;
 			rearrangeGui();
 			break;
-		case "vlc":
+		case modeVLC:
 			getElement("screenContent").innerHTML = modeInfo.info.source.split("/")[modeInfo.info.source.split("/").length - 1];
 			getElement("modeControl").innerHTML = `<h5 class="my-2">VLC</h5>
 <div class='col-6'>
@@ -1718,7 +1729,7 @@ function changeMode(modeInfo) {
 			}
 			rearrangeGui();
 			break;
-		case "impress":
+		case modeImpress:
 			getElement("screenContent").innerHTML = modeInfo.info.file.split("/")[modeInfo.info.file.split("/").length - 1];
 			getElement("modeControl").innerHTML = `<h5 class="my-2">Impress</h5>
 <div class='col-6'>
