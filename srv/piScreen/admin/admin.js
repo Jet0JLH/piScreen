@@ -1363,6 +1363,17 @@ function saveFileRename() {
 
 }
 
+function dropFileIntoFileExplorer(ev) {
+	ev.preventDefault();
+	let file = ev.dataTransfer.files[0];
+	var formData = new FormData();
+	formData.append("file", file);
+	var xmlhttp = new XMLHttpRequest();
+	xmlhttp.onloadend = () => {getFilesInFolder(currentFileExplorerMode)};
+	xmlhttp.open("POST", 'cmd.php?id=25&mode=' + currentFileExplorerMode, true);
+	xmlhttp.send(formData);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////   screenshot modal functions   //////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////

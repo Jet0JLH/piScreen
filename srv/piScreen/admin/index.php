@@ -491,7 +491,7 @@ for (let w = 0; w < 5; w++) {
 						</tr>
 						<tr>
 							<td class="border border-primary p-3">
-								<div id="fileExplorerFileCollection" class="row row-cols-1 row-cols-md-6 g-2" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
+								<div id="fileExplorerFileCollection" class="row row-cols-1 row-cols-md-6 g-2" style="overflow-x:hidden; overflow-y:auto; height: 30rem;" ondragover='event.preventDefault();' ondrop='dropFileIntoFileExplorer(event);'>
 
 								</div>
 							</td>
