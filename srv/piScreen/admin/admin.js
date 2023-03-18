@@ -473,6 +473,8 @@ function prepareScheduleString() {
 		parameter = parameter.replaceAll("%20", " ");
 		parameter = parameter.replaceAll("\"", "\\\"");
 		msg += "parameter=\"" + encodeURIComponent(parameter) + "\"&";
+	} else {
+		msg += "parameter=\"\"&"
 	}
 	msg = msg.substring(0, msg.length - 1);
 	
