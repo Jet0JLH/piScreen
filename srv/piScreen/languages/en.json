@@ -117,6 +117,11 @@
         "choose-trigger": "Select trigger",
         "triggerHelpText": "This command will be executed directly after startup.",
         "execute": "Execute",
+        "name": "Name",
+        "comment": "Comment",
+
+        "file-exists": "File exists",
+        "file-changed": "File changed",
 
         "update-button": "Update available for version ",
         "update-info-header": "Update information",

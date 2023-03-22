@@ -227,6 +227,7 @@
 
 								</div>
 							<button id='commandsetEntryButtonAdd' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showCommandsetModal();'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-commandset'>Neues Commandset</span></button>
+							</div>
 							<div class="carousel-item">
 								<div id="triggerCollectionList" class="list-group" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
 

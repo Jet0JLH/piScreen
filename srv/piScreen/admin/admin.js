@@ -23,6 +23,11 @@ var scheduleObj;
 var scheduleToImport = null;
 //trigger
 var startupTriggerIndex = -1;
+var triggerCollection = [
+	["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+	["file-exists", "text"], ["file-changed", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+	["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+];
 //general modal
 var modal = new bootstrap.Modal(getElement("modal"));
 var modalCloseBtn = modal._element.getElementsByClassName('btn-close')[0];
@@ -121,6 +126,12 @@ function loadScheduleJson(jsonString) {
 			} else getElement("trigger0CommandsetSelect").value = 0;
 			break;
 		}
+	}
+
+	getElement("triggerCollectionList").innerHTML = "";
+	for (let i = 0; i < scheduleObj.trigger.length; i++) {//trigger
+		if (scheduleObj.trigger[i].trigger == 1) continue; //skip the startup trigger
+		generateTriggerEntry(scheduleObj.trigger[i]);
 	}
 }
 
@@ -767,6 +778,21 @@ function cronEditorMonthsUnselectAll() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 //////////////////////////////////////   trigger functions   ///////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function generateTriggerEntry(triggerObj) {	
+	let triggerEntryObj = document.createElement('div');
+	triggerEntryObj.id = "triggerEntry" + triggerObj.trigger;
+	triggerEntryObj.className = "disableOnDisconnect list-group-item list-group-item-action border border-primary p-3";
+	triggerEntryObj.style.backgroundColor = "transparent";
+	//triggerEntryObj.onclick = () => {showScheduleModal(scheduleEntryId);};
+	triggerEntryObj.style.cursor = "pointer";
+	triggerEntryObj.innerHTML = `<div class="d-flex w-100 justify-content-between">
+	<p><i class='bi bi-lightning bigIcon pe-2'></i>${getLanguageAsText(triggerCollection[triggerObj.trigger][0])}</p>
+	<p><span lang-data="active">${getLanguageAsText("active")}</span>: ${triggerObj.enabled ? "<i class='bi bi-check-lg bigIcon pe-2' style='color: green;'></i>" : "<i class='bi bi-x-lg bigIcon pe-2' style='color: red;'></i>"}</p>
+</div>
+<i class='bi bi-chat-left-quote bigIcon pe-2'></i><span lang-data="comment">${getLanguageAsText("comment")}</span>: ${triggerObj.comment == undefined ? "-" : triggerObj.comment}`;
+	getElement("triggerCollectionList").appendChild(triggerEntryObj);
+}
 
 function addParameterToTrigger(triggerId, commandId, parameter) {
 	let cell = getElement("trigger" + triggerId + "ParameterCell");
