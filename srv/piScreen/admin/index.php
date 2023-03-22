@@ -214,7 +214,7 @@
 					<div id="timeActionsCarousel" class="carousel slide">
 						<div class="carousel-inner">
 							<div class="carousel-item active">
-								<div id='scheduleEntryCollectionList' class="list-group">
+								<div id='scheduleEntryCollectionList' class="list-group" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
 
 								</div>
 								<div>
@@ -223,10 +223,14 @@
 								</div>
 							</div>
 							<div class="carousel-item">
-								<div id="commandsetCollectionList" class="list-group">
+								<div id="commandsetCollectionList" class="list-group" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
+
 								</div>
 							<button id='commandsetEntryButtonAdd' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showCommandsetModal();'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-commandset'>Neues Commandset</span></button>
 							<div class="carousel-item">
+								<div id="triggerCollectionList" class="list-group" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
+
+								</div>
 							</div>
 						</div>
 					</div>
