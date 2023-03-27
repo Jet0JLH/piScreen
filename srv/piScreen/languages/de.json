@@ -70,6 +70,14 @@
         "back": "Zurück",
         "save": "Speichern",
 
+        "color": "Farbe",
+        "stretch": "Strecken",
+        "fit": "Passend",
+        "crop": "Zugeschnitten",
+        "center": "Zentriert",
+        "tile": "Kacheln",
+        "screen": "Ausgefüllt",
+
         "info-tile-header": "Info",
         "about-info": "piScreen Info",
         "update-available": "Eine neue Version von piScreen ist nun verfügbar",

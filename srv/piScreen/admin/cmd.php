@@ -1,5 +1,4 @@
 <?php
-	umask(0); // to execute with www-data
 	$sudoSyscall = 'sudo /home/pi/piScreen/piScreenCmd.py';
 	$syscall = 'sudo -u pi /home/pi/piScreen/piScreenCmd.py';
 	$fileExplorerPath = "/srv/piScreen/admin/data/";
@@ -342,7 +341,19 @@
 		}
 	}
 	elseif ($_GET['id'] == 29) { //Impress
-		executeCommand("$sudoSyscall --restart-impress", true);
+		executeCommand("$syscall --restart-impress", true);
+	}
+	elseif ($_GET['id'] == 30) { //Get background
+		executeCommand("$syscall --get-desktop-configuration", true);
+	}
+	elseif ($_GET['id'] == 31) { //Set background mode
+		executeCommand("$syscall --configure-desktop --mode " . $_GET["mode"], true);
+	}
+	elseif ($_GET['id'] == 32) { //Set background color
+		executeCommand("$syscall --configure-desktop --bg-color \\#" . $_GET["color"], true);
+	}
+	elseif ($_GET['id'] == 33) { //Set background wallpaper
+		executeCommand("$syscall --configure-desktop --wallpaper " . $_GET["wallpaper"], true);
 	}
 
 ?>

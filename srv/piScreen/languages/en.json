@@ -70,6 +70,14 @@
         "back": "Back",
         "save": "Save",
 
+        "color": "color",
+        "stretch": "stretch",
+        "fit": "fit",
+        "crop": "crop",
+        "center": "center",
+        "tile": "tile",
+        "screen": "screen",
+
         "info-tile-header": "Info",
         "about-info": "piScreen Info",
         "update-available": "A new version of piScreen is now available",

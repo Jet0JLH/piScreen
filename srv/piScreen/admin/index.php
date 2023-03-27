@@ -124,6 +124,31 @@
 											</td>
 										</tr>
 										<tr>
+											<td>
+												<div class="input-group mb-3">
+													<select id='backgroundSelect' onchange='settingSaved("settingsButtonSaveBackground", false); showSettingsFileExplorerButton();' class='disableOnDisconnect form-select border-secondary rounded'>
+														<option value='color' lang-data='color'>color</option>
+														<option value='stretch' lang-data='stretch'>stretch</option>
+														<option value='fit' lang-data='fit'>fit</option>
+														<option value='crop' lang-data='crop'>crop</option>
+														<option value='center' lang-data='center'>center</option>
+														<option value='tile' lang-data='tile'>tile</option>
+														<option value='screen' lang-data='screen'>screen</option>
+													</select>
+
+													<span class="bg-transparent border-0 input-group-text"></span>
+													<button id='fileExplorerBackgroundButton' class='disableOnDisconnect btn btn-outline-primary border-secondary rounded-start border-end-0' onclick='showFileExplorerModal(modeGeneral, false, getElement("setBackgroundInputTextfield"), true); settingSaved("settingsButtonSaveBackground", false);'><i class="bi bi-folder px-2"></i></button>
+													<input id='setBackgroundInputTextfield' type="text" class=" disableOnDisconnect form-control border-secondary" style='float: right;' onkeyup='settingSaved("settingsButtonSaveBackground", false);' value=''>
+												</div>
+											</td>
+											<td style='width: 8%;'>
+												<button id='settingsButtonDeleteBackground' class='disableOnDisconnect btn btn-outline-danger ms-3 mb-3' onclick='deleteBackground();'><i class='bi bi-trash'></i></button>
+											</td>
+											<td style='width: 8%;'>
+												<button id='settingsButtonSaveBackground' class='disableOnDisconnect btn btn-success ms-3 mb-3' onclick='saveBackground();'><i class='bi bi-check2'></i></button>
+											</td>
+										</tr>
+										<tr>
 											<td colspan="2">
 												<div class="input-group mb-3">
 													<button id='exportScheduleButton' class='disableOnDisconnect btn btn-outline-primary border-secondary' onclick='download("cmd.php?id=21", "schedule.json")'><i class='bi bi-download pe-2'></i><span lang-data='export'>Export</span></button>

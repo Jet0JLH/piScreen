@@ -2,7 +2,7 @@
 //////////////////////////////////////   general variables   ///////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-var timeoutTime = 1994;
+var timeoutTime = 5000;
 //schedule
 let commandsetCommandCount = 0;
 var commandsetEntryCount = 0;
@@ -1612,6 +1612,53 @@ function settingSaved(elementId, saved) {
 	}
 }
 
+function showDesktopSettings() {
+	let requestedUrl = "cmd.php?id=30";
+	let xmlhttp = new XMLHttpRequest();
+	xmlhttp.timeout = timeoutTime;
+	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
+	xmlhttp.onloadend = function() {
+		if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
+			console.log(xmlhttp.responseText);
+			showServerError("Error while setting display orientation select", requestedUrl);
+			return;
+		}
+		desktopConfig = JSON.parse(parseReturnValuesFromServer(xmlhttp.responseText)[0]);
+		getElement("backgroundSelect").value = desktopConfig.wallpaper_mode;
+		showSettingsFileExplorerButton();
+	}
+	xmlhttp.open('GET', requestedUrl, true);
+	xmlhttp.send();
+}
+
+function showSettingsFileExplorerButton() {
+	if (getElement("backgroundSelect").value == "color") {
+		getElement("fileExplorerBackgroundButton").hidden = true;
+		getElement("setBackgroundInputTextfield").value = desktopConfig.desktop_bg.toString().substring(1);
+	} else {
+		getElement("fileExplorerBackgroundButton").hidden = false;
+		getElement("setBackgroundInputTextfield").value = desktopConfig.wallpaper;
+	}
+}
+
+function deleteBackground() {
+	getElement("backgroundSelect").value = "color";
+	getElement("setBackgroundInputTextfield").value = "";
+	settingSaved("settingsButtonSaveBackground", false);
+}
+
+function saveBackground() {
+	let mode = getElement("backgroundSelect").value;
+	let val = getElement("setBackgroundInputTextfield").value;
+	if (val + "+" == "+") val = "000000";
+	if (desktopConfig.wallpaper_mode != mode) sendHTTPRequest('GET', 'cmd.php?id=31&mode=' + mode, true, () => {settingSaved("settingsButtonSaveBackground", true); showDesktopSettings();});
+	if (mode == "color") {
+		if (desktopConfig.desktop_bg.toString().substring(1) != val) sendHTTPRequest('GET', 'cmd.php?id=32&color=' + val, true, () => {settingSaved("settingsButtonSaveBackground", true); showDesktopSettings();});
+	} else {
+		if (desktopConfig.wallpaper != val) sendHTTPRequest('GET', 'cmd.php?id=33&path=' + val, true, () => {settingSaved("settingsButtonSaveBackground", true); showDesktopSettings();});
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////   organizer functions   //////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1630,6 +1677,7 @@ window.onload = function() {
 	getDefaultLanguage();
 	setDisplayProtocolSelect();
 	setDisplayOrientationSelect();
+	showDesktopSettings();
 
 	let st = null; //screenshotTime
 	let idleBadge = getElement("idle");
