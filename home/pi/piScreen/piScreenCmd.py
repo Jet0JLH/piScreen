@@ -237,6 +237,7 @@ def configureDesktop():
 				else:
 					piScreenUtils.logging.warning("No possible mode selected")
 					verbose and print("No possible mode selected")
+		time.sleep(0.5)
 		if f"--wallpaper" in sys.argv:
 			indexOfElement = sys.argv.index(f"--wallpaper") + 1
 			if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
@@ -249,6 +250,7 @@ def configureDesktop():
 				else:
 					piScreenUtils.logging.warning("Wallpaper File dose't exist")
 					verbose and print("Wallpaper File dose't exist")
+		time.sleep(0.5)
 		if f"--bg-color" in sys.argv:
 			indexOfElement = sys.argv.index(f"--bg-color") + 1
 			if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
