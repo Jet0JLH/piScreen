@@ -42,7 +42,7 @@ def printHelp():
 	Restarts the Device
 --shutdown
 	Shutdown the Device
---configure-desktop [<--mode> <mode>] [<--wallpaper> <path>] [<--color> <hexColor>]
+--configure-desktop [<--mode> <mode>] [<--wallpaper> <path>] [<--bg-color> <hexColor>]
 	Configure the desktop wallpaper.
 	Possible modes are: color|stretch|fit|crop|center|tile|screen
 	Hex colors has 6 characters and starts with a hash. Keep in mind, this character has to be escaped with a backslash!
@@ -99,8 +99,6 @@ def printHelp():
 	Runs the commandset selected by id in schedule
 --schedule-manually-cron <--index> <index>
 	Runs the cron entry selected by index in schedule
---schedule-manually-trigger <--index> <index>
-	Runs the trigger selected by index in schedule (Except startup trigger (ID=1))
 --add-cron <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"YYYY-MM-DD hh:mm">] [--end <"YYYY-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>] [--comment <comment>]
 	Add a cronentry to schedule.json.
 --update-cron <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["YYYY-MM-DD hh:mm"]] [--end ["YYYY-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>] [--comment <comment>]
@@ -308,42 +306,22 @@ def getMode():
 	return "none"
 
 def screenOn():
-	piScreenUtils.logging.info("Create file for turning on the screen")
-	verbose and print("Create file for turning on the screen")
-	try:	
-		if os.path.exists(piScreenUtils.paths.displayOff): os.remove(piScreenUtils.paths.displayOff)
-		if os.path.exists(piScreenUtils.paths.displayOn): os.remove(piScreenUtils.paths.displayOn)
-		if os.path.exists(piScreenUtils.paths.displayStandby): os.remove(piScreenUtils.paths.displayStandby)
-	except:
-		piScreenUtils.logging.error("Could not remove ramdisk files")
-	open(piScreenUtils.paths.displayOn,"w").close()
+	piScreenUtils.logging.info("Send display on command to core")
+	verbose and print("Send display on command to core")
+	sendToCore({"cmd":5,"parameter":1})
 
 def screenStandby():
-	piScreenUtils.logging.info("Create file for turning screen to standby")
-	verbose and print("Create file for turning screen to standby")
-	try:	
-		if os.path.exists(piScreenUtils.paths.displayOff): os.remove(piScreenUtils.paths.displayOff)
-		if os.path.exists(piScreenUtils.paths.displayOn): os.remove(piScreenUtils.paths.displayOn)
-		if os.path.exists(piScreenUtils.paths.displayStandby): os.remove(piScreenUtils.paths.displayStandby)
-	except:
-		piScreenUtils.logging.error("Could not remove ramdisk files")
-	open(piScreenUtils.paths.displayStandby,"w").close()
+	screenOff()
 
 def screenOff():
-	piScreenUtils.logging.info("Create file for turning off the screen")
-	verbose and print("Create file for turning off the screen")
-	try:	
-		if os.path.exists(piScreenUtils.paths.displayOff): os.remove(piScreenUtils.paths.displayOff)
-		if os.path.exists(piScreenUtils.paths.displayOn): os.remove(piScreenUtils.paths.displayOn)
-		if os.path.exists(piScreenUtils.paths.displayStandby): os.remove(piScreenUtils.paths.displayStandby)
-	except:
-		piScreenUtils.logging.error("Could not remove ramdisk files")
-	open(piScreenUtils.paths.displayOff,"w").close()
+	piScreenUtils.logging.info("Send display off command to core")
+	verbose and print("Send display off command to core")
+	sendToCore({"cmd":5,"parameter":2})
 
 def screenSwitchInput():
-	piScreenUtils.logging.info("Create file for switching display input")
-	verbose and print("Create file for switching display input")
-	open(piScreenUtils.paths.displaySwitchChannel,"w").close()
+	piScreenUtils.logging.info("Send display change input command to core")
+	verbose and print("Send display change input command to core")
+	sendToCore({"cmd":5,"parameter":3})
 
 def checkUpdate(draft,prerelease,silent):
 	manifest = loadManifest()
@@ -1030,17 +1008,17 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--get-display-orientation":
 		print(getDisplayOrientation())
 	elif item == "--schedule-firstrun":
-		piScreenUtils.logging.info("Write file for schedule firstrun")
-		open(piScreenUtils.paths.scheduleDoFirstRun,"w").close()
+		piScreenUtils.logging.info("Send command for schedule firstrun")
+		sendToCore({"cmd":6,"parameter":{}})
 	elif item == "--schedule-lastcron":
-		piScreenUtils.logging.info("Write file for schedule last cron")
-		open(piScreenUtils.paths.scheduleDoLastCron,"w").close()
+		piScreenUtils.logging.info("Send command for schedule last cron")
+		sendToCore({"cmd":7,"parameter":{}})
 	elif item == "--schedule-manually-command":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--command":
 				if piScreenUtils.isInt(sys.argv[i + 2]):
 					command = {}
-					command["type"] = "command"
+					command["type"] = 1
 					command["command"] = int(sys.argv[i + 2])
 					if i + 4 < len(sys.argv):
 						if sys.argv[i + 3] == "--parameter":
@@ -1049,10 +1027,8 @@ for i, origItem in enumerate(sys.argv):
 							piScreenUtils.logging.warning("Missing parameter flag")
 							verbose and print("Missing parameter flag")
 							exit(1)
-					piScreenUtils.logging.info("Create file for manually command run")
-					manualFile = open(piScreenUtils.paths.scheduleDoManually, "w")
-					manualFile.write(json.dumps(command))
-					manualFile.close()
+					piScreenUtils.logging.info("Send command for manually command run")
+					sendToCore({"cmd":8,"parameter":command})
 				else:
 					piScreenUtils.logging.warning("Command is no number")
 					verbose and print("Command is no number")
@@ -1069,10 +1045,8 @@ for i, origItem in enumerate(sys.argv):
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--id":
 				if piScreenUtils.isInt(sys.argv[i + 2]):
-					piScreenUtils.logging.info("Create file for manually commandset run")
-					manualFile = open(piScreenUtils.paths.scheduleDoManually, "w")
-					manualFile.write(json.dumps({"type":"commandset","id":int(sys.argv[i + 2])},indent=4))
-					manualFile.close()
+					piScreenUtils.logging.info("Send command for manually commandset run")
+					sendToCore({"cmd":8,"parameter":{"type":2,"id":int(sys.argv[i + 2])}})
 				else:
 					piScreenUtils.logging.warning("ID is no number")
 					verbose and print("ID is no number")
@@ -1089,30 +1063,8 @@ for i, origItem in enumerate(sys.argv):
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--index":
 				if piScreenUtils.isInt(sys.argv[i + 2]):
-					piScreenUtils.logging.info("Create file for manually cron run")
-					manualFile = open(piScreenUtils.paths.scheduleDoManually, "w")
-					manualFile.write(json.dumps({"type":"cron","index":int(sys.argv[i + 2])},indent=4))
-					manualFile.close()
-				else:
-					piScreenUtils.logging.warning("Index is no number")
-					verbose and print("Index is no number")
-					exit(1)
-			else:
-				piScreenUtils.logging.warning("Argument --index expected")
-				verbose and print("Argument --index expected")
-				exit(1)
-		else:
-			piScreenUtils.logging.warning("Not enough arguments")
-			verbose and print("Not enough arguments")
-			exit(1)
-	elif item == "--schedule-manually-trigger":
-		if i + 2 < len(sys.argv):
-			if sys.argv[i + 1] == "--index":
-				if piScreenUtils.isInt(sys.argv[i + 2]):
-					piScreenUtils.logging.info("Create file for manually trigger run")
-					manualFile = open(piScreenUtils.paths.scheduleDoManually, "w")
-					manualFile.write(json.dumps({"type":"trigger","index":int(sys.argv[i + 2])},indent=4))
-					manualFile.close()
+					piScreenUtils.logging.info("Send command for manually cron run")
+					sendToCore({"cmd":8,"parameter":{"type":3,"index":int(sys.argv[i + 2])}})
 				else:
 					piScreenUtils.logging.warning("Index is no number")
 					verbose and print("Index is no number")
