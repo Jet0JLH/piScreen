@@ -26,8 +26,8 @@
 	if ($_GET['id'] == 1) { //Browser
 		if ($_GET['cmd'] == "restart") {
 			executeCommand("$syscall --restart-browser", true);
-		} elseif ($_GET['cmd'] == "reload") {
-			executeCommand("$syscall --reload-browser", true);
+		} elseif ($_GET['cmd'] == "refresh") {
+			executeCommand("$syscall --refresh-browser", true);
 		}
 	}
 	elseif ($_GET['id'] == 2) { //reboot

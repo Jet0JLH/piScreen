@@ -52,7 +52,7 @@
 							<button id='displayOnButton' class='disableOnDisconnect btn btn-success w-100' onclick='setDisplayOn()'><span id='spinnerDisplayOn' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display btn-icon-xxl'></i><br><span lang-data='display-on'>Display an</span></button>
 						</div>
 						<div class='col-6'>
-							<button id='displayStandbyButton' class='disableOnDisconnect btn btn-danger w-100' onclick='setDisplayStandby()'><span id='spinnerDisplayStandby' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display btn-icon-xxl'></i><br><span lang-data='display-off'>Display Standby</span></button>
+							<button id='displayOffBtn' class='disableOnDisconnect btn btn-danger w-100' onclick='setDisplayOff()'><span id='spinnerDisplayOff' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-display btn-icon-xxl'></i><br><span lang-data='display-off'>Display Off</span></button>
 						</div>
 					</div>
 					<div id="modeControl" class='row my-2'>
@@ -153,7 +153,7 @@
 												<div class="input-group mb-3">
 													<button id='exportScheduleButton' class='disableOnDisconnect btn btn-outline-primary border-secondary' onclick='download("cmd.php?id=21", "schedule.json")'><i class='bi bi-download pe-2'></i><span lang-data='export'>Export</span></button>
 													<button id='importScheduleButton' class='disableOnDisconnect btn btn-outline-primary border-secondary border-end-0' ondragover='event.preventDefault();' ondrop='dropScheduleJson(event);' onclick='selectScheduleToImport();'><i class='bi bi-upload pe-2'></i><span lang-data='import'>Import</span></button>
-													<input id='importScheduleInputTextfield' type="text" class=" disableOnDisconnect form-control border-secondary border-start-0" style='float: right;' ondragover='event.preventDefault();' ondrop='dropScheduleJson(event);' onclick='this.blur(); selectScheduleToImport();' value=''>
+													<input id='importScheduleInputTextfield' type="text" class="disableOnDisconnect form-control border-secondary border-start-0" style='float: right;' ondragover='event.preventDefault();' ondrop='dropScheduleJson(event);' onclick='this.blur(); this.value = null;' value=''>
 												</div>
 											</td>
 											<td style='width: 8%;'>

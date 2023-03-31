@@ -11,7 +11,7 @@ const commandCollection = [//text, parameter
 		["universal", "text"], ["restart-device", false], ["shutdown-device", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["display-state", [[0, "display-off"], [1, "display-on"]]], ["switch-display-input", false], ["change-display-protocol", [[0, "cec"], [1, "ddc"], [2, "manually"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["start-browser", "text"], ["restart-browser", false], ["reload-browser-page", false], ["stop-browser", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["start-browser", "text"], ["restart-browser", false], ["refresh-browser-page", false], ["stop-browser", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["start-vlc-video", "filemanager", 2], ["restart-vlc-video", false], ["stop-vlc", false], ["play-pause-vlc-video", false], ["play-vlc-video", false], ["pause-vlc-video", false], ["", false], ["", false], ["", false], ["", false],
 		["start-impress", "filemanager", 3], ["restart-impress", false], ["stop-impress", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
@@ -1418,9 +1418,9 @@ function restartBrowser() {
 	sendHTTPRequest('GET', 'cmd.php?id=1&cmd=restart', true, () => {getElement("restartBrowserSpinner").hidden = true;});
 }
 
-function reloadBrowserPage() {
-	getElement("reloadBrowserPageSpinner").hidden = false;
-	sendHTTPRequest('GET', 'cmd.php?id=1&cmd=reload', true, () => {getElement("reloadBrowserPageSpinner").hidden = true;});
+function refreshBrowserPage() {
+	getElement("refreshBrowserPageSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=1&cmd=refresh', true, () => {getElement("refreshBrowserPageSpinner").hidden = true;});
 }
 
 function restartVlcVideo() {
@@ -1455,8 +1455,8 @@ function setDisplayOn() {
 	sendHTTPRequest('GET', 'cmd.php?id=8&cmd=1', true, () => {getElement("spinnerDisplayOn").hidden = false;});
 }
 
-function setDisplayStandby() {
-	sendHTTPRequest('GET', 'cmd.php?id=8&cmd=0', true, () => {getElement("spinnerDisplayStandby").hidden = false;});
+function setDisplayOff() {
+	sendHTTPRequest('GET', 'cmd.php?id=8&cmd=0', true, () => {getElement("spinnerDisplayOff").hidden = false;});
 }
 
 function showPiscreenInfo() {
@@ -1684,7 +1684,7 @@ window.onload = function() {
 	let active = getElement("active");
 	let displayState = getElement("displayState");
 	let displayOnBtn = getElement("displayOnButton");
-	let displayStandbyBtn = getElement("displayStandbyButton");
+	let displayOffBtn = getElement("displayOffBtn");
 	
 	let requestedUrl = 'cmd.php?id=5';
 	let xmlhttp = new XMLHttpRequest();
@@ -1709,19 +1709,19 @@ window.onload = function() {
 				displayState.classList = "badge rounded-pill bg-success";
 				displayState.innerHTML = getLanguageAsText('on');
 				displayOnBtn.parentElement.hidden = true;
-				displayStandbyBtn.parentElement.hidden = false; 
+				displayOffBtn.parentElement.hidden = false; 
 				break;
-			case "standby":
+			case "off":
 				displayState.classList = "badge rounded-pill bg-danger";
-				displayState.innerHTML = getLanguageAsText('standby');
+				displayState.innerHTML = getLanguageAsText('off');
 				displayOnBtn.parentElement.hidden = false;
-				displayStandbyBtn.parentElement.hidden = true; 
+				displayOffBtn.parentElement.hidden = true; 
 				break;
 			default:
 				displayState.classList = "badge rounded-pill bg-secondary";
 				displayState.innerHTML = getLanguageAsText('unknown');
 				displayOnBtn.parentElement.hidden = false;
-				displayStandbyBtn.parentElement.hidden = false; 
+				displayOffBtn.parentElement.hidden = false; 
 				break;
 		}
 		getElement("uptime").innerHTML = jsonData.uptime.days + " " + getLanguageAsText('days') + ", " + jsonData.uptime.hours + " " + getLanguageAsText('hours') + ", " + jsonData.uptime.mins + " " + getLanguageAsText('minutes');
@@ -1731,7 +1731,7 @@ window.onload = function() {
 		getElement("ramTotal").innerHTML = Number(jsonData.ramTotal / 1000 / 1000).toFixed(2) + " GiB";
 		getElement("ramUsage").innerHTML = Number(jsonData.ramUsed / jsonData.ramTotal * 100).toFixed(2);
 		getElement("spinnerDisplayOn").hidden = !jsonData.display.onSet;
-		getElement("spinnerDisplayStandby").hidden = !jsonData.display.standbySet;
+		getElement("spinnerDisplayOff").hidden = !jsonData.display.standbySet;
 		if (new Date(jsonData.screenshotTime * 1000) != st) {
 			st = new Date(jsonData.screenshotTime * 1000);
 			getElement("screenshotTime").innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth() + 1)}.${1900 + st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
@@ -1795,7 +1795,7 @@ function changeMode(modeInfo) {
 	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartBrowser();'><span id='restartBrowserSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-repeat btn-icon-xxl'></i><br><span lang-data='restart-browser'>${getLanguageAsText("restart-browser")}</span></button>
 </div>
 <div class='col-6'>
-	<button class='disableOnDisconnect btn btn-primary w-100' onclick='reloadBrowserPage();'><span id='reloadBrowserPageSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-arrow-clockwise btn-icon-xxl'></i><br><span lang-data='reload-browser-page'>${getLanguageAsText("reload-browser-page")}</span></button>
+	<button class='disableOnDisconnect btn btn-primary w-100' onclick='refreshBrowserPage();'><span id='refreshBrowserPageSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-arrow-clockwise btn-icon-xxl'></i><br><span lang-data='refresh-browser-page'>${getLanguageAsText("refresh-browser-page")}</span></button>
 </div>`;
 			rearrangeGui();
 			break;
@@ -2047,9 +2047,9 @@ function setToUnknownValues() {
 	getElement("displayState").innerHTML = getLanguageAsText('unknown');
 
 	getElement("displayOnButton").hidden = false;
-	getElement("displayStandbyButton").hidden = false;
+	getElement("displayOffBtn").hidden = false;
 	getElement("spinnerDisplayOn").hidden = true;
-	getElement("spinnerDisplayStandby").hidden = true;
+	getElement("spinnerDisplayOff").hidden = true;
 
 	getElement("uptime").innerHTML = "???";
 	getElement("cpuLoad").innerHTML = "???";
