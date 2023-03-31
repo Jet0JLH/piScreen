@@ -137,8 +137,9 @@ def sendToCore(data:dict) -> dict:
 		s.sendto(str.encode(json.dumps(data)),("127.0.0.1",SOCKET))
 		msg = s.recvfrom(bufferSize)
 		return json.loads(msg[0].decode("utf-8"))
-	except:
+	except Exception as err:
 		piScreenUtils.logging.error("Unable to reach core")
+		piScreenUtils.logging.debug(err)
 		verbose and print("Unable to reach core")
 		return {"code":-1}
 
@@ -169,8 +170,9 @@ def endAllModes():
 		if os.path.exists(piScreenUtils.paths.modeImpress):
 			os.remove(piScreenUtils.paths.modeImpress)
 			os.system("killall -q -SIGTERM soffice.bin")
-	except:
+	except Exception as err:
 		piScreenUtils.logging.error("Unable to end mode")
+		piScreenUtils.logging.debug(err)
 	
 
 def startBrowser(parameter):
@@ -276,8 +278,9 @@ def configureDesktop():
 					piScreenUtils.logging.warning("Given color is no valid hex string")
 					verbose and print("Given color is no valid hex string")
 
-	except:
+	except Exception as err:
 		piScreenUtils.logging.warning("Error while access desktop configuration")
+		piScreenUtils.logging.debug(err)
 		verbose and print("Error while access desktop configuration")
 		exit(1)
 
@@ -464,8 +467,8 @@ def modifySchedule(element,typ,scheduleJson,elementName:str=""):
 			try:
 				del scheduleJson[elementName]
 				changed = True
-			except:
-				pass
+			except Exception as err:
+				piScreenUtils.logging.debug(err)
 		else:
 			if typ == bool:
 				if sys.argv[indexOfElement].lower() == "true":
@@ -489,8 +492,9 @@ def modifySchedule(element,typ,scheduleJson,elementName:str=""):
 					datetime.datetime.strptime(sys.argv[indexOfElement], "%Y-%m-%d %H:%M")
 					scheduleJson[elementName] = sys.argv[indexOfElement]
 					changed = True
-				except:
+				except Exception as err:
 					piScreenUtils.logging.warning(f"{element} is no valid date")
+					piScreenUtils.logging.debug(err)
 					verbose and print(f"{element} is no valid date")
 			elif typ == "pattern":
 				if all(ch in "0123456789/-*, " for ch in sys.argv[indexOfElement]) and len(sys.argv[indexOfElement].split(" ")) == 5:
@@ -529,8 +533,9 @@ def addCron():
 						scheduleFile.close()
 						piScreenUtils.logging.info("Changed schedule.json")
 						verbose and print("Changed schedule.json")
-					except:
+					except Exception as err:
 						piScreenUtils.logging.error("Error with schedule.json")
+						piScreenUtils.logging.debug(err)
 						verbose and print("Error with schedule.json")
 						exit(1)
 				else:
@@ -579,8 +584,9 @@ def updateCron():
 							piScreenUtils.logging.warning("Index is bigger than count of cron entries")
 							verbose and print("Index is bigger than count of cron entries")
 							exit(1)
-					except:
+					except Exception as err:
 						piScreenUtils.logging.error("Error with schedule.json")
+						piScreenUtils.logging.debug(err)
 						verbose and print("Error with schedule.json")
 						exit(1)
 				else:
@@ -634,8 +640,9 @@ def addTrigger():
 						scheduleFile.close()
 						piScreenUtils.logging.info("Changed schedule.json")
 						verbose and print("Changed schedule.json")
-					except:
+					except Exception as err:
 						piScreenUtils.logging.error("Error with schedule.json")
+						piScreenUtils.logging.debug(err)
 						verbose and print("Error with schedule.json")
 						exit(1)
 				else:
@@ -695,8 +702,9 @@ def updateTrigger():
 							piScreenUtils.logging.warning("Index is bigger than count of trigger entries")
 							verbose and print("Index is bigger than count of trigger entries")
 							exit(1)
-					except:
+					except Exception as err:
 						piScreenUtils.logging.error("Error with schedule.json")
+						piScreenUtils.logging.debug(err)
 						verbose and print("Error with schedule.json")
 						exit(1)
 				else:
@@ -752,8 +760,9 @@ def addCommandset(update):
 				piScreenUtils.logging.info("Changed schedule.json")
 				verbose and print("Changed schedule.json")
 				print(item["id"])
-			except:
+			except Exception as err:
 				piScreenUtils.logging.error("Error with schedule.json")
+				piScreenUtils.logging.debug(err)
 				verbose and print("Error with schedule.json")
 				exit(1)
 		else:
@@ -799,8 +808,9 @@ def deleteCommandset():
 						scheduleFile.close()
 						piScreenUtils.logging.info("Changed schedule.json")
 						verbose and print("Changed schedule.json")
-				except:
+				except Exception as err:
 					piScreenUtils.logging.error("Error with schedule.json")
+					piScreenUtils.logging.debug(err)
 					verbose and print("Error with schedule.json")
 					exit(1)
 			else:
@@ -1004,8 +1014,9 @@ for i, origItem in enumerate(sys.argv):
 		settingsJson = loadSettings()
 		try:
 			print(settingsJson["settings"]["display"]["orientation"])
-		except:
+		except Exception as err:
 			piScreenUtils.logging.error("Can not read displayorientation from settings")
+			piScreenUtils.logging.debug(err)
 			print(0)
 	elif item == "--get-display-orientation":
 		print(getDisplayOrientation())
@@ -1101,8 +1112,9 @@ for i, origItem in enumerate(sys.argv):
 							piScreenUtils.logging.warning("Index is bigger than count of cron entries")
 							verbose and print("Index is bigger than count of cron entries")
 							exit(1)
-					except:
+					except Exception as err:
 						piScreenUtils.logging.error("Error with schedule.json")
+						piScreenUtils.logging.debug(err)
 						verbose and print("Error with schedule.json")
 						exit(1)
 				else:
@@ -1145,8 +1157,9 @@ for i, origItem in enumerate(sys.argv):
 							piScreenUtils.logging.warning("Index is bigger than count of tigger entries")
 							verbose and print("Index is bigger than count of trigger entries")
 							exit(1)
-					except:
+					except Exception as err:
 						piScreenUtils.logging.error("Error with schedule.json")
+						piScreenUtils.logging.debug(err)
 						verbose and print("Error with schedule.json")
 						exit(1)
 				else:
@@ -1210,12 +1223,14 @@ for i, origItem in enumerate(sys.argv):
 					scheduleFile = open(piScreenUtils.paths.schedule, "w")
 					scheduleFile.write(json.dumps(scheduleJson,indent=4))
 					scheduleFile.close()
-				except:
+				except Exception as err:
 					verbose and print("Unable to change schedule")
 					piScreenUtils.logging.error("Unable to change schedule")
-			except:
+					piScreenUtils.logging.debug(err)
+			except Exception as err:
 				verbose and print(f"Datetime string not in right format: {dateFormate}")
 				piScreenUtils.logging.error(f"Datetime string not in right format: {dateFormate}")
+				piScreenUtils.logging.debug(err)
 		elif splitedString[0] == "":
 			try:
 				piScreenUtils.logging.info("Delete cron ignore time")
@@ -1225,9 +1240,10 @@ for i, origItem in enumerate(sys.argv):
 				scheduleFile = open(piScreenUtils.paths.schedule, "w")
 				scheduleFile.write(json.dumps(scheduleJson,indent=4))
 				scheduleFile.close()
-			except:
+			except Exception as err:
 				verbose and print("Unable to change schedule")
 				piScreenUtils.logging.error("Unable to change schedule")
+				piScreenUtils.logging.debug(err)
 		else:
 			verbose and print("Not enough arguments")
 			piScreenUtils.logging.warning("Not enough arguments")

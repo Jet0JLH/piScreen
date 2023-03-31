@@ -55,8 +55,9 @@ class firefoxHandler(threading.Thread):
 						self.info = {}
 						self.client.delete_session()
 						self.client.start_session(timeout=2)
-					except:
+					except Exception as err:
 						piScreenUtils.logging.error("Unable to create marionette session")
+						piScreenUtils.logging.debug(err)
 				time.sleep(1)
 			if checkIfProcessRunning("firefox-esr"): os.system("killall firefox-esr")
 			self.info = {}
@@ -93,9 +94,10 @@ class vlcHandler(threading.Thread):
 						elif item == "pause": piScreenUtils.logging.info("Pause VLC") ; self.vlcMediaPlayer.set_pause(1)
 						elif item == "restart": piScreenUtils.logging.info("Restart VLC") ; self.vlcMediaPlayer.set_position(0)
 					self.actions.clear()
-				except:
+				except Exception as err:
 					self.info = {}
 					piScreenUtils.logging.error("Unable to control VLC")
+					piScreenUtils.logging.debug(err)
 				time.sleep(1)
 
 			self.vlcMediaPlayer.stop()
@@ -177,8 +179,9 @@ class cecHandler(threading.Thread):
 							piScreenUtils.logging.info("Set display active source")
 							cec.set_active_source()
 							displayAction = 0
-					except:
+					except Exception as err:
 						piScreenUtils.logging.error("Trouble while controling display")
+						piScreenUtils.logging.debug(err)
 					if not active or displayProtocol != "cec": break
 					time.sleep(2)
 				self.updateStatus()
@@ -237,8 +240,9 @@ class ddcHandler(threading.Thread):
 								else:
 									piScreenUtils.logging.warning(f"Unkown status: {mode}")
 									displayLastValue = "Unknown"
-							except:
+							except Exception as err:
 								piScreenUtils.logging.error("Unable to check display mode")
+								piScreenUtils.logging.debug(err)
 								displayLastValue = "Unknown"
 
 							try:
@@ -268,9 +272,10 @@ class ddcHandler(threading.Thread):
 									displayAction = 0
 							except Exception as err:
 								piScreenUtils.logging.error("Trouble while controling display")
-								print(err)
-						except:
+								piScreenUtils.logging.debug(err)
+						except Exception as err:
 							piScreenUtils.logging.error("Trouble with reading DDC/CI power mode")
+							piScreenUtils.logging.debug(err)
 							displayLastValue = "Unknown"
 				time.sleep(2)
 			time.sleep(1)
@@ -308,8 +313,9 @@ class manuallyHandler(threading.Thread):
 						if displayLastValue != "on": displayLastValue = "on" ; piScreenUtils.logging.info("Display status changed to on")
 					elif "Monitor is in Standby" in status or "Monitor is in Suspend" in status:
 						if displayLastValue != "standby": displayLastValue = "standby" ; piScreenUtils.logging.info("Display status changed to standby")
-				except:
+				except Exception as err:
 					piScreenUtils.logging.error("Error while reading display state")
+					piScreenUtils.logging.debug(err)
 					displayLastValue = "Unknown"
 
 				try:
@@ -337,8 +343,9 @@ class manuallyHandler(threading.Thread):
 					elif displayAction == 3: #Set Inputsource
 						piScreenUtils.logging.info("Manually Mode dosent support change of the display source")
 						displayAction = 0
-				except:
+				except Exception as err:
 					piScreenUtils.logging.error("Trouble while controling display")
+					piScreenUtils.logging.debug(err)
 				time.sleep(2)
 			if ran: ran = False ; os.system("xset -dpms")
 			time.sleep(1)
@@ -659,9 +666,8 @@ class trigger(threading.Thread):
 								self.execute("change")
 								self.execute("false")
 							self.lastState = state
-							
-					except:
-						pass #Error
+					except Exception as err:
+						piScreenUtils.logging.debug(err)
 					self.isInFirstrun = False
 					time.sleep(1)
 			elif self.mode == 40: #Mode changed [true,<mode>]
@@ -673,8 +679,8 @@ class trigger(threading.Thread):
 							self.lastState = state
 							self.execute("true")
 							self.execute(state)
-					except:
-						pass #Error
+					except Exception as err:
+						piScreenUtils.logging.debug(err)
 					self.isInFirstrun = False
 					time.sleep(1)
 			elif self.mode == 50: #GPiO pin high [change,true,false]
@@ -783,8 +789,9 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 		if parameter:
 			try:
 				os.system(parameter)
-			except:
+			except Exception as err:
 				piScreenUtils.logging.error("Error while executing universal call")
+				piScreenUtils.logging.debug(err)
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 11: #Reboot
@@ -871,9 +878,11 @@ class socketHandler(threading.Thread):
 					returnValue = socketCmdInterpreter(jsonData)
 					self.s.sendto(str.encode(json.dumps(returnValue)),bytesAddressPair[1])
 				except Exception as err:
-					piScreenUtils.logging.error(f"Error while interpret data. {err}")
+					piScreenUtils.logging.error("Error while interpret data")
+					piScreenUtils.logging.debug(err)
 			except Exception as err:
 				piScreenUtils.logging.error("Unable to convert recieved command to json")
+				piScreenUtils.logging.debug(err)
 				self.s.sendto(str.encode(json.dumps({"code":2})),bytesAddressPair[1])
 		piScreenUtils.logging.info("End socket listener")
 
@@ -1006,8 +1015,9 @@ def checkSettings():
 				if "protocol" in settings["settings"]["display"]: displayProtocol = settings["settings"]["display"]["protocol"]
 				if "orientation" in settings["settings"]["display"]: displayOrientation = settings["settings"]["display"]["orientation"]
 				if "force" in settings["settings"]["display"]: displayForceMode = settings["settings"]["display"]["force"]
-		except:
+		except Exception as err:
 			piScreenUtils.logging.critical("Settingsfile seems to be demaged and could not be loaded as JSON object")
+			piScreenUtils.logging.debug(err)
 
 def checkSchedule():
 	global scheduleDateFormate
@@ -1023,17 +1033,20 @@ def checkSchedule():
 			scheduleFileModify = newScheduleFileModify
 			if "ignoreCronFrom" in schedule:
 				try: ignoreCronFrom = datetime.datetime.strptime(schedule["ignoreCronFrom"],scheduleDateFormate)
-				except:
+				except Exception as err:
 					piScreenUtils.logging.error("Wrong datetime format in ignoreCronFrom")
+					piScreenUtils.logging.debug(err)
 					ignoreCronFrom = datetime.datetime.strptime("01.01.1900 00:00",scheduleDateFormate)
 			if "ignoreCronTo" in schedule:
 				try: ignoreCronTo = datetime.datetime.strptime(schedule["ignoreCronTo"],scheduleDateFormate)
-				except:
+				except Exception as err:
 					piScreenUtils.logging.error("Wrong datetime format in ignoreCronTo")
+					piScreenUtils.logging.debug(err)
 					ignoreCronTo = datetime.datetime.strptime("01.01.1900 00:00",scheduleDateFormate)
 			loadTrigger()
-		except:
+		except Exception as err:
 			piScreenUtils.logging.critical("Schedulefile seems to be demaged and could not be loaded as JSON object")
+			piScreenUtils.logging.debug(err)
 
 ###################
 ### Global vars ###
@@ -1180,8 +1193,9 @@ if __name__ == "__main__":
 			os.system(f"scrot -z -o -t 50 {piScreenUtils.paths.screenshot}.jpg")
 			os.system(f"mv {piScreenUtils.paths.screenshot}.jpg {piScreenUtils.paths.screenshot}")
 			os.system(f"mv {piScreenUtils.paths.screenshot}-thumb.jpg {piScreenUtils.paths.screenshotThumbnail}")
-		except:
+		except Exception as err:
 			piScreenUtils.logging.error("Error while creating screenshot")
+			piScreenUtils.logging.debug(err)
 
 		#checkSettings
 		checkSettings()
@@ -1195,8 +1209,9 @@ if __name__ == "__main__":
 				if subprocess.check_output(f"{piScreenUtils.paths.syscall} --get-display-orientation",shell=True).decode("utf-8").replace("\n","") != str(displayOrientation):
 					piScreenUtils.logging.info("Change display orientation")
 					os.system(f"{piScreenUtils.paths.syscall} --set-display-orientation --no-save {displayOrientation}")
-		except:
+		except Exception as err:
 			piScreenUtils.logging.error("Unable to set display orientation")
+			piScreenUtils.logging.debug(err)
 
 		#Wait for new cycle
 		time.sleep(5)
