@@ -356,13 +356,11 @@ class manuallyHandler(threading.Thread):
 ################
 
 def scheduleFirstRun(noTrigger):
-	piScreenUtils.logging.debug(f"noTrigger={noTrigger}")
 	global scheduleSaveMode
 	scheduleSaveMode = True
 	#Check if startup trigger (1) enabled
 	if noTrigger or not runTrigger(1,"true"):
 		if "cron" in schedule:
-			print("LUL")
 			found = False
 			entries = []
 			for item in schedule["cron"]:
@@ -495,7 +493,7 @@ class cronEntry():
 				if not self.checkPattern(self.pattern[1], timestamp.hour):
 					return False
 				if not self.checkPattern(self.pattern[0], timestamp.minute):
-					return False		
+					return False
 		scheduleCmdInterpreter(self.command, self.parameter)
 		if self.commandset != None:
 			commandsetTask(self.commandset)
@@ -942,10 +940,10 @@ def socketCmdInterpreter(data:dict) -> dict:
 		else:
 			return {"code":2} #Package format is wrong
 	elif cmd == 6: #scheduleDoFirstRun
-		scheduleFirstRun(False)
+		threading.Thread(target=scheduleFirstRun,kwargs={"noTrigger":False}).start()
 		return returnValue
 	elif cmd == 7: #scheduleDoLastCron
-		scheduleFirstRun(True)
+		threading.Thread(target=scheduleFirstRun,kwargs={"noTrigger":True}).start()
 		return returnValue
 	elif cmd == 8: #scheduleDoManually
 		if "parameter" not in data:
@@ -959,9 +957,9 @@ def socketCmdInterpreter(data:dict) -> dict:
 			if data["parameter"]["type"] == 1: #Command
 				piScreenUtils.logging.info("Running command manually")
 				if "command" in data["parameter"] and "parameter" in data["parameter"]:
-					scheduleCmdInterpreter(data["parameter"]["command"],data["parameter"]["parameter"])
+					threading.Thread(target=scheduleCmdInterpreter,args=(data["parameter"]["command"],data["parameter"]["parameter"])).start()
 				if "command" in data["parameter"]:
-					scheduleCmdInterpreter(data["parameter"]["command"],"")
+					threading.Thread(target=scheduleCmdInterpreter,args=(data["parameter"]["command"],"")).start()
 				else:
 					piScreenUtils.logging.warning("There is no command field in parameter")
 					return {"code":2} #Package format is wrong
@@ -976,7 +974,7 @@ def socketCmdInterpreter(data:dict) -> dict:
 				piScreenUtils.logging.info("Running cron manually")
 				if "index" in data["parameter"]:
 					if piScreenUtils.isInt(data["parameter"]["index"]) and len(schedule["cron"]) > int(data["parameter"]["index"]):
-						cronEntry(schedule["cron"][int(data["parameter"]["index"])]).run(None,True)
+						threading.Thread(target=cronEntry(schedule["cron"][int(data["parameter"]["index"])]).run,args=(None,True)).start()
 					else:
 						piScreenUtils.logging.warning("Cron index dosent exists")
 						return {"code":4} #Wrong index
