@@ -138,7 +138,8 @@
 
 													<span class="bg-transparent border-0 input-group-text"></span>
 													<button id='fileExplorerBackgroundButton' class='disableOnDisconnect btn btn-outline-primary border-secondary rounded-start border-end-0' onclick='showFileExplorerModal(modeGeneral, false, getElement("setBackgroundInputTextfield"), true); settingSaved("settingsButtonSaveBackground", false);'><i class="bi bi-folder px-2"></i></button>
-													<input id='setBackgroundInputTextfield' type="text" class=" disableOnDisconnect form-control border-secondary" style='float: right;' onkeyup='settingSaved("settingsButtonSaveBackground", false);' value=''>
+													<button id='backgroundColorPickerButton' class="disableOnDisconnect btn btn-outline-primary border-secondary rounded-start border-end-0" onclick='showColorPicker(getElement("setBackgroundInputTextfield").value); settingSaved("settingsButtonSaveBackground", false);'><i class="bi bi-pen px-2"></i></button>
+													<input id='setBackgroundInputTextfield' type="text" class="disableOnDisconnect form-control border-secondary" style='float: right;' onkeyup='settingSaved("settingsButtonSaveBackground", false);' value=''>
 												</div>
 											</td>
 											<td style='width: 8%;'>

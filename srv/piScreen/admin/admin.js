@@ -53,6 +53,7 @@ const dayOfMonthLowerLimit = 1, dayOfMonthUpperLimit = 31;
 const monthLowerLimit = 1, monthUpperLimit = 12;
 const dayOfWeekLowerLimit = 0, dayOfWeekUpperLimit = 6;
 //file explorer
+const modeGeneral = 0;
 const modeFirefox = 1;
 const modeVLC = 2;
 const modeImpress = 3;
@@ -62,6 +63,12 @@ var currentRenameFile;
 var fileExplorerReturnElement = null;
 //screenshot modal
 var screenshotModalShown = false;
+//color picker
+var colorPickerElement = document.createElement("input");
+colorPickerElement.type = "color";
+colorPickerElement.onchange = e => {
+	getElement("setBackgroundInputTextfield").value = colorPickerElement.value.substring(1);
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////   general schedule functions   ///////////////////////////////////
@@ -1480,6 +1487,11 @@ function showPiscreenInfo() {
 	xmlhttp.send();
 }
 
+function showColorPicker(colorCode) {
+	colorPickerElement.value = "#" + colorCode;
+	colorPickerElement.click();
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////   event listener   /////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1634,9 +1646,11 @@ function showDesktopSettings() {
 function showSettingsFileExplorerButton() {
 	if (getElement("backgroundSelect").value == "color") {
 		getElement("fileExplorerBackgroundButton").hidden = true;
+		getElement("backgroundColorPickerButton").hidden = false;
 		getElement("setBackgroundInputTextfield").value = desktopConfig.desktop_bg.toString().substring(1);
 	} else {
 		getElement("fileExplorerBackgroundButton").hidden = false;
+		getElement("backgroundColorPickerButton").hidden = true;
 		getElement("setBackgroundInputTextfield").value = desktopConfig.wallpaper;
 	}
 }
