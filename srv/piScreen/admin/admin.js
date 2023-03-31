@@ -1689,7 +1689,7 @@ window.onload = function() {
 	let requestedUrl = 'cmd.php?id=5';
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.open('GET', requestedUrl, true);
-	xmlhttp.timeout = timeoutTime;
+	xmlhttp.timeout = 1900; //has to be shorter than the interval time
 	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
 	//load periodical the current infos about the system
 	xmlhttp.onload = () => {
