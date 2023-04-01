@@ -321,7 +321,7 @@ class ddcHandler(threading.Thread):
 										piScreenUtils.logging.warning("Tries to often to set display to off")
 										displayAction = 0
 								elif displayAction == 3: #Set Inputsource
-									piScreenUtils.logging.info("DDC Mode dosent support change of the display source")
+									piScreenUtils.logging.info("DDC Mode doesn't support change of the display source")
 									displayAction = 0
 							except Exception as err:
 								piScreenUtils.logging.error("Trouble while controling display")
@@ -394,7 +394,7 @@ class manuallyHandler(threading.Thread):
 							piScreenUtils.logging.warning("Tries to often to set display to off")
 							displayAction = 0
 					elif displayAction == 3: #Set Inputsource
-						piScreenUtils.logging.info("Manually Mode dosent support change of the display source")
+						piScreenUtils.logging.info("Manually Mode doesn't support change of the display source")
 						displayAction = 0
 				except Exception as err:
 					piScreenUtils.logging.error("Trouble while controling display")
@@ -1030,7 +1030,7 @@ def socketCmdInterpreter(data:dict) -> dict:
 					if piScreenUtils.isInt(data["parameter"]["index"]) and len(schedule["cron"]) > int(data["parameter"]["index"]):
 						threading.Thread(target=cronEntry(schedule["cron"][int(data["parameter"]["index"])]).run,args=(None,True)).start()
 					else:
-						piScreenUtils.logging.warning("Cron index dosent exists")
+						piScreenUtils.logging.warning("Cron index doesn't exists")
 						return {"code":4} #Wrong index
 				else:
 					piScreenUtils.logging.warning("There is no index field in parameter")
@@ -1166,7 +1166,6 @@ if __name__ == "__main__":
 	cronThread = cron()
 	cronThread.start()
 
-	os.system("touch " + piScreenUtils.paths.scheduleActive)
 	piScreenUtils.logging.info("Start subprocesses")
 	killAllSubprocesses()
 	os.system("unclutter -idle 5 &")
@@ -1211,8 +1210,8 @@ if __name__ == "__main__":
 		status["uptime"]["days"] = int(upTime / 60 / 60 / 24)
 		status["displayState"] = displayLastValue
 		status["display"] = {}
-		status["display"]["standbySet"] = os.path.isfile(piScreenUtils.paths.displayStandby)
-		status["display"]["onSet"] = os.path.isfile(piScreenUtils.paths.displayOn)
+		status["display"]["standbySet"] = (displayAction == 2)
+		status["display"]["onSet"] = (displayAction == 1)
 		status["modeInfo"] = {}
 		status["modeInfo"]["mode"] = mode
 		if mode == 1:

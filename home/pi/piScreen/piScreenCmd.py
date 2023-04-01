@@ -250,8 +250,8 @@ def configureDesktop():
 					piScreenUtils.logging.info(f"Set wallpaper to {os.path.abspath(sys.argv[indexOfElement])}")
 					os.system(f'pcmanfm "--set-wallpaper={os.path.abspath(sys.argv[indexOfElement])}"')
 				else:
-					piScreenUtils.logging.warning("Wallpaper File dose't exist")
-					verbose and print("Wallpaper File dose't exist")
+					piScreenUtils.logging.warning("Wallpaper File doesn't exist")
+					verbose and print("Wallpaper File doesn't exist")
 		time.sleep(0.5)
 		if f"--bg-color" in sys.argv:
 			indexOfElement = sys.argv.index(f"--bg-color") + 1
@@ -261,7 +261,7 @@ def configureDesktop():
 			else:
 				import re
 				if re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', sys.argv[indexOfElement]):
-					piScreenUtils.logging.info(f"Set backgroudcolor to {os.path.abspath(sys.argv[indexOfElement])}")
+					piScreenUtils.logging.info(f"Set backgroundcolor to {os.path.abspath(sys.argv[indexOfElement])}")
 					desktopConfig = open("/home/pi/.config/pcmanfm/LXDE-pi/desktop-items-0.conf","r").readlines()
 					count = 0
 					found = False
@@ -923,7 +923,7 @@ for i, origItem in enumerate(sys.argv):
 						os.system(f"head -1 {sys.argv[i + 3]} | tr -d '\n' | sudo xargs -0 htpasswd -c -b /etc/apache2/.piScreen_htpasswd '{sys.argv[i + 1]}'")
 						os.remove(sys.argv[i + 3])
 					else:
-						piScreenUtils.logging.error("Passwortfile dosn't exist")
+						piScreenUtils.logging.error("Passwortfile dorsn't exist")
 						verbose and print("Passwordfile doesn't exist")
 				else:
 					piScreenUtils.logging.error("No passwordfile specified")
@@ -1253,5 +1253,5 @@ for i, origItem in enumerate(sys.argv):
 			verbose and print("Core will stop")
 			piScreenUtils.logging.info("Core will stop")
 		else:
-			verbose and print("Core doesn't seem to responde")
-			piScreenUtils.logging.info("Core doesn't seem to responde")
+			verbose and print("Core doesn't seem to respond")
+			piScreenUtils.logging.info("Core doesn't seem to respond")
