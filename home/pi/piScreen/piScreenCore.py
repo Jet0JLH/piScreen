@@ -708,15 +708,14 @@ class trigger(threading.Thread):
 			elif self.mode == 30: #Display state on [change,true,false]
 				while self.active:
 					try:
-						state = open(piScreenUtils.paths.displayStatus,"r").read().strip()
-						if self.lastState != state:
-							if state == "on":
+						if self.lastState != displayLastValue:
+							if displayLastValue == "on":
 								self.execute("change")
 								self.execute("true")
 							elif self.lastState == "on" or self.lastState == None:
 								self.execute("change")
 								self.execute("false")
-							self.lastState = state
+							self.lastState = displayLastValue
 					except Exception as err:
 						piScreenUtils.logging.debug(err)
 					self.isInFirstrun = False
