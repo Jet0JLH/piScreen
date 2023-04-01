@@ -209,6 +209,59 @@ class cecHandler(threading.Thread):
 		elif cmd["opcode"] == cec.CEC_OPCODE_ACTIVE_SOURCE:
 			if cmd["parameters"] == b'\x00\x00':
 				if displayLastValue != "on": displayLastValue = "on" ; piScreenUtils.logging.info("Display status changed to on")
+		elif cmd["opcode"] == cec.CEC_OPCODE_USER_CONTROL_PRESSED:
+			if cmd["parameters"] == b'!':
+				threading.Thread(target=runTrigger,args=(31,"1")).start()
+			elif cmd["parameters"] == b'"':
+				threading.Thread(target=runTrigger,args=(31,"2")).start()
+			elif cmd["parameters"] == b'#':
+				threading.Thread(target=runTrigger,args=(31,"3")).start()
+			elif cmd["parameters"] == b'$':
+				threading.Thread(target=runTrigger,args=(31,"4")).start()
+			elif cmd["parameters"] == b'%':
+				threading.Thread(target=runTrigger,args=(31,"5")).start()
+			elif cmd["parameters"] == b'&':
+				threading.Thread(target=runTrigger,args=(31,"6")).start()
+			elif cmd["parameters"] == b"'":
+				threading.Thread(target=runTrigger,args=(31,"7")).start()
+			elif cmd["parameters"] == b'(':
+				threading.Thread(target=runTrigger,args=(31,"8")).start()
+			elif cmd["parameters"] == b')':
+				threading.Thread(target=runTrigger,args=(31,"9")).start()
+			elif cmd["parameters"] == b' ':
+				threading.Thread(target=runTrigger,args=(31,"0")).start()
+			elif cmd["parameters"] == b'\x00':
+				threading.Thread(target=runTrigger,args=(31,"accept")).start()
+			elif cmd["parameters"] == b'\x01':
+				threading.Thread(target=runTrigger,args=(31,"up")).start()
+			elif cmd["parameters"] == b'\x02':
+				threading.Thread(target=runTrigger,args=(31,"down")).start()
+			elif cmd["parameters"] == b'\x03':
+				threading.Thread(target=runTrigger,args=(31,"left")).start()
+			elif cmd["parameters"] == b'\x04':
+				threading.Thread(target=runTrigger,args=(31,"right")).start()
+			elif cmd["parameters"] == b'\r':
+				threading.Thread(target=runTrigger,args=(31,"exit")).start()
+			elif cmd["parameters"] == b'D':
+				threading.Thread(target=runTrigger,args=(31,"play")).start()
+			elif cmd["parameters"] == b'F':
+				threading.Thread(target=runTrigger,args=(31,"pause")).start()
+			elif cmd["parameters"] == b'E':
+				threading.Thread(target=runTrigger,args=(31,"stop")).start()
+			elif cmd["parameters"] == b'I':
+				threading.Thread(target=runTrigger,args=(31,"forward")).start()
+			elif cmd["parameters"] == b'H':
+				threading.Thread(target=runTrigger,args=(31,"rewind")).start()
+			elif cmd["parameters"] == b'G':
+				threading.Thread(target=runTrigger,args=(31,"record")).start()
+			elif cmd["parameters"] == b'r':
+				threading.Thread(target=runTrigger,args=(31,"red")).start()
+			elif cmd["parameters"] == b's':
+				threading.Thread(target=runTrigger,args=(31,"green")).start()
+			elif cmd["parameters"] == b't':
+				threading.Thread(target=runTrigger,args=(31,"yellow")).start()
+			elif cmd["parameters"] == b'q':
+				threading.Thread(target=runTrigger,args=(31,"blue")).start()
 
 class ddcHandler(threading.Thread):
 	def __init__(self):
@@ -668,6 +721,8 @@ class trigger(threading.Thread):
 						piScreenUtils.logging.debug(err)
 					self.isInFirstrun = False
 					time.sleep(1)
+			elif self.mode == 31: #CEC key pressed
+				pass #Execute external
 			elif self.mode == 40: #Mode changed [true,<mode>]
 				import subprocess
 				while self.active:
