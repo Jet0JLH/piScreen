@@ -849,10 +849,10 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 11: #Reboot
 		if scheduleSaveMode: time.sleep(300) ; piScreenUtils.logging.info("We are in save mode. Reboot starts in 300s")
-		os.system(piScreenUtils.paths.syscall + "--reboot")
+		os.system(f"sudo {piScreenUtils.paths.syscall} --reboot")
 	elif cmd == 12: #Shutdown
 		if scheduleSaveMode: time.sleep(300) ; piScreenUtils.logging.info("We are in save mode. Shutdown starts in 300s")
-		os.system(piScreenUtils.paths.syscall + "--shutdown")
+		os.system(f"sudo {piScreenUtils.paths.syscall} --shutdown")
 	elif cmd == 13: #Call commandset
 		if parameter:
 			commandsetTask(parameter)
