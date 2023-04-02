@@ -908,6 +908,11 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 		os.system(f"{piScreenUtils.paths.syscall} --play-vlc")
 	elif cmd == 55: #PauseVLC
 		os.system(f"{piScreenUtils.paths.syscall} --pause-vlc")
+	elif cmd == 56: #VolumeVLC
+		if parameter:
+			os.system(f'{piScreenUtils.paths.syscall} --volume-vlc "{parameter}"')
+		else:
+			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 60: #StartImpress
 		if parameter:
 			os.system(f'{piScreenUtils.paths.syscall} --start-impress "{parameter}"')
