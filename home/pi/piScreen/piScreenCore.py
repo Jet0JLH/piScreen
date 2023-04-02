@@ -88,11 +88,18 @@ class vlcHandler(threading.Thread):
 					self.info["state"] = str(self.vlcMediaPlayer.get_state())
 					self.info["time"] = self.vlcMediaPlayer.get_time()
 					self.info["length"] = self.vlcMediaPlayer.get_length()
+					self.info["volume"] = self.vlcMediaPlayer.audio_get_volume()
 					for item in self.actions:
 						if item == "play": piScreenUtils.logging.info("Play VLC") ; self.vlcMediaPlayer.play()
 						elif item == "play/pause": piScreenUtils.logging.info("Play / Pause VLC") ; self.vlcMediaPlayer.pause()
 						elif item == "pause": piScreenUtils.logging.info("Pause VLC") ; self.vlcMediaPlayer.set_pause(1)
 						elif item == "restart": piScreenUtils.logging.info("Restart VLC") ; self.vlcMediaPlayer.set_position(0)
+						elif item.startswith("volume"):
+							try:
+								piScreenUtils.logging.info(f"Set volume to {item[6:]}")
+								self.vlcMediaPlayer.audio_set_volume(int(item[6:]))
+							except:
+								piScreenUtils.logging.error("The volume is no int")
 					self.actions.clear()
 				except Exception as err:
 					self.info = {}

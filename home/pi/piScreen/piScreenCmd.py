@@ -32,6 +32,8 @@ def printHelp():
 	Pause the video if mode is VLC
 --play-vlc
 	Play the video if mode is VLC
+--volume-vlc <value>
+	Set the audio volume to the given value
 --start-impress <file>
 	Starts Libreoffice Impress
 --stop-impress
@@ -875,13 +877,20 @@ for i, origItem in enumerate(sys.argv):
 		stopVLC()
 	elif item == "--play-pause-vlc":
 		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"play/pause"}})
-		pass
 	elif item == "--pause-vlc":
 		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"pause"}})
-		pass
 	elif item == "--play-vlc":
 		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"play"}})
-		pass
+	elif item == "--volume-vlc":
+		if i + 1 < len(sys.argv):
+			if piScreenUtils.isInt(sys.argv[i + 1]):
+				sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":f"volume{sys.argv[i + 1]}"}})
+			else:
+				piScreenUtils.logging.warning("Volume is no int")
+				verbose and print("Volume is no int")
+		else:
+			piScreenUtils.logging.warning("Not enough arguments")
+			verbose and print("Not enough arguments")
 	elif item == "--start-impress":
 		if i + 1 < len(sys.argv):
 			startImpress(sys.argv[i + 1])
