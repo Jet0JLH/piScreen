@@ -4,6 +4,7 @@ import logging, logging.handlers, __main__, os
 class paths:
 	ramdisk = "/media/ramdisk/"
 	softwareDir = "/home/pi/piScreen/"
+	wwwDir = "/srv/piScreen/"
 	settings = f"{softwareDir}settings.json"
 	schedule = f"{softwareDir}schedule.json"
 	manifest = f"{softwareDir}manifest.json"

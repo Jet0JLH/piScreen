@@ -4,6 +4,23 @@ from OpenSSL.crypto import FILETYPE_PEM, load_certificate
 from base64 import b64encode
 from datetime import datetime
 
+def printInfo(value:str,exitCode:int=-1,style=0):
+	if style == 0: print(value)
+	elif style == 1: print(f"\33[4;94m{value}\33[0m")
+	elif style == 2: print(f"\33[92m{value}\33[0m")
+	elif style == 3: print(f"\33[93m{value}\33[0m")
+	info["log"].append(f"{datetime.now()} [INFO] {value}")
+	if exitCode >= 0: info["verbose"] and print(info) ; exit(exitCode)
+
+def printError(value:str,exitCode:int=-1):
+	print(f"\33[91m{value}\33[0m",file=sys.stderr)
+	info["log"].append(f"{datetime.now()} [ERROR] {value}")
+	if exitCode >= 0: info["verbose"] and print(info) ; exit(exitCode)
+
+if os.geteuid() != 0:
+	printError("Please run this script with root privileges!",1)
+import home.pi.piScreen.piScreenUtils as piScreenUtils
+
 SHA256OID = "OID.2.16.840.1.101.3.4.2.1"
 SHA384OID = "OID.2.16.840.1.101.3.4.2.2"
 SHA512OID = "OID.2.16.840.1.101.3.4.2.3"
@@ -22,7 +39,8 @@ piScreenFiles = {
 		{"type":"dir","path":f"{piScreenUtils.paths.softwareDir}certs","tmp":f"{tmpPath}/certs","chown":["pi","pi"]},
 		{"type":"file","path":f"{piScreenUtils.paths.settings}","tmp":f"{tmpPath}/settings.json","chown":["pi","pi"]},
 		{"type":"file","path":f"{piScreenUtils.paths.schedule}","tmp":f"{tmpPath}/schedule.json","chown":["pi","pi"]},
-		{"type":"file","path":"/etc/apache2/.piScreen_htpasswd","tmp":f"{tmpPath}/.piScreen_htpasswd","chown":["pi","pi"]}
+		{"type":"file","path":"/etc/apache2/.piScreen_htpasswd","tmp":f"{tmpPath}/.piScreen_htpasswd","chown":["pi","pi"]},
+		{"type":"dir","path":f"{piScreenUtils.paths.wwwDir}/admin/data","tmp":f"{tmpPath}/data","chown":["pi","pi"]}
 	],
 	"old": [
 		{"type":"dir","path":piScreenUtils.paths.softwareDir},
@@ -39,22 +57,13 @@ piScreenFiles = {
 		{"type":"file","path":"/home/pi/.config/autostart/piScreenCore.desktop","facl":[["pi","rwx"],["www-data","rwx"]]},
 		{"type":"file","path":"/etc/apache2/sites-available/piScreen.conf"},
 		{"type":"file","path":"/etc/sudoers.d/050_piScreen-nopasswd","chmod":"0440"},
-		{"type":"file","path":"/etc/firefox-esr/piScreen.js"}
+		{"type":"file","path":"/etc/firefox-esr/piScreen.js"},
+		{"type":"mkdir","path":f"{piScreenUtils.paths.wwwDir}/admin/data/general"},
+		{"type":"mkdir","path":f"{piScreenUtils.paths.wwwDir}/admin/data/firefox"},
+		{"type":"mkdir","path":f"{piScreenUtils.paths.wwwDir}/admin/data/vlc"},
+		{"type":"mkdir","path":f"{piScreenUtils.paths.wwwDir}/admin/data/impress"}
 	]
 }
-
-def printInfo(value:str,exitCode:int=-1,style=0):
-	if style == 0: print(value)
-	elif style == 1: print(f"\33[4;94m{value}\33[0m")
-	elif style == 2: print(f"\33[92m{value}\33[0m")
-	elif style == 3: print(f"\33[93m{value}\33[0m")
-	info["log"].append(f"{datetime.now()} [INFO] {value}")
-	if exitCode >= 0: info["verbose"] and print(info) ; exit(exitCode)
-
-def printError(value:str,exitCode:int=-1):
-	print(f"\33[91m{value}\33[0m",file=sys.stderr)
-	info["log"].append(f"{datetime.now()} [ERROR] {value}")
-	if exitCode >= 0: info["verbose"] and print(info) ; exit(exitCode)
 
 def install():
 	killProcesses()
@@ -206,6 +215,11 @@ def installPiScreenFiles():
 					shutil.copytree(tmpPath,item["path"],dirs_exist_ok=True)
 					setRights(item)
 			except: printError(f"Unable to copy dir from {tmpPath} to {item['path']}",1)
+		elif item["type"] == "mkdir":
+			printInfo(f"Create directory {item['path']}")
+			try:
+				if not info["dry"]: os.makedirs(item["path"],exist_ok=True)
+			except: printError(f"Unable to create directory {item['path']}",1)
 		elif item["type"] == "rights":
 			setRights(item)
 		else:
@@ -465,9 +479,6 @@ def killProcesses():
 	os.system("killall vlc")
 	os.system("killall soffice.bin")
 
-if os.geteuid() != 0:
-	printError("Please run this script with root privileges!",1)
-import home.pi.piScreen.piScreenUtils as piScreenUtils
 info = {"log":[]}
 if "--dry" in sys.argv: info["dry"] = True ; printInfo("Script is in dryrun")
 else: info["dry"] = False
