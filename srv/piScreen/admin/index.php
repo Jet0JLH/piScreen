@@ -252,12 +252,13 @@
 								<div id="commandsetCollectionList" class="list-group" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
 
 								</div>
-							<button id='commandsetEntryButtonAdd' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showCommandsetModal();'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-commandset'>Neues Commandset</span></button>
+								<button id='commandsetEntryButtonAdd' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showCommandsetModal();'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-commandset'>Neues Commandset</span></button>
 							</div>
 							<div class="carousel-item">
 								<div id="triggerCollectionList" class="list-group" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
 
 								</div>
+								<button id='triggerEntryButtonAdd' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showTriggerModal();'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-trigger'>Neuer Trigger</span></button>
 							</div>
 						</div>
 					</div>
@@ -483,6 +484,32 @@ for (let w = 0; w < 5; w++) {
 							<td>
 								<button id='commandsetEntryButtonSave' class='disableOnDisconnect btn btn-outline-success m-1' onclick='saveCommandsetEntry();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
 								<button id='commandsetEntryButtonCancel' class='toggleDarkLight btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
+							</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div id='triggerModal' class='modal fade' tabindex='-1'>
+		<div class='modal-xl modal-dialog modal-dialog-centered modal-dialog-scrollable modal-fullscreen-xl-down'>
+			<div class='modal-content'>
+				<div class='modal-header'>
+					<h5 id='triggerModalTitle' class='modal-title'></h5>
+					<button class='btn-close btn-close-white' data-bs-dismiss='modal'></button>
+				</div>
+				<div id='triggerModalBody' class='modal-body'>
+
+				</div>
+				<div class='modal-footer'>
+					<table style="width: 100%;">
+						<tr>
+							<td style="width: 50%;">
+								<button id="triggerButtonDelete" class="disableOnDisconnect btn btn-outline-danger m-1" onclick='deleteCommandsetEntry();'><i class='bi bi-trash pe-2'></i><span lang-data='delete-trigger'></span></button>
+							</td>
+							<td>
+								<button id='triggerButtonSave' class='disableOnDisconnect btn btn-outline-success m-1' onclick='saveCommandsetEntry();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
+								<button id='triggerButtonCancel' class='toggleDarkLight btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
 							</td>
 						</tr>
 					</table>

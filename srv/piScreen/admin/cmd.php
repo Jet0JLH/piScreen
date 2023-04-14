@@ -353,7 +353,7 @@
 		executeCommand("$syscall --configure-desktop --bg-color \\#" . $_GET["color"], true);
 	}
 	elseif ($_GET['id'] == 33) { //Set background wallpaper
-		executeCommand("$syscall --configure-desktop --wallpaper " . $_GET["wallpaper"], true);
+		executeCommand("$syscall --configure-desktop --wallpaper \"" . $_GET["path"] . "\"", true);
 	}
 
 ?>

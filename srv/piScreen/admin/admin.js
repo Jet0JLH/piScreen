@@ -23,11 +23,13 @@ var scheduleObj;
 var scheduleToImport = null;
 //trigger
 var startupTriggerIndex = -1;
-var triggerCollection = [
+var triggerCollection = [//[]name, []list cases, []case, []attributes
 	["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-	["file-exists", "text"], ["file-changed", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-	["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+	["file-exists", [["true", "text"], ["false", "text"], ["change", "text"]]], ["file-changed", [["true", "text"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+	["display-state-on", [["true", "text"], ["false", "text"], ["change", "text"]]], ["cec-key-pressed", [["1"], ["2"], ["3"], ["4"], ["5"], ["6"], ["7"], ["8"], ["9"], ["0"], ["accept"], ["up"], ["down"], ["left"], ["right"], ["exit"], ["play"], ["pause"], ["stop"], ["forward"], ["rewind"], ["record"], ["red"], ["green"], ["yellow"], ["blue"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+	["mode-changed", [["true", "text"], ["firefox", "text"], ["vlc", "text"], ["impress", "text"], ["none", "text"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false]
 ];
+var triggerEntryCount = 0;
 //general modal
 var modal = new bootstrap.Modal(getElement("modal"));
 var modalCloseBtn = modal._element.getElementsByClassName('btn-close')[0];
@@ -38,6 +40,7 @@ var modalActionBtn = getElement("modal-actionBtn");
 //modals
 var scheduleModal = new bootstrap.Modal(getElement("scheduleModal"));
 var commandsetModal = new bootstrap.Modal(getElement("commandsetModal"));
+var triggerModal = new bootstrap.Modal(getElement("triggerModal"));
 var cronEditorModal = new bootstrap.Modal(getElement("cronEditorModal"));
 var fileExplorerModal = new bootstrap.Modal(getElement("fileExplorerModal"));
 var renameModal = new bootstrap.Modal(getElement("renameModal"));
@@ -66,9 +69,7 @@ var screenshotModalShown = false;
 //color picker
 var colorPickerElement = document.createElement("input");
 colorPickerElement.type = "color";
-colorPickerElement.onchange = e => {
-	getElement("setBackgroundInputTextfield").value = colorPickerElement.value.substring(1);
-}
+colorPickerElement.onchange = () => {getElement("setBackgroundInputTextfield").value = colorPickerElement.value.substring(1);};
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////   general schedule functions   ///////////////////////////////////
@@ -136,9 +137,11 @@ function loadScheduleJson(jsonString) {
 	}
 
 	getElement("triggerCollectionList").innerHTML = "";
+	triggerEntryCount = 0;
 	for (let i = 0; i < scheduleObj.trigger.length; i++) {//trigger
-		if (scheduleObj.trigger[i].trigger == 1) continue; //skip the startup trigger
-		generateTriggerEntry(scheduleObj.trigger[i]);
+		if (scheduleObj.trigger[i].trigger != 1) //skip the startup trigger
+			generateTriggerEntry(scheduleObj.trigger[i]);
+		triggerEntryCount += 1;
 	}
 }
 
@@ -786,18 +789,19 @@ function cronEditorMonthsUnselectAll() {
 //////////////////////////////////////   trigger functions   ///////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-function generateTriggerEntry(triggerObj) {	
+function generateTriggerEntry(triggerObj) {
+	let tempTriggerCount = triggerEntryCount;
 	let triggerEntryObj = document.createElement('div');
 	triggerEntryObj.id = "triggerEntry" + triggerObj.trigger;
 	triggerEntryObj.className = "disableOnDisconnect list-group-item list-group-item-action border border-primary p-3";
 	triggerEntryObj.style.backgroundColor = "transparent";
-	//triggerEntryObj.onclick = () => {showScheduleModal(scheduleEntryId);};
+	triggerEntryObj.onclick = () => {showTriggerModal(tempTriggerCount);};
 	triggerEntryObj.style.cursor = "pointer";
 	triggerEntryObj.innerHTML = `<div class="d-flex w-100 justify-content-between">
 	<p><i class='bi bi-lightning bigIcon pe-2'></i>${getLanguageAsText(triggerCollection[triggerObj.trigger][0])}</p>
 	<p><span lang-data="active">${getLanguageAsText("active")}</span>: ${triggerObj.enabled ? "<i class='bi bi-check-lg bigIcon pe-2' style='color: green;'></i>" : "<i class='bi bi-x-lg bigIcon pe-2' style='color: red;'></i>"}</p>
 </div>
-<i class='bi bi-chat-left-quote bigIcon pe-2'></i><span lang-data="comment">${getLanguageAsText("comment")}</span>: ${triggerObj.comment == undefined ? "-" : triggerObj.comment}`;
+<i class='bi bi-chat-left-quote bigIcon pe-2'></i><span lang-data="description">${getLanguageAsText("description")}</span>: ${triggerObj.comment == undefined ? "-" : triggerObj.comment}`;
 	getElement("triggerCollectionList").appendChild(triggerEntryObj);
 }
 
@@ -835,19 +839,209 @@ function addParameterToTrigger(triggerId, commandId, parameter) {
 	div.appendChild(label);
 }
 
-function triggerSaved(saved, triggerId) {
-	let saveButtonElement = getElement("trigger" + triggerId + "SaveButton");
-	let executeButtonElement = getElement("trigger" + triggerId + "ExecuteButton");
-	if (saved) {
-		saveButtonElement.className = "disableOnDisconnect btn btn-success mt-2";
-		saveButtonElement.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='saved'>" + getLanguageAsText("saved") + "</span>";
-		executeButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2";
-		executeButtonElement.disabled = false;
+function showTriggerModal(triggerEntryId=0) {
+	let obj;
+	if (triggerEntryId == 0) {//default new entry
+		obj = {
+			"enabled": true,
+			"trigger": 0,
+			"cases": {}
+		};
 	} else {
-		saveButtonElement.className = "disableOnDisconnect btn btn-outline-success mt-2";
+		obj = scheduleObj.trigger[triggerEntryId];
+	}
+	
+	getElement("triggerModalTitle").innerHTML = `<i class="bi bi-terminal bigIcon pe-2"></i><span lang-data="trigger">${getLanguageAsText("trigger")}</span>: <span lang-data="trigger">${getLanguageAsText(triggerCollection[obj.trigger][0])}</span>`;
+	getElement("triggerModalBody").innerHTML = `<table id="triggerEntryCaseCollection" style='width: 100%;'>
+	<tr>
+		<td>
+			<div class="form-check form-switch m-2" style='width: 50%;'>
+				<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="triggerEntryEnabledSwitchCheck" onchange="triggerSaved(false);" ${obj.enabled ? "checked" : ""}>
+				<label class="form-check-label" for="triggerEntryEnabledSwitchCheck" lang-data="active">${getLanguageAsText("active")}</label>
+			</div>
+		</td>
+		<td colspan="2" style='width: 50%;'>
+			<span class='ms-2'>ID: </span><span id='triggerId'>${obj.trigger}</span>
+			<button id="triggerEntryButtonExecute" class="btn btn-outline-warning mb-3" onclick='' style='float: right;' hidden><i class='bi bi-play pe-2'></i><span id='triggerEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="2" style='width: 50%;'>
+			<div class='form-floating mb-3'>
+				<select id='triggerNameSelect' class='disableOnDisconnect form-select border border-secondary' onchange='triggerSaved(false); removeAllCaseAddButtons(); addAllCaseAddButton(value);' value='${obj.trigger}'>
+				</select>
+				<label for="triggerNameSelect" lang-data="choose-trigger">${getLanguageAsText("choose-trigger")}</label>
+			</div>
+		</td>
+		<td style='width: 50%;'>
+			<div class='form-floating mb-3'>
+				<input id='triggerEntryName' type='text' class='disableOnDisconnect form-control border border-secondary' value='${obj.comment == undefined ? "" : obj.comment}' onkeyup='triggerSaved(false); showTriggerEntryTitle();'>
+				<label for='triggerEntryName' lang-data='description'>${getLanguageAsText("description")}</label>
+			</div>
+		</td>
+	</tr>
+</table>
+<div id="triggerEntryButtonNewCaseDiv" class="btn-group dropend">
+	<button id='triggerEntryButtonNewCase' class="disableOnDisconnect btn btn-outline-success mt-2 dropdown-toggle" data-bs-toggle="dropdown"><i class='bi bi-plus-lg pe-2'></i><span lang-data='add-trigger-case'>${getLanguageAsText("add-trigger-case")}</span></button>
+	<ul id="triggerButtonAddCaseList" class="dropdown-menu dropdown-menu-dark">
+	</ul>
+</div>`;
+
+	for (let i = 0; i < triggerCollection.length; i++) {
+		if (triggerCollection[i][0] + "+" != "+") {
+			let opt = document.createElement("option");
+			opt.value = i;
+			opt.innerHTML = getLanguageAsText(triggerCollection[i][0]);
+			opt.selected = i == obj.trigger ? true : false;
+
+			getElement("triggerNameSelect").appendChild(opt);
+		}
+	}
+	
+	triggerModal.show();
+
+	let triggerCases = Object.keys(obj.cases);
+	for (let i = 0; i < Object.keys(obj.cases).length; i++) {
+		addCaseRow(triggerCases[i], obj.cases[triggerCases[i]].commandset, obj.cases[triggerCases[i]].command, obj.cases[triggerCases[i]].parameter);
+	}
+	for (let i = 0; i < triggerCollection[obj.trigger][1].length; i++) {
+		if (!triggerCases.includes(triggerCollection[obj.trigger][1][i][0])) {
+			addCaseAddButton(triggerCollection[obj.trigger][1][i][0]);
+		}
+	}
+
+	enableElements(prevItemsEnabled);
+}
+
+function addCaseAddButton(triggerCase) {
+	let newCase = document.createElement("li");
+	newCase.id = "caseListItem" + triggerCase;
+	newCase.innerHTML = `<button class="dropdown-item" onclick='triggerSaved(false); addCaseRow(this.innerHTML); removeCaseAddButton("${triggerCase}");'>${triggerCase}</button>`;
+	getElement("triggerButtonAddCaseList").appendChild(newCase);
+}
+
+function removeCaseAddButton(triggerCase) {
+	getElement("caseListItem" + triggerCase).remove();
+}
+
+function removeCaseRow(triggerCase) {
+	getElement("caseRow" + triggerCase).remove();
+}
+
+function addCaseRow(triggerCase, commandset=0, command=0, parameter="") {
+	let newTriggerEntryObj = document.createElement('tr');
+	newTriggerEntryObj.id = "caseRow" + triggerCase;
+	newTriggerEntryObj.setAttribute("case", triggerCase);
+	newTriggerEntryObj.className = "border-top border-bottom border-primary caseRow";
+	newTriggerEntryObj.innerHTML = `<td colspan="3" class='p-2' style='width: 50%;'>
+	<table class="w-100">
+		<tr>
+			<td colspan="2">
+				<h5><span lang-data="case">${getLanguageAsText("case")}</span>: <span id="triggerCase">${triggerCase}</span></h5>
+			</td>
+			<td>
+			</td>
+		</tr>
+		<tr>
+			<td style='width: 45%;'>
+				<div class='form-floating p-1'>
+					<select id='triggerEntryCommandSelect${triggerCase}' class='disableOnDisconnect form-select border border-secondary commandSelect' onchange='triggerSaved(false); addParameterToTriggerCaseCommand(${triggerCase}, value);'>
+					</select>
+					<label for="triggerEntryCommandSelect${triggerCase}" lang-data="choose-command">${getLanguageAsText("choose-command")}</label>
+				</div>
+			</td>
+			<td id='triggerCaseCommand${triggerCase}ParameterCell' class='p-1' style='width: 45%;'>
+			</td>
+			<td class='p-2' style='width: 10%;'>
+				<button id="triggerCaseButtonDelete${triggerCase}" class="disableOnDisconnect btn btn-danger" onclick='triggerSaved(false); removeCaseRow("${triggerCase}"); addCaseAddButton("${triggerCase}");' style='float: right;'><i class='bi bi-trash'></i></button>
+			</td>
+		</tr>
+		<tr>
+			<td colspan="2">
+				<div class='form-floating p-1'>
+					<select id='triggerEntryCommandsetSelect${triggerCase}' class='disableOnDisconnect form-select border border-secondary' onchange="triggerSaved(false);" value='${commandset}'>
+					</select>
+					<label for="triggerEntryCommandsetSelect${triggerCase}" lang-data="choose-commandset">${getLanguageAsText("choose-commandset")}</label>
+				</div>
+			</td>
+			<td>
+			</td>
+		</tr>
+	</table>
+</td>`;
+	//Adding element to document
+	getElement("triggerEntryCaseCollection").appendChild(newTriggerEntryObj);
+
+	//Adding dropdown options
+	addCommandsToDropdown("triggerEntryCommandSelect" + triggerCase);
+	getElement("triggerEntryCommandSelect" + triggerCase).value = command;
+
+	addParameterToTriggerCaseCommand(triggerCase, command, parameter);
+
+	addCommandsetsToDropdown("triggerEntryCommandsetSelect" + triggerCase, commandset);
+}
+
+function addParameterToTriggerCaseCommand(triggerCase, commandId, parameter) {
+	let cell = getElement("triggerCaseCommand" + triggerCase + "ParameterCell");
+	cell.innerHTML = "";
+	//add element
+	let div = document.createElement("div");
+	div.id = "triggerEntryParameterInputDiv";
+	div.className = "form-floating";
+
+	if (commandId < 0 || commandId > commandCollection.length - 1) {
+		return;
+	} else if (commandCollection[commandId][1] == false) {
+		return;
+	} else if (commandCollection[commandId][1] == "text") {
+		if (parameter == undefined) parameter = "";
+		div.innerHTML = `<input id='triggerEntryCommand${triggerCase}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandParameter' onkeyup='triggerSaved(false);' value='${parameter}' lang-data='parameter'>`;
+	} else if (Array.isArray(commandCollection[commandId][1])) {
+		let htmlSelect = `<select id='triggerEntryCommand${triggerCase}ParameterInput' onchange='triggerSaved(false);' class='disableOnDisconnect form-select border border-secondary commandParameter' value='${commandCollection[commandId][1][0][1]}'>\n`;
+		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
+			htmlSelect += `<option value='${commandCollection[commandId][1][i][0]}' lang-data='${commandCollection[commandId][1][i][1]}'>${getLanguageAsText(commandCollection[commandId][1][i][1])}</option>\n`;
+		}
+		htmlSelect += "</select>";
+		div.innerHTML = htmlSelect;
+		if (parameter == undefined) parameter = 0;
+	}
+
+	cell.appendChild(div);
+	getElement("triggerEntryCommand" + triggerCase + "ParameterInput").value = parameter;
+
+	//add label
+	let label = document.createElement("label");
+	label.htmlFor = "triggerEntryCommand" + triggerCase + "ParameterInput";
+	label.setAttribute('lang-data', 'parameter');
+	label.innerHTML = getLanguageAsText('parameter');
+	div.appendChild(label);
+}
+
+function removeAllCaseAddButtons() {
+	let caseList = document.getElementsByClassName("caseRow");
+	for (let i = caseList.length - 1; i >= 0; i--) caseList[i].remove();
+	getElement("triggerButtonAddCaseList").innerHTML = "";
+}
+
+function addAllCaseAddButton(triggerNumber) {
+	for (let i = 0; i < triggerCollection[triggerNumber][1].length; i++) {
+		addCaseAddButton(triggerCollection[triggerNumber][1][i][0]);
+	}
+}
+
+function triggerSaved(saved) {
+	let saveButtonElement = getElement("triggerButtonSave");
+	//let executeButtonElement = getElement("triggerExecuteButton");
+	if (saved) {
+		saveButtonElement.className = "disableOnDisconnect btn btn-success m-1";
+		saveButtonElement.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='saved'>" + getLanguageAsText("saved") + "</span>";
+		//executeButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2";
+		//executeButtonElement.disabled = false;
+	} else {
+		saveButtonElement.className = "disableOnDisconnect btn btn-outline-success m-1";
 		saveButtonElement.innerHTML = "<i class='bi bi-save pe-2'></i><span lang-data='save'>" + getLanguageAsText("save") + "</span>";
-		executeButtonElement.className = "btn btn-outline-warning mt-2";
-		executeButtonElement.disabled = true;
+		//executeButtonElement.className = "btn btn-outline-warning mt-2";
+		//executeButtonElement.disabled = true;
 	}
 }
 
@@ -2111,6 +2305,5 @@ function addCommandsetsToDropdown(dropdownId, selectedId=0) {
 		}
 	}
 }
-
 
 

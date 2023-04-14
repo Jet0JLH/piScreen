@@ -127,9 +127,16 @@
         "execute": "Execute",
         "name": "Name",
         "comment": "Comment",
+        "new-trigger": "Add trigger",
+        "delete-trigger": "Delete trigger",
+        "add-trigger-case": "Add case",
+        "case": "Case",
 
         "file-exists": "File exists",
         "file-changed": "File changed",
+        "display-state-on": "Display state on",
+        "cec-key-pressed": "Only CEC: remote key pressed",
+        "mode-changed": "Mode changed",
 
         "update-button": "Update available for version ",
         "update-info-header": "Update information",

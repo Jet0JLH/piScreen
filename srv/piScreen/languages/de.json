@@ -127,9 +127,16 @@
         "execute": "Ausführen",
         "name": "Name",
         "comment": "Kommentar",
+        "new-trigger": "Auslöser hinzufügen",
+        "delete-trigger": "Auslöser löschen",
+        "add-trigger-case": "Fall hinzufügen",
+        "case": "Fall",
 
         "file-exists": "Datei existiert",
         "file-changed": "Datei geändert",
+        "display-state-on": "Displaystatus an",
+        "cec-key-pressed": "Nur CEC: Fernbedingstaste gedrückt",
+        "mode-changed": "Modus geändert",
 
         "update-button": "Update vorhanden auf Version ",
         "update-info-header": "Information für das Update",
