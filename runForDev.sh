@@ -25,6 +25,10 @@ chown -R pi:pi /home/pi/.config/autostart/
 ln -s "$parent_path/etc/firefox-esr/piScreen.js" /etc/firefox-esr/piScreen.js
 ln -s /media/ramdisk/piScreenScreenshot.jpg /srv/piScreen/admin/
 ln -s /media/ramdisk/piScreenScreenshot-thumb.jpg /srv/piScreen/admin/
+mkdir -p /srv/piScreen/admin/data/general
+mkdir -p /srv/piScreen/admin/data/firefox
+mkdir -p /srv/piScreen/admin/data/vlc
+mkdir -p /srv/piScreen/admin/data/impress
 
 
 setfacl -Rm d:u:www-data:rwx /home/pi/piScreen
