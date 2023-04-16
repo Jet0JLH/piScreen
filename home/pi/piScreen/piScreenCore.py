@@ -283,11 +283,11 @@ class ddcHandler(threading.Thread):
 		while active:
 			if displayProtocol == "ddc": piScreenUtils.logging.info("Start display control over ddc") ; displayLastValue = "Unknown"
 			while displayProtocol == "ddc" and active:
-				monitors = monitorcontrol.get_monitors()
-				if len(monitors) <= 0: piScreenUtils.logging.warning("Unable to find display") ; displayLastValue = "Unknown"
-				else:
-					with monitors[0]: 
-						try:
+				try:
+					monitors = monitorcontrol.get_monitors()
+					if len(monitors) <= 0: piScreenUtils.logging.warning("Unable to find display") ; displayLastValue = "Unknown"
+					else:
+						with monitors[0]: 
 							mode = monitors[0].get_power_mode()
 							try:
 								#Check current state
@@ -333,10 +333,10 @@ class ddcHandler(threading.Thread):
 							except Exception as err:
 								piScreenUtils.logging.error("Trouble while controling display")
 								piScreenUtils.logging.debug(err)
-						except Exception as err:
-							piScreenUtils.logging.error("Trouble with reading DDC/CI power mode")
-							piScreenUtils.logging.debug(err)
-							displayLastValue = "Unknown"
+				except Exception as err:
+					piScreenUtils.logging.error("Trouble with reading DDC/CI Info")
+					piScreenUtils.logging.debug(err)
+					displayLastValue = "Unknown"
 				time.sleep(2)
 			time.sleep(1)
 		piScreenUtils.logging.info("End ddc handler")
@@ -1187,24 +1187,35 @@ if __name__ == "__main__":
 		#check if threads active
 		if not firefoxMode.is_alive():
 			piScreenUtils.logging.critical("Firefox handler thread is down!")
+			firefoxMode = firefoxHandler()
 			firefoxMode.start()
 		if not vlcMode.is_alive():
 			piScreenUtils.logging.critical("VLC handler thread is down!")
+			vlcMode = vlcHandler()
 			vlcMode.start()
 		if not impressMode.is_alive():
 			piScreenUtils.logging.critical("Impress handler thread is down!")
+			impressMode = impressHandler()
 			impressMode.start()
+		if not cecMode.is_alive():
+			piScreenUtils.logging.critical("CEC handler thread is down!")
+			cecMode = cecHandler()
+			cecMode.start()
 		if not ddcMode.is_alive():
 			piScreenUtils.logging.critical("DDC handler thread is down!")
+			ddcMode = ddcHandler()
 			ddcMode.start()
 		if not manuallyMode.is_alive():
 			piScreenUtils.logging.critical("Manually handler thread is down!")
+			manuallyMode = manuallyHandler()
 			manuallyMode.start()
 		if not sH.is_alive():
 			piScreenUtils.logging.critical("Socket handler thread is down!")
+			sH = socketHandler()
 			sH.start()
 		if not cronThread.is_alive():
 			piScreenUtils.logging.critical("Schedule thread is down!")
+			cronThread = cron()
 			cronThread.start()
 			
 		#readStatus

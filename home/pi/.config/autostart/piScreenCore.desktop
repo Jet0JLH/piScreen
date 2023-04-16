@@ -1,5 +1,5 @@
 [Desktop Entry] 
 Name=PiScreenCore
 Type=Application
-Exec=/home/pi/piScreen/piScreenCore.py
+Exec=sudo systemctl restart piScreen
 Terminal=false

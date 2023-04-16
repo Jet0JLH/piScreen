@@ -55,6 +55,7 @@ piScreenFiles = {
 		{"type":"dir","path":piScreenUtils.paths.softwareDir,"chown":["pi","pi"],"chmod":"775","facl":[["pi","rwx"],["www-data","rwx"]]},
 		{"type":"dir","path":"/srv/piScreen","chown":["www-data","www-data"],"chmod":"775","facl":[["pi","rwx"],["www-data","rwx"]]},
 		{"type":"file","path":"/home/pi/.config/autostart/piScreenCore.desktop","facl":[["pi","rwx"],["www-data","rwx"]]},
+		{"type":"file","path":"/home/pi/.config/autostart/piScreenCore.desktop","chown":["root","root"],"chmod":"755"},
 		{"type":"file","path":"/etc/apache2/sites-available/piScreen.conf"},
 		{"type":"file","path":"/etc/sudoers.d/050_piScreen-nopasswd","chmod":"0440"},
 		{"type":"file","path":"/etc/firefox-esr/piScreen.js"},
