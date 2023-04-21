@@ -187,28 +187,28 @@
 			</div>
 			<div class='col-sm-12 col-lg-6 mb-4'>
 				<div class='card p-3 shadow'>
-					<h1 class='pb-2'><i class='bi bi-lightning-charge bigIcon px-2'></i><span lang-data='startup-trigger'>Startuptrigger</span></h1>
+					<h1 class='pb-2'><i class='bi bi-lightning-charge bigIcon px-2'></i><span lang-data='startup-trigger'>startupTrigger</span></h1>
 					<div class='form-check form-switch m-1' style='display: flex; flex-flow: row wrap; align-items: center;'>
-						<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="trigger0EnabledSwitch" onchange='triggerSaved(false, 0);'></input>
-						<label for="trigger0EnabledSwitch" class="px-2" lang-data='active'>Startup trigger</label>
+						<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="startupTriggerEnabledSwitch" onchange='startupTriggerSaved(false);'></input>
+						<label for="startupTriggerEnabledSwitch" class="px-2" lang-data='active'>Startup trigger</label>
 						<i class='bi-question-octagon p-2' style='cursor: pointer;' id='triggerHelp' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="??" onclick='showModal(getLanguageAsText("help"), getLanguageAsText("triggerHelpText"), false, true, getLanguageAsText("ok"));'></i>
 					</div>
 					<div class='form-floating mb-4'>
-						<select id='trigger0CommandsetSelect' class='disableOnDisconnect commandsetDropdown form-select border-secondary' onchange='triggerSaved(false, 0);'>
+						<select id='startupTriggerCommandsetSelect' class='disableOnDisconnect commandsetDropdown form-select border-secondary' onchange='startupTriggerSaved(false);'>
 						</select>
-						<label for="trigger0CommandsetSelect" lang-data='choose-commandset'>Commandset auswählen</label>
+						<label for="startupTriggerCommandsetSelect" lang-data='choose-commandset'>Commandset auswählen</label>
 					</div>
 					<br>
 					<div class='form-floating mb-3'>
-						<select id='trigger0CommandSelect' class='disableOnDisconnect form-select border-secondary' onchange='triggerSaved(false, 0); addParameterToTrigger(0, value);'>
+						<select id='startupTriggerCommandSelect' class='disableOnDisconnect form-select border-secondary' onchange='startupTriggerSaved(false); addParameterToStartupTrigger(value);'>
 						</select>
-						<label for="trigger0CommandSelect" lang-data='choose-command'>Command auswählen</label>
+						<label for="startupTriggerCommandSelect" lang-data='choose-command'>Command auswählen</label>
 					</div>
-					<div id="trigger0ParameterCell" style='width: 100%;'>
+					<div id="startupTriggerParameterCell" style='width: 100%;'>
 					</div>
 					<div>
-						<button id="trigger0SaveButton" class="disableOnDisconnect btn btn-success mt-2" onclick='saveTrigger(0);'><i class='bi bi-check2 pe-2'></i><span lang-data="saved">Speichern</span></button>
-						<button id="trigger0ExecuteButton" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeStartupTrigger();'><i class='bi bi-play pe-2'></i><span id='executeStartupTriggerSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
+						<button id="startupTriggerSaveButton" class="disableOnDisconnect btn btn-success mt-2" onclick='saveStartupTrigger(true);'><i class='bi bi-check2 pe-2'></i><span lang-data="saved">Speichern</span></button>
+						<button id="startupTriggerExecuteButton" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeStartupTrigger();'><i class='bi bi-play pe-2'></i><span id='executestartupTriggerSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
 					</div>
 				</div>
 			</div>
@@ -258,7 +258,7 @@
 								<div id="triggerCollectionList" class="list-group" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
 
 								</div>
-								<button id='triggerEntryButtonAdd' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showTriggerModal();'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-trigger'>Neuer Trigger</span></button>
+								<button id='triggerEntryButtonAdd' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showTriggerModal(undefined, true);'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-trigger'>Neuer Trigger</span></button>
 							</div>
 						</div>
 					</div>
@@ -505,10 +505,10 @@ for (let w = 0; w < 5; w++) {
 					<table style="width: 100%;">
 						<tr>
 							<td style="width: 50%;">
-								<button id="triggerButtonDelete" class="disableOnDisconnect btn btn-outline-danger m-1" onclick='deleteCommandsetEntry();'><i class='bi bi-trash pe-2'></i><span lang-data='delete-trigger'></span></button>
+								<button id="triggerButtonDelete" class="disableOnDisconnect btn btn-outline-danger m-1" onclick='deleteTrigger();'><i class='bi bi-trash pe-2'></i><span lang-data='delete-trigger'></span></button>
 							</td>
 							<td>
-								<button id='triggerButtonSave' class='disableOnDisconnect btn btn-outline-success m-1' onclick='saveCommandsetEntry();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
+								<button id='triggerButtonSave' class='disableOnDisconnect btn btn-outline-success m-1' onclick='saveTrigger();' style='float: right;'><i class='bi bi-save pe-2'></i><span lang-data="save">Speichern</span></button>
 								<button id='triggerButtonCancel' class='toggleDarkLight btn btn-outline-light m-1' data-bs-dismiss='modal' style='float: right;'><i class='bi bi-x-circle pe-2'></i><span lang-data="cancel">Abbruch</span></button>
 							</td>
 						</tr>

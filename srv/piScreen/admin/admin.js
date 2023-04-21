@@ -115,23 +115,23 @@ function loadScheduleJson(jsonString) {
 		generateNewScheduleEntry(i, cronObj);
 	}
 
-	addCommandsToDropdown("trigger0CommandSelect");//trigger
-	addCommandsetsToDropdown("trigger0CommandsetSelect");//trigger
+	addCommandsToDropdown("startupTriggerCommandSelect");//trigger
+	addCommandsetsToDropdown("startupTriggerCommandsetSelect");//trigger
 	for (let i = 0; i < scheduleObj.trigger.length; i++) {//trigger parameter
 		let triggerObj = scheduleObj.trigger[i];
 		if (triggerObj.trigger == 1) {
 			startupTriggerIndex = i;
-			if (triggerObj.enabled != undefined) getElement("trigger0EnabledSwitch").checked = triggerObj.enabled;
-			else getElement("trigger0EnabledSwitch").checked = false;
+			if (triggerObj.enabled != undefined) getElement("startupTriggerEnabledSwitch").checked = triggerObj.enabled;
+			else getElement("startupTriggerEnabledSwitch").checked = false;
 			
 			if (triggerObj.cases.true.command != undefined) {
-				getElement("trigger0CommandSelect").value = triggerObj.cases.true.command;
-				addParameterToTrigger(0, triggerObj.cases.true.command, triggerObj.cases.true.parameter);
-			} else getElement("trigger0CommandSelect").value = 0;
+				getElement("startupTriggerCommandSelect").value = triggerObj.cases.true.command;
+				addParameterToStartupTrigger(triggerObj.cases.true.command, triggerObj.cases.true.parameter);
+			} else getElement("startupTriggerCommandSelect").value = 0;
 
 			if (triggerObj.cases.true.commandset != undefined) {
-				getElement("trigger0CommandsetSelect").value = triggerObj.cases.true.commandset;
-			} else getElement("trigger0CommandsetSelect").value = 0;
+				getElement("startupTriggerCommandsetSelect").value = triggerObj.cases.true.commandset;
+			} else getElement("startupTriggerCommandsetSelect").value = 0;
 			break;
 		}
 	}
@@ -805,21 +805,32 @@ function generateTriggerEntry(triggerObj) {
 	getElement("triggerCollectionList").appendChild(triggerEntryObj);
 }
 
-function addParameterToTrigger(triggerId, commandId, parameter) {
-	let cell = getElement("trigger" + triggerId + "ParameterCell");
+function addParameterToStartupTrigger(commandId, parameter) {
+	let cell = getElement("startupTriggerParameterCell");
 	cell.innerHTML = "";
 	//add element
 	let div = document.createElement("div");
-	div.id = "trigger" + triggerId + "ParameterInputDiv";
+	div.id = "startupTriggerParameterInputDiv";
 	div.className = "form-floating mb-3";
 
 	if (commandCollection[commandId][1] == false) {
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
-		div.innerHTML = `<input id='trigger${triggerId}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary' onkeyup='triggerSaved(false, 0);' lang-data='parameter'>`;
+		div.innerHTML = `<input id='startupTriggerParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary' onkeyup='startupTriggerSaved(false);' lang-data='parameter'>`;
+		if (parameter == undefined) parameter = "";
+	} else if (commandCollection[commandId][1] == "filemanager") {
+		div.className += " w-75";
+		div.innerHTML = `<input id='startupTriggerParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary' onkeyup='startupTriggerSaved(false);' value='${parameter}' lang-data='parameter'>`;
+		let btn = document.createElement("button");
+		btn.id = "startupTriggerFileManagerButtonOpen";
+		btn.onclick = () => showFileExplorerModal(commandCollection[commandId][2], false, getElement("startupTriggerParameterInput"));
+		btn.className = "disableOnDisconnect btn btn-outline-success mt-2";
+		btn.style.float = "right";
+		btn.innerHTML = `<i class="bi bi-folder"></i>`;
+		cell.appendChild(btn);
 		if (parameter == undefined) parameter = "";
 	} else if (Array.isArray(commandCollection[commandId][1])) {
-		let htmlSelect = `<select id='trigger${triggerId}ParameterInput' class='disableOnDisconnect form-select border border-secondary' style='width: 100%;' onchange='triggerSaved(false, 0);'>\n`;
+		let htmlSelect = `<select id='startupTriggerParameterInput' class='disableOnDisconnect form-select border border-secondary' style='width: 100%;' onchange='startupTriggerSaved(false);'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
 			htmlSelect += `<option value='${commandCollection[commandId][1][i][0]}' lang-data='${commandCollection[commandId][1][i][1]}'>${getLanguageAsText(commandCollection[commandId][1][i][1])}</option>\n`;
 		}
@@ -829,28 +840,29 @@ function addParameterToTrigger(triggerId, commandId, parameter) {
 	}
 
 	cell.appendChild(div);
-	getElement("trigger" + triggerId + "ParameterInput").value = parameter;
+	getElement("startupTriggerParameterInput").value = parameter;
 
 	//add label
 	let label = document.createElement("label");
-	label.htmlFor = "trigger" + triggerId + "ParameterInput";
+	label.htmlFor = "startupTriggerParameterInput";
 	label.setAttribute('lang-data', 'parameter');
 	label.innerHTML = getLanguageAsText('parameter');
 	div.appendChild(label);
 }
 
-function showTriggerModal(triggerEntryId=0) {
+function showTriggerModal(triggerEntryId=-1, newTrigger=false) {
 	let obj;
-	if (triggerEntryId == 0) {//default new entry
+	if (triggerEntryId == -1) {//default new entry
 		obj = {
 			"enabled": true,
-			"trigger": 0,
+			"trigger": 10,
 			"cases": {}
 		};
 	} else {
 		obj = scheduleObj.trigger[triggerEntryId];
 	}
-	
+
+	getElement("triggerModalTitle").setAttribute("newtrigger", newTrigger);
 	getElement("triggerModalTitle").innerHTML = `<i class="bi bi-terminal bigIcon pe-2"></i><span lang-data="trigger">${getLanguageAsText("trigger")}</span>: <span lang-data="trigger">${getLanguageAsText(triggerCollection[obj.trigger][0])}</span>`;
 	getElement("triggerModalBody").innerHTML = `<table id="triggerEntryCaseCollection" style='width: 100%;'>
 	<tr>
@@ -861,22 +873,22 @@ function showTriggerModal(triggerEntryId=0) {
 			</div>
 		</td>
 		<td colspan="2" style='width: 50%;'>
-			<span class='ms-2'>ID: </span><span id='triggerId'>${obj.trigger}</span>
+			<span class='ms-2'>ID: </span><span id='triggerId'>${triggerEntryId}</span>
 			<button id="triggerEntryButtonExecute" class="btn btn-outline-warning mb-3" onclick='' style='float: right;' hidden><i class='bi bi-play pe-2'></i><span id='triggerEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
 		</td>
 	</tr>
 	<tr>
 		<td colspan="2" style='width: 50%;'>
 			<div class='form-floating mb-3'>
-				<select id='triggerNameSelect' class='disableOnDisconnect form-select border border-secondary' onchange='triggerSaved(false); removeAllCaseAddButtons(); addAllCaseAddButton(value);' value='${obj.trigger}'>
+				<select id='triggerSelect' class='disableOnDisconnect form-select border border-secondary' onchange='triggerSaved(false); removeAllCaseAddButtons(); addAllCaseAddButton(value);' value='${obj.trigger}'>
 				</select>
-				<label for="triggerNameSelect" lang-data="choose-trigger">${getLanguageAsText("choose-trigger")}</label>
+				<label for="triggerSelect" lang-data="choose-trigger">${getLanguageAsText("choose-trigger")}</label>
 			</div>
 		</td>
 		<td style='width: 50%;'>
 			<div class='form-floating mb-3'>
-				<input id='triggerEntryName' type='text' class='disableOnDisconnect form-control border border-secondary' value='${obj.comment == undefined ? "" : obj.comment}' onkeyup='triggerSaved(false); showTriggerEntryTitle();'>
-				<label for='triggerEntryName' lang-data='description'>${getLanguageAsText("description")}</label>
+				<input id='triggerEntryDescription' type='text' class='disableOnDisconnect form-control border border-secondary' value='${obj.comment == undefined ? "" : obj.comment}' onkeyup='triggerSaved(false);'>
+				<label for='triggerEntryDescription' lang-data='description'>${getLanguageAsText("description")}</label>
 			</div>
 		</td>
 	</tr>
@@ -894,7 +906,7 @@ function showTriggerModal(triggerEntryId=0) {
 			opt.innerHTML = getLanguageAsText(triggerCollection[i][0]);
 			opt.selected = i == obj.trigger ? true : false;
 
-			getElement("triggerNameSelect").appendChild(opt);
+			getElement("triggerSelect").appendChild(opt);
 		}
 	}
 	
@@ -937,7 +949,7 @@ function addCaseRow(triggerCase, commandset=0, command=0, parameter="") {
 	<table class="w-100">
 		<tr>
 			<td colspan="2">
-				<h5><span lang-data="case">${getLanguageAsText("case")}</span>: <span id="triggerCase">${triggerCase}</span></h5>
+				<h5><span lang-data="case">${getLanguageAsText("case")}</span>: <span id="triggerCase" class="triggerCase">${triggerCase}</span></h5>
 			</td>
 			<td>
 			</td>
@@ -959,7 +971,7 @@ function addCaseRow(triggerCase, commandset=0, command=0, parameter="") {
 		<tr>
 			<td colspan="2">
 				<div class='form-floating p-1'>
-					<select id='triggerEntryCommandsetSelect${triggerCase}' class='disableOnDisconnect form-select border border-secondary' onchange="triggerSaved(false);" value='${commandset}'>
+					<select id='triggerEntryCommandsetSelect${triggerCase}' class='disableOnDisconnect form-select border border-secondary commandsetSelect' onchange="triggerSaved(false);" value='${commandset}'>
 					</select>
 					<label for="triggerEntryCommandsetSelect${triggerCase}" lang-data="choose-commandset">${getLanguageAsText("choose-commandset")}</label>
 				</div>
@@ -1029,6 +1041,23 @@ function addAllCaseAddButton(triggerNumber) {
 	}
 }
 
+function startupTriggerSaved(saved) {
+	let saveButtonElement = getElement("startupTriggerSaveButton");
+	let executeButtonElement = getElement("startupTriggerExecuteButton");
+	if (saved) {
+		saveButtonElement.className = "disableOnDisconnect btn btn-success mt-2";
+		saveButtonElement.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='saved'>" + getLanguageAsText("saved") + "</span>";
+		executeButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2";
+		executeButtonElement.disabled = false;
+	} else {
+		saveButtonElement.className = "disableOnDisconnect btn btn-outline-success mt-2";
+		saveButtonElement.innerHTML = "<i class='bi bi-save pe-2'></i><span lang-data='save'>" + getLanguageAsText("save") + "</span>";
+		executeButtonElement.className = "btn btn-outline-warning mt-2";
+		executeButtonElement.disabled = true;
+	}
+
+}
+
 function triggerSaved(saved) {
 	let saveButtonElement = getElement("triggerButtonSave");
 	//let executeButtonElement = getElement("triggerExecuteButton");
@@ -1046,29 +1075,77 @@ function triggerSaved(saved) {
 }
 
 function executeStartupTrigger() {
-	getElement("executeStartupTriggerSpinner").hidden = false;
-	sendHTTPRequest('GET', 'cmd.php?id=23', true, () => getElement("executeStartupTriggerSpinner").hidden = true);
+	getElement("executestartupTriggerSpinner").hidden = false;
+	sendHTTPRequest('GET', 'cmd.php?id=23', true, () => getElement("executestartupTriggerSpinner").hidden = true);
 }
 
-function saveTrigger(triggerId) {
-	if (triggerId != 0) return;//only startup trigger
+function saveStartupTrigger() {
 	if (startupTriggerIndex > -1) {
-		if (getElement("trigger" + triggerId + "CommandSelect").value == 0 && getElement("trigger" + triggerId + "CommandsetSelect").value == 0) {//if no command or commandset selected, delete
-			sendHTTPRequest('GET', 'cmd.php?id=20&cmd=delete&index=' + startupTriggerIndex, true, () => {triggerSaved(true, 0);});
+		if (getElement("startupTriggerCommandSelect").value == 0 && getElement("startupTriggerCommandsetSelect").value == 0) {//if no command or commandset selected, delete
+			sendHTTPRequest('GET', 'cmd.php?id=20&cmd=delete&index=' + startupTriggerIndex, true, () => {startupTriggerSaved(true, 0);});
 			startupTriggerIndex--;
 			return;
 		}
-		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + startupTriggerIndex + '&' + prepareTriggerString(triggerId), true, () => {triggerSaved(true, 0);});
+		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + startupTriggerIndex + '&' + prepareStartupTriggerString(), true, () => {startupTriggerSaved(true, 0);});
 		return;
 	}
-	sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareTriggerString(triggerId), true, () => {triggerSaved(true, 0);});
+	sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareStartupTriggerString(triggerId), true, () => {startupTriggerSaved(true, 0);});
 	startupTriggerIndex++;
 }
 
-function prepareTriggerString(triggerId, triggerCase=["true"]) {
-	let enabled = getElement("trigger" + triggerId + "EnabledSwitch").checked;
-	let command = getElement("trigger" + triggerId + "CommandSelect").value;
-	let commandset = getElement("trigger" + triggerId + "CommandsetSelect").value;
+function saveTrigger() {
+	let commandSelects = document.getElementsByClassName("commandSelect");
+	let commandsetSelects = document.getElementsByClassName("commandsetSelect");
+	let allEmpty = true;
+	for (let i = 0; i < commandSelects.length; i++) {
+		if (commandSelects[i].value != 0 && commandsetSelects[i].value != 0) allEmpty = false;
+	}
+	if (getElement("triggerEntryDescription").value + "+" != "+") allEmpty = false;//save if it has a description
+	if (getElement("triggerModalTitle").getAttribute("newtrigger") == "false") {
+		if (allEmpty) {//if no command or commandset selected, delete
+			sendHTTPRequest('GET', 'cmd.php?id=20&cmd=delete&index=' + getElement("triggerId").innerText, true, () => {triggerModal.hide(); getScheduleFromServer();});
+			return;
+		}
+		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + getElement("triggerId").innerText + '&' + prepareTriggerString(), true, () => {triggerModal.hide(); getScheduleFromServer();});
+		return;
+	} else {
+		if (allEmpty) triggerModal.hide();
+		else sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareTriggerString(), true, () => {triggerModal.hide(); getScheduleFromServer();});
+	}
+}
+
+function prepareTriggerString() {
+	let enabled = getElement("triggerEntryEnabledSwitchCheck").checked;
+	let comment = getElement("triggerEntryDescription").value;
+	let parameter = "";
+
+	let msg = "enabled=" + enabled.toString().trim() + "&";
+	let triggerCases = [];
+	for (let i = 0; i < triggerCollection[getElement("triggerSelect").value][1].length; i++) triggerCases[i] = triggerCollection[getElement("triggerSelect").value][1][i][0];
+	for (let i = 0; i < triggerCases.length; i++) {
+		let command = getElement("triggerEntryCommandSelect" + triggerCases[i]) == null ? "" : getElement("triggerEntryCommandSelect" + triggerCases[i]).value;
+		let commandset = getElement("triggerEntryCommandsetSelect" + triggerCases[i]) == null ? "" : getElement("triggerEntryCommandsetSelect" + triggerCases[i]).value;
+		if (command != 0) msg += "command=" + triggerCases[i] + " " + command + "&";
+		else msg += "command=" + triggerCases[i] + " &";
+		if (getElement("triggerEntryCommand" + triggerCases[i] + "ParameterInput") != null) {
+			parameter = getElement("triggerEntryCommand" + triggerCases[i] + "ParameterInput").value;
+			parameter = parameter.replaceAll("%20", " ");
+			parameter = parameter.replaceAll("\"", "\\\"");
+			msg += "parameter=" + triggerCases[i] + " \"" + encodeURIComponent(parameter) + "\"&";
+		} else msg += "parameter=" + triggerCases[i] + " &";
+		if (commandset != 0) msg += "commandset=" + triggerCases[i] + " " + commandset + "&";
+		else msg += "commandset=" + triggerCases[i] + " &";
+	}
+	msg += "comment=\"" + encodeURIComponent(comment) + "\"&";
+	msg += "trigger=" + getElement("triggerSelect").value;
+
+	return msg;
+}
+
+function prepareStartupTriggerString(triggerCase=["true"]) {
+	let enabled = getElement("startupTriggerEnabledSwitch").checked;
+	let command = getElement("startupTriggerCommandSelect").value;
+	let commandset = getElement("startupTriggerCommandsetSelect").value;
 	let parameter = "";
 
 	let msg = "enabled=" + enabled.toString().trim() + "&";
@@ -1076,8 +1153,8 @@ function prepareTriggerString(triggerId, triggerCase=["true"]) {
 	for (let i = 0; i < triggerCase.length; i++) {
 		if (command != 0) msg += "command=" + triggerCase[i] + " " + command + "&";
 		else msg += "command=" + triggerCase[i] + " &";
-		if (getElement("trigger" + triggerId + "ParameterInput") != null) {
-			let parameterElement = getElement("trigger" + triggerId + "ParameterInput");
+		if (getElement("startupTriggerParameterInput") != null) {
+			let parameterElement = getElement("startupTriggerParameterInput");
 			parameter = parameterElement.value;
 			parameter = parameter.replaceAll("%20", " ");
 			parameter = parameter.replaceAll("\"", "\\\"");
@@ -1087,10 +1164,13 @@ function prepareTriggerString(triggerId, triggerCase=["true"]) {
 		else msg += "commandset=" + triggerCase[i] + " &";
 	}
 
-	if (triggerId == 0) msg += "trigger=1&";
-	msg = msg.substring(0, msg.length - 1);
+	msg += "trigger=1";
 
 	return msg;
+}
+
+function deleteTrigger(triggerEntryId) {
+	sendHTTPRequest('GET', 'cmd.php?id=20&cmd=delete&index=' + getElement("triggerId").innerText, true, () => {triggerModal.hide(); getScheduleFromServer();});
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1258,7 +1338,7 @@ function deleteCommandFromCommandset(commandEntry) {
 }
 
 function deleteCommandsetEntry() {
-	if (getCommandsetId(getCommandsetId()) < 0) {// < 0 is unsaved, > 0 is saved
+	if (getCommandsetId() < 0) {// < 0 is unsaved, > 0 is saved
 		commandsetModal.hide();
 	} else {
 		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=delete&commandsetid=' + getCommandsetId(), true, () => {commandsetModal.hide(); getScheduleFromServer();});

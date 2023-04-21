@@ -248,6 +248,9 @@
 			if ($_GET['trigger'] != NULL) {
 				$parameterString .= " --trigger " . $_GET['trigger'];
 			}
+			if ($_GET['comment'] != NULL) {
+				$parameterString .= " --comment " . $_GET['comment'];
+			}
 			if ($_GET['command'] != NULL) {
 				$parameterString .= " --command:" . $_GET['command'];
 			}
@@ -257,7 +260,7 @@
 			if ($_GET['commandset'] != NULL) {
 				$parameterString .= " --commandset:" . $_GET['commandset'];
 			}
-			echo "$syscall --add-trigger$parameterString";
+			//echo "$syscall --add-trigger$parameterString";
 			executeCommand("$syscall --add-trigger$parameterString", true);
 
 		} elseif ($_GET['cmd'] == "update") {
@@ -267,6 +270,9 @@
 			}
 			if ($_GET['trigger'] != NULL) {
 				$parameterString .= " --trigger " . $_GET['trigger'];
+			}
+			if ($_GET['comment'] != NULL) {
+				$parameterString .= " --comment " . $_GET['comment'];
 			}
 			if ($_GET['command'] != NULL) {
 				$parameterString .= " --command:" . $_GET['command'];
