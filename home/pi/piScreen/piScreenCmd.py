@@ -695,6 +695,11 @@ def updateTrigger():
 								elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--first-state-dont-trigger","--firstStateDontTrigger","--run-once","--runOnce","--"}:
 									changed = modifySchedule(i2[2:],None,item) or changed
 							if changed:
+								cases = []
+								for case in item["cases"]:
+									cases.append(case)
+								for case in cases:
+									if item["cases"][case] == {}: del item["cases"][case]
 								scheduleFile = open(piScreenUtils.paths.schedule, "w")
 								scheduleFile.write(json.dumps(scheduleJson,indent=4))
 								scheduleFile.close()
