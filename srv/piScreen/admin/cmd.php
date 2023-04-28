@@ -251,14 +251,17 @@
 			if ($_GET['comment'] != NULL) {
 				$parameterString .= " --comment " . $_GET['comment'];
 			}
-			if ($_GET['command'] != NULL) {
-				$parameterString .= " --command:" . $_GET['command'];
-			}
-			if ($_GET['parameter'] != NULL) {
-				$parameterString .= " --parameter:" . $_GET['parameter'];
-			}
-			if ($_GET['commandset'] != NULL) {
-				$parameterString .= " --commandset:" . $_GET['commandset'];
+			$cases = $_GET["cases"];
+			for ($i = 0; $i < count($cases); $i++) {
+				if ($_GET['command' . $cases[$i]] != NULL) {
+					$parameterString .= " --command:" . $_GET['command' . $cases[$i]];
+				}
+				if ($_GET['parameter' . $cases[$i]] != NULL) {
+					$parameterString .= " --parameter:" . $_GET['parameter' . $cases[$i]];
+				}
+				if ($_GET['commandset' . $cases[$i]] != NULL) {
+					$parameterString .= " --commandset:" . $_GET['commandset' . $cases[$i]];
+				}
 			}
 			//echo "$syscall --add-trigger$parameterString";
 			executeCommand("$syscall --add-trigger$parameterString", true);
@@ -274,14 +277,17 @@
 			if ($_GET['comment'] != NULL) {
 				$parameterString .= " --comment " . $_GET['comment'];
 			}
-			if ($_GET['command'] != NULL) {
-				$parameterString .= " --command:" . $_GET['command'];
-			}
-			if ($_GET['parameter'] != NULL) {
-				$parameterString .= " --parameter:" . $_GET['parameter'];
-			}
-			if ($_GET['commandset'] != NULL) {
-				$parameterString .= " --commandset:" . $_GET['commandset'];
+			$cases = $_GET["cases"];
+			for ($i = 0; $i < count($cases); $i++) {
+				if ($_GET['command' . $cases[$i]] != NULL) {
+					$parameterString .= " --command:" . $_GET['command' . $cases[$i]];
+				}
+				if ($_GET['parameter' . $cases[$i]] != NULL) {
+					$parameterString .= " --parameter:" . $_GET['parameter' . $cases[$i]];
+				}
+				if ($_GET['commandset' . $cases[$i]] != NULL) {
+					$parameterString .= " --commandset:" . $_GET['commandset' . $cases[$i]];
+				}
 			}
 			//echo "$syscall --update-trigger$parameterString";
 			executeCommand("$syscall --update-trigger$parameterString", true);

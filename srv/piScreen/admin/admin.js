@@ -957,7 +957,7 @@ function addCaseRow(triggerCase, commandset=0, command=0, parameter="") {
 		<tr>
 			<td style='width: 45%;'>
 				<div class='form-floating p-1'>
-					<select id='triggerEntryCommandSelect${triggerCase}' class='disableOnDisconnect form-select border border-secondary commandSelect' onchange='triggerSaved(false); addParameterToTriggerCaseCommand(${triggerCase}, value);'>
+					<select id='triggerEntryCommandSelect${triggerCase}' class='disableOnDisconnect form-select border border-secondary commandSelect' onchange='triggerSaved(false); addParameterToTriggerCaseCommand("${triggerCase}", value);'>
 					</select>
 					<label for="triggerEntryCommandSelect${triggerCase}" lang-data="choose-command">${getLanguageAsText("choose-command")}</label>
 				</div>
@@ -1106,7 +1106,7 @@ function saveTrigger() {
 			sendHTTPRequest('GET', 'cmd.php?id=20&cmd=delete&index=' + getElement("triggerId").innerText, true, () => {triggerModal.hide(); getScheduleFromServer();});
 			return;
 		}
-		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + getElement("triggerId").innerText + '&' + prepareTriggerString(), true, () => {triggerModal.hide(); getScheduleFromServer();});
+		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + getElement("triggerId").innerText + '&' + prepareTriggerString(true), true, () => {triggerModal.hide(); getScheduleFromServer();});
 		return;
 	} else {
 		if (allEmpty) triggerModal.hide();
@@ -1114,7 +1114,7 @@ function saveTrigger() {
 	}
 }
 
-function prepareTriggerString() {
+function prepareTriggerString(update=false) {//add or update
 	let enabled = getElement("triggerEntryEnabledSwitchCheck").checked;
 	let comment = getElement("triggerEntryDescription").value;
 	let parameter = "";
@@ -1123,18 +1123,25 @@ function prepareTriggerString() {
 	let triggerCases = [];
 	for (let i = 0; i < triggerCollection[getElement("triggerSelect").value][1].length; i++) triggerCases[i] = triggerCollection[getElement("triggerSelect").value][1][i][0];
 	for (let i = 0; i < triggerCases.length; i++) {
+		msg += "cases[" + i + "]=" + triggerCases[i] + "&";
 		let command = getElement("triggerEntryCommandSelect" + triggerCases[i]) == null ? "" : getElement("triggerEntryCommandSelect" + triggerCases[i]).value;
 		let commandset = getElement("triggerEntryCommandsetSelect" + triggerCases[i]) == null ? "" : getElement("triggerEntryCommandsetSelect" + triggerCases[i]).value;
-		if (command != 0) msg += "command=" + triggerCases[i] + " " + command + "&";
-		else msg += "command=" + triggerCases[i] + " &";
+		if (command != 0) msg += "command" + triggerCases[i] + "=" + triggerCases[i] + " " + command + "&";
+		else {
+			if (update) msg += "command" + triggerCases[i] + "=" + triggerCases[i] + " &";
+		}
 		if (getElement("triggerEntryCommand" + triggerCases[i] + "ParameterInput") != null) {
 			parameter = getElement("triggerEntryCommand" + triggerCases[i] + "ParameterInput").value;
 			parameter = parameter.replaceAll("%20", " ");
 			parameter = parameter.replaceAll("\"", "\\\"");
-			msg += "parameter=" + triggerCases[i] + " \"" + encodeURIComponent(parameter) + "\"&";
-		} else msg += "parameter=" + triggerCases[i] + " &";
-		if (commandset != 0) msg += "commandset=" + triggerCases[i] + " " + commandset + "&";
-		else msg += "commandset=" + triggerCases[i] + " &";
+			msg += "parameter" + triggerCases[i] + "=" + triggerCases[i] + " \"" + encodeURIComponent(parameter) + "\"&";
+		} else {
+			if (update) msg += "parameter" + triggerCases[i] + "=" + triggerCases[i] + " &";
+		}
+		if (commandset != 0) msg += "commandset" + triggerCases[i] + "=" + triggerCases[i] + " " + commandset + "&";
+		else {
+			if (update) msg += "commandset" + triggerCases[i] + "=" + triggerCases[i] + " &";
+		}
 	}
 	msg += "comment=\"" + encodeURIComponent(comment) + "\"&";
 	msg += "trigger=" + getElement("triggerSelect").value;
@@ -1151,17 +1158,17 @@ function prepareStartupTriggerString(triggerCase=["true"]) {
 	let msg = "enabled=" + enabled.toString().trim() + "&";
 
 	for (let i = 0; i < triggerCase.length; i++) {
-		if (command != 0) msg += "command=" + triggerCase[i] + " " + command + "&";
-		else msg += "command=" + triggerCase[i] + " &";
+		if (command != 0) msg += "command" + triggerCases[i] + "=" + triggerCase[i] + " " + command + "&";
+		else msg += "command" + triggerCases[i] + "=" + triggerCase[i] + " &";
 		if (getElement("startupTriggerParameterInput") != null) {
 			let parameterElement = getElement("startupTriggerParameterInput");
 			parameter = parameterElement.value;
 			parameter = parameter.replaceAll("%20", " ");
 			parameter = parameter.replaceAll("\"", "\\\"");
-			msg += "parameter=" + triggerCase[i] + " \"" + encodeURIComponent(parameter) + "\"&";
-		} else msg += "parameter=" + triggerCase[i] + " &";
-		if (commandset != 0) msg += "commandset=" + triggerCase[i] + " " + commandset + "&";
-		else msg += "commandset=" + triggerCase[i] + " &";
+			msg += "parameter" + triggerCases[i] + "=" + triggerCase[i] + " \"" + encodeURIComponent(parameter) + "\"&";
+		} else msg += "parameter" + triggerCases[i] + "=" + triggerCase[i] + " &";
+		if (commandset != 0) msg += "commandset" + triggerCases[i] + "=" + triggerCase[i] + " " + commandset + "&";
+		else msg += "commandset" + triggerCases[i] + "=" + triggerCase[i] + " &";
 	}
 
 	msg += "trigger=1";
