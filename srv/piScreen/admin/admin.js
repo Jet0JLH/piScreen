@@ -1329,6 +1329,17 @@ function addParameterToCommandsetEntryCommand(commandEntryId, commandId, paramet
 	} else if (commandCollection[commandId][1] == "text") {
 		if (parameter == undefined) parameter = "";
 		div.innerHTML = `<input id='commandsetEntryCommand${commandEntryId}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandParameter' onkeyup='commandsetEntrySaved(false);' value='${parameter}' lang-data='parameter'>`;
+	} else if (commandCollection[commandId][1] == "filemanager") {
+		div.className += " w-75";
+		div.innerHTML = `<input id='commandsetEntryCommand${commandEntryId}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandParameter' onkeyup='startupTriggerSaved(false);' value='${parameter}' lang-data='parameter'>`;
+		let btn = document.createElement("button");
+		btn.id = "commandsetEntryCommandFileManagerButtonOpen";
+		btn.onclick = () => showFileExplorerModal(commandCollection[commandId][2], false, getElement(`commandsetEntryCommand${commandEntryId}ParameterInput`));
+		btn.className = "disableOnDisconnect btn btn-outline-success mt-2";
+		btn.style.float = "right";
+		btn.innerHTML = `<i class="bi bi-folder"></i>`;
+		cell.appendChild(btn);
+		if (parameter == undefined) parameter = "";
 	} else if (Array.isArray(commandCollection[commandId][1])) {
 		let htmlSelect = `<select id='commandsetEntryCommand${commandEntryId}ParameterInput' onchange='commandsetEntrySaved(false);' class='disableOnDisconnect form-select border border-secondary commandParameter' value='${commandCollection[commandId][1][0][1]}'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
