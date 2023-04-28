@@ -135,8 +135,14 @@
         "file-exists": "File exists",
         "file-changed": "File changed",
         "display-state-on": "Display state on",
+        "tcp-connection-changed": "TCP connection changed",
         "cec-key-pressed": "Only CEC: remote key pressed",
         "mode-changed": "Mode changed",
+
+        "file": "File",
+        "port": "Port",
+        "tries": "Tries",
+        "timeout": "Timeout",
 
         "update-button": "Update available for version ",
         "update-info-header": "Update information",

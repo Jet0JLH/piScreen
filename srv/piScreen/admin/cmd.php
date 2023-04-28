@@ -263,6 +263,10 @@
 					$parameterString .= " --commandset:" . $_GET['commandset' . $cases[$i]];
 				}
 			}
+			$triggerParameter = $_GET["triggerParameter"];
+			for ($i = 0; $i < count($triggerParameter); $i++) {
+				$parameterString .= " --" . $triggerParameter[$i];
+			}
 			//echo "$syscall --add-trigger$parameterString";
 			executeCommand("$syscall --add-trigger$parameterString", true);
 
@@ -288,6 +292,10 @@
 				if ($_GET['commandset' . $cases[$i]] != NULL) {
 					$parameterString .= " --commandset:" . $_GET['commandset' . $cases[$i]];
 				}
+			}
+			$triggerParameter = $_GET["triggerParameter"];
+			for ($i = 0; $i < count($triggerParameter); $i++) {
+				$parameterString .= " --" . $triggerParameter[$i];
 			}
 			//echo "$syscall --update-trigger$parameterString";
 			executeCommand("$syscall --update-trigger$parameterString", true);

@@ -23,11 +23,12 @@ var scheduleObj;
 var scheduleToImport = null;
 //trigger
 var startupTriggerIndex = -1;
-var triggerCollection = [//[]name, []list cases, []case, []attributes
+var triggerCollection = [//[]name, []list cases, []parameters
 	["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-	["file-exists", [["true", "text"], ["false", "text"], ["change", "text"]]], ["file-changed", [["true", "text"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-	["display-state-on", [["true", "text"], ["false", "text"], ["change", "text"]]], ["cec-key-pressed", [["1"], ["2"], ["3"], ["4"], ["5"], ["6"], ["7"], ["8"], ["9"], ["0"], ["accept"], ["up"], ["down"], ["left"], ["right"], ["exit"], ["play"], ["pause"], ["stop"], ["forward"], ["rewind"], ["record"], ["red"], ["green"], ["yellow"], ["blue"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-	["mode-changed", [["true", "text"], ["firefox", "text"], ["vlc", "text"], ["impress", "text"], ["none", "text"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false]
+	["file-exists", ["true", "false", "change"], ["file"]], ["file-changed", ["true"], ["file"]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+	["tcp-connection-changed", ["true", "false", "change"], ["host", "port", "tries", "timeout"]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+	["display-state-on", ["true", "false", "change"], []], ["cec-key-pressed", ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0", "accept", "up", "down", "left", "right", "exit", "play", "pause", "stop", "forward", "rewind", "record", "red", "green", "yellow", "blue"], []], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+	["mode-changed", ["true", "firefox", "vlc", "impress", "none"], []], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false]
 ];
 var triggerEntryCount = 0;
 //general modal
@@ -880,7 +881,7 @@ function showTriggerModal(triggerEntryId=-1, newTrigger=false) {
 	<tr>
 		<td colspan="2" style='width: 50%;'>
 			<div class='form-floating mb-3'>
-				<select id='triggerSelect' class='disableOnDisconnect form-select border border-secondary' onchange='triggerSaved(false); removeAllCaseAddButtons(); addAllCaseAddButton(value);' value='${obj.trigger}'>
+				<select id='triggerSelect' class='disableOnDisconnect form-select border border-secondary' onchange='triggerSaved(false); removeAllCaseAddButtons(); addAllCaseAddButton(value); addTriggerParameter(value)' value='${obj.trigger}'>
 				</select>
 				<label for="triggerSelect" lang-data="choose-trigger">${getLanguageAsText("choose-trigger")}</label>
 			</div>
@@ -890,6 +891,12 @@ function showTriggerModal(triggerEntryId=-1, newTrigger=false) {
 				<input id='triggerEntryDescription' type='text' class='disableOnDisconnect form-control border border-secondary' value='${obj.comment == undefined ? "" : obj.comment}' onkeyup='triggerSaved(false);'>
 				<label for='triggerEntryDescription' lang-data='description'>${getLanguageAsText("description")}</label>
 			</div>
+		</td>
+	</tr>
+	<tr>
+		<td colspan="3" class="w-100 pb-3">
+			<table id="triggerParameterCollection" class="w-100">
+			</table>
 		</td>
 	</tr>
 </table>
@@ -909,7 +916,9 @@ function showTriggerModal(triggerEntryId=-1, newTrigger=false) {
 			getElement("triggerSelect").appendChild(opt);
 		}
 	}
-	
+
+	addTriggerParameter(obj.trigger, obj);
+
 	triggerModal.show();
 
 	let triggerCases = Object.keys(obj.cases);
@@ -917,12 +926,26 @@ function showTriggerModal(triggerEntryId=-1, newTrigger=false) {
 		addCaseRow(triggerCases[i], obj.cases[triggerCases[i]].commandset, obj.cases[triggerCases[i]].command, obj.cases[triggerCases[i]].parameter);
 	}
 	for (let i = 0; i < triggerCollection[obj.trigger][1].length; i++) {
-		if (!triggerCases.includes(triggerCollection[obj.trigger][1][i][0])) {
-			addCaseAddButton(triggerCollection[obj.trigger][1][i][0]);
+		if (!triggerCases.includes(triggerCollection[obj.trigger][1][i])) {
+			addCaseAddButton(triggerCollection[obj.trigger][1][i]);
 		}
 	}
 
 	enableElements(prevItemsEnabled);
+}
+
+function addTriggerParameter(trigger, triggerObj) {
+	getElement("triggerParameterCollection").innerHTML = "";
+	for (let i = 0; i < triggerCollection[trigger][2].length; i++) {
+		let row = document.createElement("tr");
+		row.innerHTML = `<td>
+	<div class="form-floating">
+		<input id='triggerParameter${triggerCollection[trigger][2][i]}' type='text' class='disableOnDisconnect form-control border border-secondary triggerParameter' onkeyup='triggerSaved(false);' value="${triggerObj == undefined || triggerObj[triggerCollection[trigger][2][i]] == undefined ? '' : triggerObj[triggerCollection[trigger][2][i]]}">
+		<label for="triggerParameter${triggerCollection[trigger][2][i]}" lang-data="${triggerCollection[trigger][2][i]}">${getLanguageAsText(triggerCollection[trigger][2][i])}</label>
+	</div>
+</td>`;
+		getElement("triggerParameterCollection").appendChild(row);
+	}
 }
 
 function addCaseAddButton(triggerCase) {
@@ -1037,7 +1060,7 @@ function removeAllCaseAddButtons() {
 
 function addAllCaseAddButton(triggerNumber) {
 	for (let i = 0; i < triggerCollection[triggerNumber][1].length; i++) {
-		addCaseAddButton(triggerCollection[triggerNumber][1][i][0]);
+		addCaseAddButton(triggerCollection[triggerNumber][1][i]);
 	}
 }
 
@@ -1121,7 +1144,7 @@ function prepareTriggerString(update=false) {//add or update
 
 	let msg = "enabled=" + enabled.toString().trim() + "&";
 	let triggerCases = [];
-	for (let i = 0; i < triggerCollection[getElement("triggerSelect").value][1].length; i++) triggerCases[i] = triggerCollection[getElement("triggerSelect").value][1][i][0];
+	for (let i = 0; i < triggerCollection[getElement("triggerSelect").value][1].length; i++) triggerCases[i] = triggerCollection[getElement("triggerSelect").value][1][i];
 	for (let i = 0; i < triggerCases.length; i++) {
 		msg += "cases[" + i + "]=" + triggerCases[i] + "&";
 		let command = getElement("triggerEntryCommandSelect" + triggerCases[i]) == null ? "" : getElement("triggerEntryCommandSelect" + triggerCases[i]).value;
@@ -1143,6 +1166,8 @@ function prepareTriggerString(update=false) {//add or update
 			if (update) msg += "commandset" + triggerCases[i] + "=" + triggerCases[i] + " &";
 		}
 	}
+	let triggerParameters = document.getElementsByClassName("triggerParameter");
+	for (let i = 0; i < triggerParameters.length; i++) msg += "triggerParameter[" + i + "]=" + triggerParameters[i].id.substring("triggerParameter".length) + " " + encodeURIComponent(triggerParameters[i].value) + "&";
 	msg += "comment=\"" + encodeURIComponent(comment) + "\"&";
 	msg += "trigger=" + getElement("triggerSelect").value;
 
