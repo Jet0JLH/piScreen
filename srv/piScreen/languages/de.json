@@ -5,7 +5,8 @@
         "small-header": "Hier lassen sich die wichtigsten piScreen Funktionen bequem administrieren",
 
         "status-tile-header": "Status",
-        "display-status": "Display status",
+        "display-status": "Displaystatus",
+        "display-resolution": "Displayauflösung",
         "activity": "Aktivität",
         "uptime": "Betriebszeit",
         "months": "Monate",

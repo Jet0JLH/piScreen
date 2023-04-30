@@ -2017,7 +2017,6 @@ window.onload = function() {
 	let displayState = getElement("displayState");
 	let displayOnBtn = getElement("displayOnButton");
 	let displayOffBtn = getElement("displayOffBtn");
-	let modeBadge = getElement("modeBadge");
 
 	let requestedUrl = 'cmd.php?id=5';
 	let xmlhttp = new XMLHttpRequest();
@@ -2037,7 +2036,8 @@ window.onload = function() {
 		}
 		active.classList = "badge rounded-pill bg-success";
 		active.innerHTML = getLanguageAsText('online');
-		modeBadge.innerHTML = modes[jsonData.modeInfo.mode];
+		getElement("modeBadge").innerHTML = modes[jsonData.modeInfo.mode];
+		getElement("displayResolution").innerHTML = jsonData.resolution;
 		switch (jsonData.displayState) {
 			case "on":
 				displayState.classList = "badge rounded-pill bg-success";
@@ -2379,6 +2379,7 @@ function setToUnknownValues() {
 
 	getElement("displayState").classList = "badge rounded-pill bg-secondary";
 	getElement("displayState").innerHTML = getLanguageAsText('unknown');
+	getElement("displayResolution").innerHTML = getLanguageAsText('unknown');
 
 	getElement("displayOnButton").hidden = false;
 	getElement("displayOffBtn").hidden = false;

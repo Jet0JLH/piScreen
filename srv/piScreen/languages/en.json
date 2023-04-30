@@ -6,6 +6,7 @@
 
         "status-tile-header": "Status",
         "display-status": "Display status",
+        "display-resolution": "Display resolution",
         "activity": "Activity",
         "uptime": "Uptime",
         "months": "months",
