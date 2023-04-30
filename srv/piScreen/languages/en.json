@@ -22,6 +22,7 @@
         "off": "Off",
         "online": "Online",
         "offline": "Offline",
+        "current-mode": "Current mode",
 
         "control-tile-header": "Control",
         "restart-browser": "Restart browser",

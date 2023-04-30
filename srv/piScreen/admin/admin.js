@@ -1174,7 +1174,7 @@ function prepareTriggerString(update=false) {//add or update
 	return msg;
 }
 
-function prepareStartupTriggerString(triggerCase=["true"]) {
+function prepareStartupTriggerString(triggerCases=["true"]) {
 	let enabled = getElement("startupTriggerEnabledSwitch").checked;
 	let command = getElement("startupTriggerCommandSelect").value;
 	let commandset = getElement("startupTriggerCommandsetSelect").value;
@@ -1182,18 +1182,19 @@ function prepareStartupTriggerString(triggerCase=["true"]) {
 
 	let msg = "enabled=" + enabled.toString().trim() + "&";
 
-	for (let i = 0; i < triggerCase.length; i++) {
-		if (command != 0) msg += "command" + triggerCases[i] + "=" + triggerCase[i] + " " + command + "&";
-		else msg += "command" + triggerCases[i] + "=" + triggerCase[i] + " &";
+	for (let i = 0; i < triggerCases.length; i++) {
+		msg += "cases[" + i + "]=" + triggerCases[i] + "&";
+		if (command != 0) msg += "command" + triggerCases[i] + "=" + triggerCases[i] + " " + command + "&";
+		else msg += "command" + triggerCases[i] + "=" + triggerCases[i] + " &";
 		if (getElement("startupTriggerParameterInput") != null) {
 			let parameterElement = getElement("startupTriggerParameterInput");
 			parameter = parameterElement.value;
 			parameter = parameter.replaceAll("%20", " ");
 			parameter = parameter.replaceAll("\"", "\\\"");
-			msg += "parameter" + triggerCases[i] + "=" + triggerCase[i] + " \"" + encodeURIComponent(parameter) + "\"&";
-		} else msg += "parameter" + triggerCases[i] + "=" + triggerCase[i] + " &";
-		if (commandset != 0) msg += "commandset" + triggerCases[i] + "=" + triggerCase[i] + " " + commandset + "&";
-		else msg += "commandset" + triggerCases[i] + "=" + triggerCase[i] + " &";
+			msg += "parameter" + triggerCases[i] + "=" + triggerCases[i] + " \"" + encodeURIComponent(parameter) + "\"&";
+		} else msg += "parameter" + triggerCases[i] + "=" + triggerCases[i] + " &";
+		if (commandset != 0) msg += "commandset" + triggerCases[i] + "=" + triggerCases[i] + " " + commandset + "&";
+		else msg += "commandset" + triggerCases[i] + "=" + triggerCases[i] + " &";
 	}
 
 	msg += "trigger=1";
@@ -2016,7 +2017,8 @@ window.onload = function() {
 	let displayState = getElement("displayState");
 	let displayOnBtn = getElement("displayOnButton");
 	let displayOffBtn = getElement("displayOffBtn");
-	
+	let modeBadge = getElement("modeBadge");
+
 	let requestedUrl = 'cmd.php?id=5';
 	let xmlhttp = new XMLHttpRequest();
 	xmlhttp.open('GET', requestedUrl, true);
@@ -2035,6 +2037,7 @@ window.onload = function() {
 		}
 		active.classList = "badge rounded-pill bg-success";
 		active.innerHTML = getLanguageAsText('online');
+		modeBadge.innerHTML = modes[jsonData.modeInfo.mode];
 		switch (jsonData.displayState) {
 			case "on":
 				displayState.classList = "badge rounded-pill bg-success";

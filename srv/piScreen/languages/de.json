@@ -22,7 +22,8 @@
         "off": "Aus",
         "online": "Online",
         "offline": "Offline",
-
+        "current-mode": "Aktueller Modus",
+        
         "control-tile-header": "Steuerung",
         "restart-browser": "Browser neu starten",
         "refresh-browser-page": "Seite neu laden",

@@ -30,7 +30,8 @@
 						<i class='bi bi-cpu'></i> <span lang-data='cpu-load'>CPU Last</span>: <span id='cpuLoad'>???</span> %<br>
 						<i class='bi bi-thermometer'></i> <span lang-data='cpu-temp'>CPU Temperatur</span>: <span id='cpuTemp'>???</span><br>
 						<i class='bi bi-memory'></i> <span lang-data='ram'>RAM</span>: <span id='ramUsed'>???</span> <span lang-data='from'>von</span> <span id='ramTotal'>???</span> <span lang-data='in-use'>belegt</span> (<span id='ramUsage'>???</span> %)<br>
-						<i class='bi bi-ethernet'></i> <span lang-data='ip-address'>IP</span>: <?php echo $_SERVER['SERVER_ADDR']; ?>
+						<i class='bi bi-ethernet'></i> <span lang-data='ip-address'>IP</span>: <?php echo $_SERVER['SERVER_ADDR']; ?><br><br>
+						<i class='bi bi-nut'></i> <span lang-data='current-mode'>Current mode</span>: <span id='modeBadge' class='badge rounded-pill bg-secondary'>???</span>
 					</p>
 				</div>
 			</div>
@@ -207,7 +208,7 @@
 					<div id="startupTriggerParameterCell" style='width: 100%;'>
 					</div>
 					<div>
-						<button id="startupTriggerSaveButton" class="disableOnDisconnect btn btn-success mt-2" onclick='saveStartupTrigger(true);'><i class='bi bi-check2 pe-2'></i><span lang-data="saved">Speichern</span></button>
+						<button id="startupTriggerSaveButton" class="disableOnDisconnect btn btn-success mt-2" onclick='saveStartupTrigger();'><i class='bi bi-check2 pe-2'></i><span lang-data="saved">Speichern</span></button>
 						<button id="startupTriggerExecuteButton" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeStartupTrigger();'><i class='bi bi-play pe-2'></i><span id='executestartupTriggerSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
 					</div>
 				</div>
