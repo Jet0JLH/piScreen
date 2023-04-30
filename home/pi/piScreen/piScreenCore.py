@@ -691,12 +691,12 @@ class trigger(threading.Thread):
 					self.isInFirstrun = False
 					time.sleep(1)
 			elif self.mode == 21: #TCP connection [change,true,false]
-				if "host" in self.config and "port" in self.config and piScreenUtils.isInt(self.config["port"]) and "timeout" in self.config and piScreenUtils.isInt(self.config["timeout"]) and "runs" in self.config and piScreenUtils.isInt(self.config["runs"]):
+				if "host" in self.config and "port" in self.config and piScreenUtils.isInt(self.config["port"]) and "timeout" in self.config and piScreenUtils.isInt(self.config["timeout"]) and "tries" in self.config and piScreenUtils.isInt(self.config["tries"]):
 					import socket
 					host = self.config["host"]
 					port = int(self.config["port"])
 					timeout = int(self.config["timeout"])
-					runs = int(self.config["runs"])
+					tries = int(self.config["tries"])
 					trueCounter = 0
 					falseCounter = 0
 					while self.active:
@@ -705,12 +705,12 @@ class trigger(threading.Thread):
 							socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
 							if falseCounter > 0: falseCounter = 0 ; self.execute("change")
 							trueCounter = trueCounter + 1
-							if trueCounter == runs: self.execute("true")
+							if trueCounter == tries: self.execute("true")
 							time.sleep(timeout)
 						except:
 							if trueCounter > 0: trueCounter = 0 ; self.execute("change")
 							falseCounter = falseCounter + 1
-							if falseCounter == runs: self.execute("false")
+							if falseCounter == tries: self.execute("false")
 						self.isInFirstrun = False
 			elif self.mode == 30: #Display state on [change,true,false]
 				while self.active:
@@ -1254,13 +1254,13 @@ if __name__ == "__main__":
 		for line in xrandr.split("\n"):
 			if line.startswith("Screen 0:"): found = line
 		if found == "":
-			status["resulution"] = None
+			status["resolution"] = None
 		else:
 			try:
 				found = found[found.index("current")+8:]
-				status["resulution"] = found[:found.index(",")]
+				status["resolution"] = found[:found.index(",")]
 			except:
-				status["resulution"] = None
+				status["resolution"] = None
 				
 		#createScreenshot
 		try:
