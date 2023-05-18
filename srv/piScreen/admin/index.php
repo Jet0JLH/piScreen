@@ -165,6 +165,7 @@
 										</tr>
 									</table>
 									<button id='showLoginSettings' class='disableOnDisconnect btn btn-outline-primary' data-bs-toggle="collapse" data-bs-target="#collapseLoginSettings"><i class='bi bi-pencil-square pe-2'></i><span lang-data="edit-weblogin">Weblogindaten bearbeiten</span></button>
+									<button class='disableOnDisconnect btn btn-outline-primary' onclick='showFileExplorerModal(0, true, null, false);'><i class='bi bi-folder pe-2'></i><span lang-data='file-explorer'></span></button>
 								</div>
 							</div>
 						</div>
@@ -212,12 +213,6 @@
 						<button id="startupTriggerSaveButton" class="disableOnDisconnect btn btn-success mt-2" onclick='saveStartupTrigger();'><i class='bi bi-check2 pe-2'></i><span lang-data="saved">Speichern</span></button>
 						<button id="startupTriggerExecuteButton" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeStartupTrigger();'><i class='bi bi-play pe-2'></i><span id='executestartupTriggerSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
 					</div>
-				</div>
-			</div>
-			<div class='col-sm-12 col-lg-6 mb-4'>
-				<div class='card p-3 shadow'>
-					<h1 class='pb-2'><i class='bi bi-folder bigIcon px-2'></i><span lang-data='file-explorer'>file explorer</span></h1>
-					<button class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showFileExplorerModal(0, true, null, false);'><i class='bi bi-folder pe-2'></i><span lang-data='file-explorer'></span></button>
 				</div>
 			</div>
 			<div class='col-lg-12 col-xl-6 mb-4'>
