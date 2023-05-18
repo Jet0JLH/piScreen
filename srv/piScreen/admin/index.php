@@ -162,8 +162,8 @@
 											</td>
 										</tr>
 										<tr>
-											<td colspan="2" lang-data="schedule-settings">
-												Schedule settings
+											<td colspan="2" lang-data="planner-settings">
+												Event organizer settings
 											</td>
 										</tr>
 										<tr>

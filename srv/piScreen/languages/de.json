@@ -73,7 +73,7 @@
         "save": "Speichern",
         "display-settings": "Displayeinstellungen",
         "background-settings": "Hintergrundeintellungen",
-        "schedule-settings": "Zeitplaneinstellungen",
+        "planner-settings": "Ereignisplaneinstellungen",
 
         "color": "Farbe",
         "stretch": "Strecken",
@@ -124,8 +124,10 @@
         "reboot-really": "Gerät wirklich neustarten?",
         "cancel": "Abbrechen",
         "alright": "Danke für die Info 😊",
-        "really-delete-trigger": "Willst du diesen Trigger wirklich löschen?",
-        "sure": "Sicher?",
+        "ups": "Ups...",
+        "allready-done": "Schon fertig?",
+        "fill-required-fields": "Manche Pflichtfelder sind noch nicht befüllt. <br>Bitte kontrolliere die mit einem Sternchem markierten Felder.",
+        "save-trigger-anyway": "Bei den Cases fehlen noch Daten. <br>Diesen Trigger trotzdem speichern?",
 
         "startup-trigger": "Startauslöser",
         "trigger": "Auslöser",
@@ -198,7 +200,6 @@
 
         "lastcron": "Zuletzt ausgeführten Eintrag ausführen",
         "connection-lost": "Verbindung zum Server unterbrochen!",
-        "fill-required-fields": "Bitte alle Pflichtfelder ausfüllen!",
         "in-use": "belegt",
         "from": "von",
         "to": "bis",

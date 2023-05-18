@@ -73,7 +73,7 @@
         "save": "Save",
         "display-settings": "Display settings",
         "background-settings": "Background settings",
-        "schedule-settings": "Schedule settings",
+        "planner-settings": "Event organizer settings5",
 
         "color": "color",
         "stretch": "stretch",
@@ -124,9 +124,10 @@
         "reboot-really": "Do you really wanna reboot?",
         "cancel": "Cancel",
         "alright": "Alright 😊",
-        "really-delete-trigger": "Really delete this trigger?",
-        "sure": "Are you sure?",
-        
+        "ups": "Whoops...",
+        "allready-done": "Allready done?",
+        "fill-required-fields": "Some required fields may not be filled. <br>Please check the fields marked with an asterisk.",
+        "save-trigger-anyway": "There is data missing in the cases. <br>Save this trigger dispite that?",
 
         "startup-trigger": "Startup trigger",
         "trigger": "Trigger",
@@ -199,7 +200,6 @@
 
         "lastcron": "Execute last cron entry",
         "connection-lost": "Connection to server lost!",
-        "fill-required-fields": "Please fill in all required fields!",
         "in-use": "in use",
         "from": "from",
         "to": "until",

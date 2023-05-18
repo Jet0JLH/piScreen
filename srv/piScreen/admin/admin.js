@@ -941,7 +941,7 @@ function addTriggerParameter(trigger, triggerObj) {
 		row.innerHTML = `<td>
 	<div class="form-floating">
 		<input id='triggerParameter${triggerCollection[trigger][2][i]}' type='text' class='disableOnDisconnect form-control border border-secondary triggerParameter' onkeyup='triggerSaved(false);' value="${triggerObj == undefined || triggerObj[triggerCollection[trigger][2][i]] == undefined ? '' : triggerObj[triggerCollection[trigger][2][i]]}">
-		<label for="triggerParameter${triggerCollection[trigger][2][i]}" lang-data="${triggerCollection[trigger][2][i]}">${getLanguageAsText(triggerCollection[trigger][2][i])}</label>
+		<label for="triggerParameter${triggerCollection[trigger][2][i]}" lang-data="${triggerCollection[trigger][2][i]}">${getLanguageAsText(triggerCollection[trigger][2][i])} *</label>
 	</div>
 </td>`;
 		getElement("triggerParameterCollection").appendChild(row);
@@ -1130,21 +1130,36 @@ function saveStartupTrigger() {
 function saveTrigger() {
 	let commandSelects = document.getElementsByClassName("commandSelect");
 	let commandsetSelects = document.getElementsByClassName("commandsetSelect");
-	let allEmpty = true;
+	let triggerParameter = document.getElementsByClassName("triggerParameter");
+	let allCasesEmpty = true;
+	let anyTriggerParameterEmpty = false;
 	for (let i = 0; i < commandSelects.length; i++) {
-		if (commandSelects[i].value != 0 || commandsetSelects[i].value != 0) allEmpty = false;
+		if (commandSelects[i].value != 0 || commandsetSelects[i].value != 0) allCasesEmpty = false;
 	}
-	if (getElement("triggerEntryDescription").value + "+" != "+") allEmpty = false;//save if it has a description
-	if (getElement("triggerModalTitle").getAttribute("newtrigger") == "false") {
-		if (allEmpty) {//if no command or commandset selected, delete
-			showModal(getLanguageAsText("sure"), getLanguageAsText("really-delete-trigger"), true, true, getLanguageAsText("cancel"), 1, getLanguageAsText("delete"), () => {sendHTTPRequest('GET', 'cmd.php?id=20&cmd=delete&index=' + getElement("triggerId").innerText, true, () => {modal.hide(); triggerModal.hide(); getScheduleFromServer();})});
+	for (let i = 0; i < triggerParameter.length; i++) {
+		if (triggerParameter[i].value + "+" == "+") anyTriggerParameterEmpty = true;
+	}
+	if (getElement("triggerModalTitle").getAttribute("newtrigger") == "false") {//update
+		if (anyTriggerParameterEmpty) {//if trigger paramter is missing
+			showModal(getLanguageAsText("ups"), getLanguageAsText("fill-required-fields"), true, true, getLanguageAsText("ok"));
+			return;
+		}
+		if (allCasesEmpty) {//if case is empty
+			showModal(getLanguageAsText("allready-done"), getLanguageAsText("save-trigger-anyway"), true, true, getLanguageAsText("cancel"), 3, getLanguageAsText("save"), () => {sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + getElement("triggerId").innerText + '&' + prepareTriggerString(true), true, () => {modal.hide(); triggerModal.hide(); getScheduleFromServer();});});
 			return;
 		}
 		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + getElement("triggerId").innerText + '&' + prepareTriggerString(true), true, () => {triggerModal.hide(); getScheduleFromServer();});
 		return;
-	} else {
-		if (allEmpty) showModal(getLanguageAsText("sure"), getLanguageAsText("really-delete-trigger"), true, true, getLanguageAsText("cancel"), 1, getLanguageAsText("delete"), () => {triggerModal.hide(); modal.hide()});
-		else sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareTriggerString(), true, () => {triggerModal.hide(); getScheduleFromServer();});
+	} else {//add
+		if (anyTriggerParameterEmpty) {//if trigger paramter is missing
+			showModal(getLanguageAsText("ups"), getLanguageAsText("fill-required-fields"), true, true, getLanguageAsText("ok"));
+			return;
+		}
+		if (allCasesEmpty) {//if case is empty
+			showModal(getLanguageAsText("allready-done"), getLanguageAsText("save-trigger-anyway"), true, true, getLanguageAsText("cancel"), 3, getLanguageAsText("save"), () => {sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareTriggerString(), true, () => {modal.hide(); triggerModal.hide(); getScheduleFromServer();});});
+			return;
+		}
+		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareTriggerString(), true, () => {triggerModal.hide(); getScheduleFromServer();});
 	}
 }
 
