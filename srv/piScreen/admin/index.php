@@ -95,8 +95,13 @@
 											</td>
 										</tr>
 										<tr>
+											<td colspan="2" lang-data="display-settings">
+												Display settings
+											</td>
+										</tr>
+										<tr>
 											<td colspan="2">
-												<div class='form-floating mb-3'>
+												<div class='form-floating mb-2'>
 													<select id='displayProtocolSelect' onchange='settingSaved("settingsButtonSaveDisplayProtocol", false);' class='disableOnDisconnect form-select border-secondary'>
 														<option id='cec' value='cec' lang-data='cec'>CEC</option>
 														<option id='ddc' value='ddc' lang-data='ddc'>DDC/CI</option>
@@ -126,6 +131,11 @@
 											</td>
 										</tr>
 										<tr>
+											<td colspan="2" lang-data="background-settings">
+												Background settings
+											</td>
+										</tr>
+										<tr>
 											<td>
 												<div class="input-group mb-3">
 													<select id='backgroundSelect' onchange='settingSaved("settingsButtonSaveBackground", false); showSettingsFileExplorerButton();' class='disableOnDisconnect form-select border-secondary rounded'>
@@ -149,6 +159,11 @@
 											</td>
 											<td style='width: 8%;'>
 												<button id='settingsButtonSaveBackground' class='disableOnDisconnect btn btn-success ms-3 mb-3' onclick='saveBackground();'><i class='bi bi-check2'></i></button>
+											</td>
+										</tr>
+										<tr>
+											<td colspan="2" lang-data="schedule-settings">
+												Schedule settings
 											</td>
 										</tr>
 										<tr>

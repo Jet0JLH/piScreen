@@ -71,6 +71,9 @@
         "password-web": "Password for weblogin",        
         "back": "Back",
         "save": "Save",
+        "display-settings": "Display settings",
+        "background-settings": "Background settings",
+        "schedule-settings": "Schedule settings",
 
         "color": "color",
         "stretch": "stretch",
