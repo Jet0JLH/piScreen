@@ -121,6 +121,8 @@
         "reboot-really": "Gerät wirklich neustarten?",
         "cancel": "Abbrechen",
         "alright": "Danke für die Info 😊",
+        "really-delete-trigger": "Willst du diesen Trigger wirklich löschen?",
+        "sure": "Sicher?",
 
         "startup-trigger": "Startauslöser",
         "trigger": "Auslöser",

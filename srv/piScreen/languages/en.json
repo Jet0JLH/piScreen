@@ -121,6 +121,9 @@
         "reboot-really": "Do you really wanna reboot?",
         "cancel": "Cancel",
         "alright": "Alright 😊",
+        "really-delete-trigger": "Really delete this trigger?",
+        "sure": "Are you sure?",
+        
 
         "startup-trigger": "Startup trigger",
         "trigger": "Trigger",

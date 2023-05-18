@@ -1121,18 +1121,18 @@ function saveTrigger() {
 	let commandsetSelects = document.getElementsByClassName("commandsetSelect");
 	let allEmpty = true;
 	for (let i = 0; i < commandSelects.length; i++) {
-		if (commandSelects[i].value != 0 && commandsetSelects[i].value != 0) allEmpty = false;
+		if (commandSelects[i].value != 0 || commandsetSelects[i].value != 0) allEmpty = false;
 	}
 	if (getElement("triggerEntryDescription").value + "+" != "+") allEmpty = false;//save if it has a description
 	if (getElement("triggerModalTitle").getAttribute("newtrigger") == "false") {
 		if (allEmpty) {//if no command or commandset selected, delete
-			sendHTTPRequest('GET', 'cmd.php?id=20&cmd=delete&index=' + getElement("triggerId").innerText, true, () => {triggerModal.hide(); getScheduleFromServer();});
+			showModal(getLanguageAsText("sure"), getLanguageAsText("really-delete-trigger"), true, true, getLanguageAsText("cancel"), 1, getLanguageAsText("delete"), () => {sendHTTPRequest('GET', 'cmd.php?id=20&cmd=delete&index=' + getElement("triggerId").innerText, true, () => {modal.hide(); triggerModal.hide(); getScheduleFromServer();})});
 			return;
 		}
 		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + getElement("triggerId").innerText + '&' + prepareTriggerString(true), true, () => {triggerModal.hide(); getScheduleFromServer();});
 		return;
 	} else {
-		if (allEmpty) triggerModal.hide();
+		if (allEmpty) showModal(getLanguageAsText("sure"), getLanguageAsText("really-delete-trigger"), true, true, getLanguageAsText("cancel"), 1, getLanguageAsText("delete"), () => {triggerModal.hide(); modal.hide()});
 		else sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareTriggerString(), true, () => {triggerModal.hide(); getScheduleFromServer();});
 	}
 }
