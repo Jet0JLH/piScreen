@@ -32,7 +32,7 @@
 						<i class='bi bi-thermometer'></i> <span lang-data='cpu-temp'>CPU Temperatur</span>: <span id='cpuTemp'>???</span><br>
 						<i class='bi bi-memory'></i> <span lang-data='ram'>RAM</span>: <span id='ramUsed'>???</span> <span lang-data='from'>von</span> <span id='ramTotal'>???</span> <span lang-data='in-use'>belegt</span> (<span id='ramUsage'>???</span> %)<br>
 						<i class='bi bi-ethernet'></i> <span lang-data='ip-address'>IP</span>: <?php echo $_SERVER['SERVER_ADDR']; ?><br><br>
-						<i class='bi bi-nut'></i> <span lang-data='current-mode'>Current mode</span>: <span id='modeBadge' class='badge rounded-pill bg-secondary'>???</span>
+						<i class='bi bi-boxes'></i> <span lang-data='current-mode'>Current mode</span>: <span id='modeBadge' class='badge rounded-pill bg-secondary'>???</span>
 					</p>
 				</div>
 			</div>
