@@ -63,6 +63,7 @@ const modeVLC = 2;
 const modeImpress = 3;
 var currentFileExplorerMode = 2;
 const modes = ["general", "firefox", "vlc", "impress"]; //there is no mode 0 
+var currentMode = 0;
 var currentRenameFile;
 var fileExplorerReturnElement = null;
 //screenshot modal
@@ -2136,6 +2137,41 @@ window.onload = function() {
 			st = new Date(jsonData.screenshotTime * 1000);
 			getElement("screenshotTime").innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth() + 1)}.${1900 + st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
 			getElement("screenshot").src = "piScreenScreenshot-thumb.jpg?t=" + new Date().getTime();
+			
+			switch (jsonData.modeInfo.mode) {
+				case modeFirefox:
+					getElement("screenContent").innerHTML = jsonData.modeInfo.info.url;
+					getElement("currentVideoTimeTable").hidden = true;
+					getElement("screenVlcAudioInfo").hidden = true;
+					break;
+				case modeVLC:
+					getElement("currentVideoTimeTable").hidden = false;
+					getElement("screenVlcAudioInfo").hidden = false;
+					getElement("currentVideoTime").innerHTML = msToTime(jsonData.modeInfo.info.time);
+					getElement("totalVideoTime").innerHTML = msToTime(jsonData.modeInfo.info.length);
+					getElement("infoVideoProgressbar").style.width = (jsonData.modeInfo.info.time / jsonData.modeInfo.info.length * 100).toFixed() + "%";
+
+					if (jsonData.modeInfo.info.state == "State.Paused") {
+						if (getElement("videoControlDiv") != null) getElement("videoControlDiv").outerHTML = "";
+						getElement("infoVideoProgressbar").classList.remove("progress-bar-animated");
+						getElement("modeControl").innerHTML += `<div id="videoControlDiv" class='col-6'>
+	<button class='disableOnDisconnect btn btn-success w-100' onclick='playVlcVideo();'><span id='playVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-play btn-icon-xxl'></i><br><span lang-data='play-vlc-video'>${getLanguageAsText("play-vlc-video")}</span></button>
+</div>`;
+					} else if (jsonData.modeInfo.info.state == "State.Playing") {
+						if (getElement("videoControlDiv") != null) getElement("videoControlDiv").outerHTML = "";
+						getElement("infoVideoProgressbar").classList.add("progress-bar-animated");
+						getElement("modeControl").innerHTML += `<div id="videoControlDiv" class='col-6'>
+	<button class='disableOnDisconnect btn btn-danger w-100' onclick='pauseVlcVideo();'><span id='pauseVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-pause btn-icon-xxl'></i><br><span lang-data='pause-vlc-video'>${getLanguageAsText("pause-vlc-video")}</span></button>
+</div>`;
+					}
+			
+					break;
+				case modeImpress:
+					getElement("currentVideoTimeTable").hidden = true;
+					getElement("screenVlcAudioInfo").hidden = true;
+					break;
+			}
+			
 			if (screenshotModalShown) {
 				getElement("screenshotFull").src = "piScreenScreenshot.jpg?t=" + new Date().getTime();
 				getElement("screenshotFullTime").innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth() + 1)}.${1900 + st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
@@ -2153,9 +2189,11 @@ window.onload = function() {
 				getElement("screenFullContent").innerHTML = getElement("screenFullContent").innerHTML.replaceAll("%20", " ");1
 			}
 		}
-		changeMode(jsonData.modeInfo);
-		if (connectionStatusChanged(true)) enableElements(true);
 
+		if (currentMode != jsonData.modeInfo.mode) changeMode(jsonData.modeInfo);
+		currentMode = jsonData.modeInfo.mode;
+
+		if (connectionStatusChanged(true)) enableElements(true);
 		rearrangeGui();
 	}
 	xmlhttp.onerror = () => {
@@ -2202,6 +2240,7 @@ function changeMode(modeInfo) {
 <div class='col-6'>
 	<button class='disableOnDisconnect btn btn-primary w-100' onclick='refreshBrowserPage();'><span id='refreshBrowserPageSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-arrow-clockwise btn-icon-xxl'></i><br><span lang-data='refresh-browser-page'>${getLanguageAsText("refresh-browser-page")}</span></button>
 </div>`;
+			getElement("infoVideoProgressbarWrapper").hidden = true;
 			rearrangeGui();
 			break;
 		case modeVLC:
@@ -2210,15 +2249,7 @@ function changeMode(modeInfo) {
 <div class='col-6'>
 	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartVlcVideo();'><span id='restartVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-skip-backward btn-icon-xxl'></i><br><span lang-data='restart-vlc-video'>${getLanguageAsText("restart-vlc-video")}</span></button>
 </div>`;
-			if (modeInfo.info.state == "State.Paused") {
-				getElement("modeControl").innerHTML += `<div class='col-6'>
-	<button class='disableOnDisconnect btn btn-success w-100' onclick='playVlcVideo();'><span id='playVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-play btn-icon-xxl'></i><br><span lang-data='play-vlc-video'>${getLanguageAsText("play-vlc-video")}</span></button>
-</div>`;
-			} else if (modeInfo.info.state == "State.Playing") {
-				getElement("modeControl").innerHTML += `<div class='col-6'>
-	<button class='disableOnDisconnect btn btn-danger w-100' onclick='pauseVlcVideo();'><span id='pauseVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-pause btn-icon-xxl'></i><br><span lang-data='pause-vlc-video'>${getLanguageAsText("pause-vlc-video")}</span></button>
-</div>`;
-			}
+			getElement("infoVideoProgressbarWrapper").hidden = false;
 			rearrangeGui();
 			break;
 		case modeImpress:
@@ -2227,7 +2258,13 @@ function changeMode(modeInfo) {
 <div class='col-6'>
 	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartImpress();'><span id='restartImpressSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-repeat btn-icon-xxl'></i><br><span lang-data='restart-impress'>${getLanguageAsText("restart-impress")}</span></button>
 </div>`;
+			getElement("infoVideoProgressbarWrapper").hidden = true;
 			rearrangeGui();
+			break;
+		default:
+			getElement("screenContent").innerHTML = "";
+			getElement("modeControl").innerHTML = "";
+			getElement("infoVideoProgressbarWrapper").hidden = true;
 			break;
 	}
 	getElement("screenContent").innerHTML = getElement("screenContent").innerHTML.replaceAll("%20", " ");
@@ -2392,6 +2429,7 @@ function setDarkMode(dark) {
 		for (let i = 0; i < closeButtons.length; i++) {
 			closeButtons[i].classList.replace("btn-close-dark", "btn-close-white");
 		}
+		getElement("infoVideoProgressbarWrapper").style.backgroundColor = "#373737cf";
 	} else {
 		theme.href = "/bootstrap/css/bootstrap.min.css";
 		languageSelect.classList.replace("border-light", "border-dark");
@@ -2402,6 +2440,7 @@ function setDarkMode(dark) {
 		for (let i = 0; i < closeButtons.length; i++) {
 			closeButtons[i].classList.replace("btn-close-white", "btn-close-dark");
 		}
+		getElement("infoVideoProgressbarWrapper").style.backgroundColor = "#cecece82";
 	}
 }
 
@@ -2521,4 +2560,11 @@ function addCommandsetsToDropdown(dropdownId, selectedId=0) {
 			getElement(dropdownId).value = selectedId;
 		}
 	}
+}
+
+function msToTime(milliseconds) {
+	let seconds = (milliseconds / 1000).toFixed();
+	let minutes = (seconds / 60).toFixed();
+	let hours = (minutes / 60).toFixed();
+	return addLeadingZero(hours) + ":" + addLeadingZero(minutes % 60) + ":" + addLeadingZero(seconds % 60);
 }

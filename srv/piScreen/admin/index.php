@@ -76,6 +76,11 @@
 						<img id='screenshot' src='piScreenScreenshot-thumb.jpg' style='max-width: 100%; cursor: pointer;' class='border figure-img img-fluid' onclick="showScreenshotModal();"></img>
 						<figcaption id='screenshotTime' class='figure-caption'></figcaption>
 						<figcaption id='screenContent' class='figure-caption text-break'></figcaption>
+						<div id="infoVideoProgressbarWrapper" class="progress" hidden>
+							<div id="infoVideoProgressbar" class="progress-bar progress-bar-striped progress-bar-animated" role="progressbar"></div>
+						</div>
+						<table id="currentVideoTimeTable" class="w-100"><tr><td><figcaption id='currentVideoTime' class='figure-caption'></figcaption></td><td style="float: right;"><figcaption id='totalVideoTime' class='figure-caption'></figcaption></td></tr></table>
+						<figcaption id='screenVlcAudioInfo' class='figure-caption text-break'></figcaption>
 					</figure>
 					<hr>
 					<div id='info-footer'>
