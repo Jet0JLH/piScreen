@@ -1634,16 +1634,51 @@ function getFilesInFolder() {
 		let files = parseReturnValuesFromServer(xmlhttp.responseText);
 		if (files + "+" == "+") return;
 		for (let i = 0; i < files.length; i++) {
+			let icon = "";
+			console.log(files[i].split(".")[files[i].split(".").length - 1]);
+			switch (files[i].split(".")[files[i].split(".").length - 1]) {
+				case "jpg":
+				case "jpeg":
+				case "png":
+				case "svg":
+				case "gif":
+				case "bmp":
+					icon = "file-earmark-image";
+					break;
+				case "mp4":
+				case "mov":
+				case "wmv":
+					icon = "file-earmark-play";
+					break;
+				case "mp3":
+				case "wav":
+				case "wma":
+					icon = "file-earmark-music";
+					break;
+				case "ppt":
+				case "pptx":
+					icon = "file-earmark-easel";
+					break;
+				case "pdf":
+					icon = "file-earmark-pdf";
+					break;
+				case "json":
+					icon = "file-earmark-code";
+					break;
+				default:
+					icon = "file-earmark";
+					break;
+			}
 			let fileItem = document.createElement("div");
 			fileItem.className = "col";
 			fileItem.innerHTML = `<div class='card border-0 mode${currentFileExplorerMode}' fileexplorerfileselected='false' onclick='selectFileItem(this)' ondblclick="showRenameModal(this);" onmouseover='this.style.opacity = 0.7;' onmouseleave='this.style.opacity = 1;'>
-	<img class='card-img-top' src='/piScreen.svg' alt='Logo' width='100%' height='100%'>
+	<svg class="bi ${isInDarkmode() ? "text-white" : "text-dark"}" role="img" width="100%" height="100%" fill="currentColor"><use xlink:href="/bootstrap/icons/bootstrap-icons.svg#${icon}"/></svg>
 	<figcaption class='text-center mt-1 card-text' style='cursor: default;'>
 		${files[i]}
 	</figcaption>
 </div>`;
 			getElement("fileExplorerFileCollection").appendChild(fileItem);
-		}
+		}//		  <img src="/bootstrap/icons/${icon}.svg" alt="Logo" width="100%" height="100%">
 	}
 	xmlhttp.open('GET', requestedUrl, true);
 	xmlhttp.send();

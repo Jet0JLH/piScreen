@@ -627,7 +627,6 @@ for (let w = 0; w < 5; w++) {
 				<div class='modal-body'>
 
 				</div>
-				<hr>
 				<div class='modal-footer'>
 					<button id='modal-cancelBtn' class='btn btn-secondary' data-bs-dismiss='modal' lang-data='cancel'>Abbruch</button>
 					<button id='modal-actionBtn' class='btn'></button>
