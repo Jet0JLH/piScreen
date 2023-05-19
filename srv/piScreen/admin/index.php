@@ -8,7 +8,15 @@
 
 	<title><?php echo shell_exec('hostname');?> piScreen Adminpage</title>
 </head>
-<body>
+<body class="prevent-scrolling">
+	<div id="splashscreen">
+		<img src='/piScreen.svg' alt='Logo' width='15%' height='15%' style="display: block; margin: auto; position: relative; top: 40%;">
+		<div class="loader">
+			<span class="bar"></span>
+			<span class="bar"></span>
+			<span class="bar"></span>
+		</div>
+	</div>
 	<main class='container'>
 		<div class='px-4 py-5 my-2 text-center'>
 			<button class='toggleDarkLight btn btn-outline-dark' id='darkmodeButton' onclick='toggleDarkmode();'><i class='bi bi-moon'></i></button>

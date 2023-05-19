@@ -71,6 +71,8 @@ var screenshotModalShown = false;
 var colorPickerElement = document.createElement("input");
 colorPickerElement.type = "color";
 colorPickerElement.onchange = () => {getElement("setBackgroundInputTextfield").value = colorPickerElement.value.substring(1);};
+//splashscreen
+var splashscreenActive = true;
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////   general schedule functions   ///////////////////////////////////
@@ -1635,7 +1637,6 @@ function getFilesInFolder() {
 		if (files + "+" == "+") return;
 		for (let i = 0; i < files.length; i++) {
 			let icon = "";
-			console.log(files[i].split(".")[files[i].split(".").length - 1]);
 			switch (files[i].split(".")[files[i].split(".").length - 1]) {
 				case "jpg":
 				case "jpeg":
@@ -1678,7 +1679,7 @@ function getFilesInFolder() {
 	</figcaption>
 </div>`;
 			getElement("fileExplorerFileCollection").appendChild(fileItem);
-		}//		  <img src="/bootstrap/icons/${icon}.svg" alt="Logo" width="100%" height="100%">
+		}
 	}
 	xmlhttp.open('GET', requestedUrl, true);
 	xmlhttp.send();
@@ -2086,6 +2087,10 @@ window.onload = function() {
 	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
 	//load periodical the current infos about the system
 	xmlhttp.onload = () => {
+		if (splashscreenActive) {
+			showSplashscreen(false);
+			splashscreenActive = false;
+		}
 		idleBadge.id = "notIdle";
 		setTimeout(() => {
 			idleBadge.id = "idle"
@@ -2175,6 +2180,11 @@ window.onload = function() {
 		xmlhttp.send();
 	}, 2000);
 	checkForUpdate();
+}
+
+window.onbeforeunload = function () {
+	window.scrollTo(0, 0);
+	showSplashscreen(true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2396,6 +2406,25 @@ function setDarkMode(dark) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////   splashscreen functions   ////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
+function showSplashscreen(show) {
+	let splashscreen = getElement("splashscreen");
+	if (show) {
+		document.getElementsByTagName("body")[0].classList.remove("prevent-scrolling");
+		splashscreen.style.opacity = 0;
+		splashscreen.style.display = "block";
+	} else {
+		splashscreen.style.opacity = 0;
+		document.getElementsByTagName("body")[0].classList.remove("prevent-scrolling");
+		setTimeout(() => {
+			splashscreen.style.display = "none";
+		}, 500);
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////   general helper functions   ///////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -2493,5 +2522,3 @@ function addCommandsetsToDropdown(dropdownId, selectedId=0) {
 		}
 	}
 }
-
-
