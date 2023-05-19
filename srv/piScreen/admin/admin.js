@@ -12,7 +12,7 @@ const commandCollection = [//text, parameter
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["display-state", [[0, "display-off"], [1, "display-on"]]], ["switch-display-input", false], ["change-display-protocol", [[0, "cec"], [1, "ddc"], [2, "manually"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["start-browser", "text"], ["restart-browser", false], ["refresh-browser-page", false], ["stop-browser", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["start-vlc-video", "filemanager", 2], ["restart-vlc-video", false], ["stop-vlc", false], ["play-pause-vlc-video", false], ["play-vlc-video", false], ["pause-vlc-video", false], ["", false], ["", false], ["", false], ["", false],
+		["start-vlc-video", "filemanager", 2], ["restart-vlc-video", false], ["stop-vlc", false], ["play-pause-vlc-video", false], ["play-vlc-video", false], ["pause-vlc-video", false], ["set-volume-vlc", "text"], ["", false], ["", false], ["", false],
 		["start-impress", "filemanager", 3], ["restart-impress", false], ["stop-impress", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
@@ -66,6 +66,8 @@ const modes = ["general", "firefox", "vlc", "impress"]; //there is no mode 0
 var currentMode = 0;
 var currentRenameFile;
 var fileExplorerReturnElement = null;
+var prevVlcVideoState = "";
+var modifiedVlcVolume = false;
 //screenshot modal
 var screenshotModalShown = false;
 //color picker
@@ -1826,6 +1828,10 @@ function pauseVlcVideo() {
 	sendHTTPRequest('GET', 'cmd.php?id=28&cmd=pause', true, () => {getElement("pauseVlcSpinner").hidden = true;});
 }
 
+function setVlcVolume(volume) {
+	sendHTTPRequest('GET', 'cmd.php?id=28&cmd=volume&value=' + volume, true, () => {volumeSaved(true);});
+}
+
 function restartImpress() {
 	getElement("restartImpressSpinner").hidden = false;
 	sendHTTPRequest('GET', 'cmd.php?id=29', true, () => {getElement("restartImpressSpinner").hidden = true;});
@@ -2054,6 +2060,18 @@ function saveBackground() {
 	}
 }
 
+function volumeSaved(saved) {
+	modifiedVlcVolume = !saved;
+	let element = getElement("vlcVolumeSetButton");
+	if (saved) {
+		element.className = "disableOnDisconnect btn btn-primary w-100";
+		element.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='set-volume-vlc'>" + getLanguageAsText("set-volume-vlc") + "</span>";
+	} else {
+		element.className = "disableOnDisconnect btn btn-outline-primary w-100";
+		element.innerHTML = "<i class='bi bi-save pe-2'></i><span lang-data='set-volume-vlc'>" + getLanguageAsText("set-volume-vlc") + "</span>";
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////   organizer functions   //////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2138,6 +2156,8 @@ window.onload = function() {
 			getElement("screenshotTime").innerHTML = `${addLeadingZero(st.getDate())}.${addLeadingZero(st.getMonth() + 1)}.${1900 + st.getYear()} - ${addLeadingZero(st.getHours())}:${addLeadingZero(st.getMinutes())}:${addLeadingZero(st.getSeconds())}`;
 			getElement("screenshot").src = "piScreenScreenshot-thumb.jpg?t=" + new Date().getTime();
 			
+			if (currentMode != jsonData.modeInfo.mode) changeMode(jsonData.modeInfo);
+
 			switch (jsonData.modeInfo.mode) {
 				case modeFirefox:
 					getElement("screenContent").innerHTML = jsonData.modeInfo.info.url;
@@ -2150,21 +2170,22 @@ window.onload = function() {
 					getElement("currentVideoTime").innerHTML = msToTime(jsonData.modeInfo.info.time);
 					getElement("totalVideoTime").innerHTML = msToTime(jsonData.modeInfo.info.length);
 					getElement("infoVideoProgressbar").style.width = (jsonData.modeInfo.info.time / jsonData.modeInfo.info.length * 100).toFixed() + "%";
-
-					if (jsonData.modeInfo.info.state == "State.Paused") {
-						if (getElement("videoControlDiv") != null) getElement("videoControlDiv").outerHTML = "";
-						getElement("infoVideoProgressbar").classList.remove("progress-bar-animated");
-						getElement("modeControl").innerHTML += `<div id="videoControlDiv" class='col-6'>
-	<button class='disableOnDisconnect btn btn-success w-100' onclick='playVlcVideo();'><span id='playVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-play btn-icon-xxl'></i><br><span lang-data='play-vlc-video'>${getLanguageAsText("play-vlc-video")}</span></button>
-</div>`;
-					} else if (jsonData.modeInfo.info.state == "State.Playing") {
-						if (getElement("videoControlDiv") != null) getElement("videoControlDiv").outerHTML = "";
-						getElement("infoVideoProgressbar").classList.add("progress-bar-animated");
-						getElement("modeControl").innerHTML += `<div id="videoControlDiv" class='col-6'>
-	<button class='disableOnDisconnect btn btn-danger w-100' onclick='pauseVlcVideo();'><span id='pauseVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-pause btn-icon-xxl'></i><br><span lang-data='pause-vlc-video'>${getLanguageAsText("pause-vlc-video")}</span></button>
-</div>`;
+					if (!modifiedVlcVolume) {
+						jsonData.modeInfo.info.volume = getElement("vlcVolumeRange").value;
+						getElement('vlcVolumeNumber').innerHTML = getElement("vlcVolumeRange").value + '%';
 					}
-			
+
+					if (prevVlcVideoState != jsonData.modeInfo.info.state) {
+						if (jsonData.modeInfo.info.state == "State.Paused") {
+							getElement("infoVideoProgressbar").classList.remove("progress-bar-animated");
+							getElement("videoControlDiv").innerHTML = `<button class='disableOnDisconnect btn btn-success w-100' onclick='playVlcVideo();'><span id='playVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-play btn-icon-xxl'></i><br><span lang-data='play-vlc-video'>${getLanguageAsText("play-vlc-video")}</span></button>`;
+						} else if (jsonData.modeInfo.info.state == "State.Playing") {
+							getElement("infoVideoProgressbar").classList.add("progress-bar-animated");
+							getElement("videoControlDiv").innerHTML = `<button class='disableOnDisconnect btn btn-danger w-100' onclick='pauseVlcVideo();'><span id='pauseVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-pause btn-icon-xxl'></i><br><span lang-data='pause-vlc-video'>${getLanguageAsText("pause-vlc-video")}</span></button>`;
+						}
+					}
+
+					prevVlcVideoState = jsonData.modeInfo.info.state;
 					break;
 				case modeImpress:
 					getElement("currentVideoTimeTable").hidden = true;
@@ -2190,7 +2211,6 @@ window.onload = function() {
 			}
 		}
 
-		if (currentMode != jsonData.modeInfo.mode) changeMode(jsonData.modeInfo);
 		currentMode = jsonData.modeInfo.mode;
 
 		if (connectionStatusChanged(true)) enableElements(true);
@@ -2240,6 +2260,7 @@ function changeMode(modeInfo) {
 <div class='col-6'>
 	<button class='disableOnDisconnect btn btn-primary w-100' onclick='refreshBrowserPage();'><span id='refreshBrowserPageSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-arrow-clockwise btn-icon-xxl'></i><br><span lang-data='refresh-browser-page'>${getLanguageAsText("refresh-browser-page")}</span></button>
 </div>`;
+			if (getElement("videoVolumeControlDiv") != null) getElement("videoVolumeControlDiv").outerHTML = "";
 			getElement("infoVideoProgressbarWrapper").hidden = true;
 			rearrangeGui();
 			break;
@@ -2248,16 +2269,31 @@ function changeMode(modeInfo) {
 			getElement("modeControl").innerHTML = `<h5 class="my-2">VLC</h5>
 <div class='col-6'>
 	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartVlcVideo();'><span id='restartVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-skip-backward btn-icon-xxl'></i><br><span lang-data='restart-vlc-video'>${getLanguageAsText("restart-vlc-video")}</span></button>
+</div>
+<div id="videoControlDiv" class='col-6'></div>
+<div id="videoVolumeControlDiv" class='col-6 mt-3'>
+	<div id="videoVolumeControl" class="border border-primary rounded p-2">
+		<table class="w-100"><tr><td><input id="vlcVolumeRange" type="range" class="form-range" min="0" max="100" step="1" value="${modeInfo.info.volume}" onchange="volumeSaved(false); getElement('vlcVolumeNumber').innerHTML = value + '%';"></td><td id="vlcVolumeNumber" class="ps-2 pb-2"></td></tr></table>
+		<button id="vlcVolumeSetButton" class='disableOnDisconnect btn btn-primary w-100' onclick="setVlcVolume(getElement('vlcVolumeRange').value); console.log(getElement('vlcVolumeRange').value);"><i class='bi bi-check2 pe-2'></i><span lang-data="set-volume-vlc">${getLanguageAsText("set-volume-vlc")}</span></button>
+	</div>
 </div>`;
+			if (jsonData.modeInfo.info.state == "State.Paused") {
+				getElement("videoControlDiv").innerHTML = `<button class='disableOnDisconnect btn btn-success w-100' onclick='playVlcVideo();'><span id='playVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-play btn-icon-xxl'></i><br><span lang-data='play-vlc-video'>${getLanguageAsText("play-vlc-video")}</span></button>`;
+			} else if (jsonData.modeInfo.info.state == "State.Playing") {
+				getElement("videoControlDiv").innerHTML = `<button class='disableOnDisconnect btn btn-danger w-100' onclick='pauseVlcVideo();'><span id='pauseVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden=''></span> <i class='bi bi-pause btn-icon-xxl'></i><br><span lang-data='pause-vlc-video'>${getLanguageAsText("pause-vlc-video")}</span></button>`;
+			}
+
 			getElement("infoVideoProgressbarWrapper").hidden = false;
 			rearrangeGui();
 			break;
 		case modeImpress:
+			if (getElement("videoVolumeControlDiv") != null) getElement("videoVolumeControlDiv").outerHTML = "";
 			getElement("screenContent").innerHTML = modeInfo.info.file.split("/")[modeInfo.info.file.split("/").length - 1];
 			getElement("modeControl").innerHTML = `<h5 class="my-2">Impress</h5>
 <div class='col-6'>
 	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartImpress();'><span id='restartImpressSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-repeat btn-icon-xxl'></i><br><span lang-data='restart-impress'>${getLanguageAsText("restart-impress")}</span></button>
 </div>`;
+			if (getElement("videoVolumeControlDiv") != null) getElement("videoVolumeControlDiv").outerHTML = "";
 			getElement("infoVideoProgressbarWrapper").hidden = true;
 			rearrangeGui();
 			break;
@@ -2430,6 +2466,7 @@ function setDarkMode(dark) {
 			closeButtons[i].classList.replace("btn-close-dark", "btn-close-white");
 		}
 		getElement("infoVideoProgressbarWrapper").style.backgroundColor = "#373737cf";
+		if (getElement("videoVolumeControl") != null) getElement("videoVolumeControl").style.backgroundColor = "#373737cf";
 	} else {
 		theme.href = "/bootstrap/css/bootstrap.min.css";
 		languageSelect.classList.replace("border-light", "border-dark");
@@ -2441,6 +2478,7 @@ function setDarkMode(dark) {
 			closeButtons[i].classList.replace("btn-close-white", "btn-close-dark");
 		}
 		getElement("infoVideoProgressbarWrapper").style.backgroundColor = "#cecece82";
+		if (getElement("videoVolumeControl") != null) getElement("videoVolumeControl").style.backgroundColor = "transparent";
 	}
 }
 

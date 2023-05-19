@@ -37,6 +37,7 @@
         "pause-vlc-video": "Pause",
         "play-pause-vlc-video": "Play / Pause",
         "stop-vlc": "Stop VLC",
+        "set-volume-vlc": "Set VLC volume",
         "restart-device": "Reboot",
         "shutdown-device": "Shutdown",
         "display-on": "Display on",

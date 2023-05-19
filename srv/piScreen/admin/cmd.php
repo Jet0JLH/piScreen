@@ -358,6 +358,8 @@
 			executeCommand("$syscall --play-vlc", true);
 		} elseif ($_GET['cmd'] == "pause") {
 			executeCommand("$syscall --pause-vlc", true);
+		} elseif ($_GET['cmd'] == "volume") {
+			executeCommand("$syscall --volume-vlc " . $_GET['value'], true);
 		}
 	}
 	elseif ($_GET['id'] == 29) { //Impress
