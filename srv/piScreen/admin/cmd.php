@@ -377,5 +377,7 @@
 	elseif ($_GET['id'] == 33) { //Set background wallpaper
 		executeCommand("$syscall --configure-desktop --wallpaper \"" . $_GET["path"] . "\"", true);
 	}
-
+	elseif ($_GET['id'] == 34) { //Set ignore time schedule
+		executeCommand("$syscall --set-ignore-cron " . $_GET["fromto"], true);
+	}
 ?>

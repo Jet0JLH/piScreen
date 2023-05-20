@@ -91,6 +91,8 @@
 
         "timeschedule": "Zeitplan",
         "ignore-timeschedule": "Zeitplan ignorieren",
+        "ignore-timeschedule-data-missing": "Daten nicht vollständig.",
+        "ignore-timeschedule-wrong-sequence": "Enddatum darf nicht vor Startdatum liegen.",
         "new-entry": "Eintrag hinzufügen",
         "delete-entry": "Eintrag löschen",
         "help": "Hilfe",

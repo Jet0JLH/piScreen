@@ -246,7 +246,26 @@
 			<div class='col-lg-12 col-xl-6 mb-4'>
 				<div class='card p-3 shadow'>
 					<h1 class='pb-2'><i class='bi bi-calendar-check bigIcon px-2'></i><span lang-data='planner'>Planer</span></h1>
-					<table class="pb-3" style="width: 100%;">
+					<table>
+						<tr>
+							<td colspan="3"><h5 lang-data="ignore-timeschedule"></h5></td>
+						</tr>
+						<tr>
+							<td colspan="4" style="display: flex;">
+								<span class="pt-1" lang-data="from">Von</span>
+								<input id='ignoreTimeScheduleStartDateTime' type="datetime-local" class="disableOnDisconnect form-control border border-secondary rounded-start p-1 mx-2 mb-2" onchange="ignoreCronDateChanged();" style="text-align: center; width: 40%;">
+								<span class="pt-1" lang-data="to">Bis</span>
+								<input id='ignoreTimeScheduleEndDateTime' type="datetime-local" class="disableOnDisconnect form-control border border-secondary rounded-start p-1 mx-2 mb-2" onchange="ignoreCronDateChanged();" style="text-align: center; width: 40%;">
+							</td>
+							<td style="width: 8%;">
+								<button id='ignoreTimeScheduleDelete' class='disableOnDisconnect btn btn-outline-danger ms-3 mb-3' onclick='ignoreCronDateChanged(); ignoreCronDateDelete();'><i class='bi bi-trash'></i></button>
+							</td>
+							<td style="width: 8%;">
+								<button id='ignoreTimeScheduleSave' class='disableOnDisconnect btn btn-success ms-3 mb-3' onclick='setIgnoreCron();'><i class='bi bi-check2'></i></button>
+							</td>
+						</tr>
+					</table>
+					<table class="pb-3 mt-1" style="width: 100%;">
 						<tr class="text-center">
 							<td style="width: 33%;">
 								<button type="radio" id="option1" name="options" class='btn-check' data-bs-target="#timeActionsCarousel" data-bs-slide-to="0" style="cursor: pointer;" checked></button>
@@ -265,7 +284,7 @@
 					<div id="timeActionsCarousel" class="carousel slide">
 						<div class="carousel-inner">
 							<div class="carousel-item active">
-								<div id='scheduleEntryCollectionList' class="list-group" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
+								<div id='scheduleEntryCollectionList' class="list-group border border-primary" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
 
 								</div>
 								<div>
@@ -274,13 +293,13 @@
 								</div>
 							</div>
 							<div class="carousel-item">
-								<div id="commandsetCollectionList" class="list-group" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
+								<div id="commandsetCollectionList" class="list-group border border-primary" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
 
 								</div>
 								<button id='commandsetEntryButtonAdd' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showCommandsetModal();'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-commandset'>Neues Commandset</span></button>
 							</div>
 							<div class="carousel-item">
-								<div id="triggerCollectionList" class="list-group" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
+								<div id="triggerCollectionList" class="list-group border border-primary" style="overflow-x:hidden; overflow-y:auto; height: 30rem;">
 
 								</div>
 								<button id='triggerEntryButtonAdd' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showTriggerModal(undefined, true);'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-trigger'>Neuer Trigger</span></button>

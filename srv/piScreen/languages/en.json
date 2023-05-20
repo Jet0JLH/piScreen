@@ -91,6 +91,8 @@
 
         "timeschedule": "Time schedule",
         "ignore-timeschedule": "Ignore time schedule",
+        "ignore-timeschedule-data-missing": "Data is missing.",
+        "ignore-timeschedule-wrong-sequence": "End date can not be before start date.",
         "new-entry": "Add entry",
         "delete-entry": "Delete entry",
         "help": "Help",

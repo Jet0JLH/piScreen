@@ -105,6 +105,10 @@ function loadScheduleJson(jsonString) {
 		showServerError("Failed to load time schedule", "schedule.json", error);
 		return;
 	}
+
+	if (getElement("ignoreTimeScheduleStartDateTime").value != undefined) getElement("ignoreTimeScheduleStartDateTime").value = scheduleObj.ignoreCronFrom;
+	if (getElement("ignoreTimeScheduleEndDateTime").value != undefined) getElement("ignoreTimeScheduleEndDateTime").value = scheduleObj.ignoreCronTo;
+
 	getElement("commandsetCollectionList").innerHTML = "";
 	for (let i = 0; i < scheduleObj.commandsets.length; i++) {//commandsets
 		let commandsetCommandsArray = [];
@@ -2072,6 +2076,35 @@ function volumeSaved(saved) {
 	}
 }
 
+function ignoreCronDateDelete() {
+	getElement("ignoreTimeScheduleStartDateTime").value = "";
+	getElement("ignoreTimeScheduleEndDateTime").value = "";
+}
+
+function ignoreCronDateChanged() {
+	getElement("ignoreTimeScheduleSave").className = "disableOnDisconnect btn btn-outline-success ms-3 mb-3";
+	getElement("ignoreTimeScheduleSave").innerHTML = "<i class='bi bi-save'></i>"
+}
+
+function setIgnoreCron() {
+	let startDateTime = getElement("ignoreTimeScheduleStartDateTime").value;
+	let endDateTime = getElement("ignoreTimeScheduleEndDateTime").value;
+	if (startDateTime + "+" == "+" && endDateTime + "+" == "+") {
+		sendHTTPRequest('GET', 'cmd.php?id=34&fromto=\" \"', true, () => {getElement("ignoreTimeScheduleSave").className = "disableOnDisconnect btn btn-success ms-3 mb-3"; getElement("ignoreTimeScheduleSave").innerHTML = "<i class='bi bi-check2'></i>"}, true);
+		return;
+	}
+	if (startDateTime > endDateTime) {
+		showModal(getLanguageAsText("error"), getLanguageAsText("ignore-timeschedule-wrong-sequence"), true, true, getLanguageAsText("ok"));
+		return;
+	}
+	if (startDateTime + "+" == "+" || endDateTime + "+" == "+") {
+		showModal(getLanguageAsText("error"), getLanguageAsText("ignore-timeschedule-data-missing"), true, true, getLanguageAsText("ok"));
+		return;
+	}
+	let fromTo = startDateTime.replace("T", " ") + " " + endDateTime.replace("T", " ");
+	sendHTTPRequest('GET', 'cmd.php?id=34&fromto=\"' + fromTo + "\"", true, () => {getElement("ignoreTimeScheduleSave").className = "disableOnDisconnect btn btn-success ms-3 mb-3"; getElement("ignoreTimeScheduleSave").innerHTML = "<i class='bi bi-check2'></i>"}, true);
+}
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////   organizer functions   //////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2171,7 +2204,7 @@ window.onload = function() {
 					getElement("totalVideoTime").innerHTML = msToTime(jsonData.modeInfo.info.length);
 					getElement("infoVideoProgressbar").style.width = (jsonData.modeInfo.info.time / jsonData.modeInfo.info.length * 100).toFixed() + "%";
 					if (!modifiedVlcVolume) {
-						jsonData.modeInfo.info.volume = getElement("vlcVolumeRange").value;
+						getElement("vlcVolumeRange").value = jsonData.modeInfo.info.volume;
 						getElement('vlcVolumeNumber').innerHTML = getElement("vlcVolumeRange").value + '%';
 					}
 
@@ -2241,8 +2274,8 @@ window.onload = function() {
 }
 
 window.onbeforeunload = function () {
-	window.scrollTo(0, 0);
 	showSplashscreen(true);
+	window.scrollTo({top: 0, left: 0, behavior: 'instant'});
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2274,7 +2307,7 @@ function changeMode(modeInfo) {
 <div id="videoVolumeControlDiv" class='col-6 mt-3'>
 	<div id="videoVolumeControl" class="border border-primary rounded p-2">
 		<table class="w-100"><tr><td><input id="vlcVolumeRange" type="range" class="form-range" min="0" max="100" step="1" value="${modeInfo.info.volume}" onchange="volumeSaved(false); getElement('vlcVolumeNumber').innerHTML = value + '%';"></td><td id="vlcVolumeNumber" class="ps-2 pb-2"></td></tr></table>
-		<button id="vlcVolumeSetButton" class='disableOnDisconnect btn btn-primary w-100' onclick="setVlcVolume(getElement('vlcVolumeRange').value); console.log(getElement('vlcVolumeRange').value);"><i class='bi bi-check2 pe-2'></i><span lang-data="set-volume-vlc">${getLanguageAsText("set-volume-vlc")}</span></button>
+		<button id="vlcVolumeSetButton" class='disableOnDisconnect btn btn-primary w-100' onclick="setVlcVolume(getElement('vlcVolumeRange').value);"><i class='bi bi-check2 pe-2'></i><span lang-data="set-volume-vlc">${getLanguageAsText("set-volume-vlc")}</span></button>
 	</div>
 </div>`;
 			if (jsonData.modeInfo.info.state == "State.Paused") {
@@ -2489,7 +2522,7 @@ function setDarkMode(dark) {
 function showSplashscreen(show) {
 	let splashscreen = getElement("splashscreen");
 	if (show) {
-		document.getElementsByTagName("body")[0].classList.remove("prevent-scrolling");
+		document.getElementsByTagName("body")[0].classList.add("prevent-scrolling");
 		splashscreen.style.opacity = 0;
 		splashscreen.style.display = "block";
 	} else {
