@@ -98,3 +98,12 @@
 		transform: scaleY(1);
 	}
 }
+
+#scheduleEntryCollectionList, #commandsetCollectionList, #triggerCollectionList {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#scheduleEntryCollectionList::-webkit-scrollbar, #commandsetCollectionList::-webkit-scrollbar, #triggerCollectionList::-webkit-scrollbar { 
+    display: none;
+}

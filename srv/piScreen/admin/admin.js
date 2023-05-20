@@ -2499,7 +2499,6 @@ function setDarkMode(dark) {
 			closeButtons[i].classList.replace("btn-close-dark", "btn-close-white");
 		}
 		getElement("infoVideoProgressbarWrapper").style.backgroundColor = "#373737cf";
-		if (getElement("videoVolumeControl") != null) getElement("videoVolumeControl").style.backgroundColor = "#373737cf";
 	} else {
 		theme.href = "/bootstrap/css/bootstrap.min.css";
 		languageSelect.classList.replace("border-light", "border-dark");
@@ -2511,7 +2510,6 @@ function setDarkMode(dark) {
 			closeButtons[i].classList.replace("btn-close-white", "btn-close-dark");
 		}
 		getElement("infoVideoProgressbarWrapper").style.backgroundColor = "#cecece82";
-		if (getElement("videoVolumeControl") != null) getElement("videoVolumeControl").style.backgroundColor = "transparent";
 	}
 }
 
