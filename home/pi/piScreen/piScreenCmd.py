@@ -125,7 +125,7 @@ def printHelp():
 	Writes a logentry.
 --set-language <countryCode>
 	Changes website language
---set-ignore-cron [%d.%m.%Y %H:%M %d.%m.%Y %H:%M]
+--set-ignore-cron [%Y-%m-%d %H:%M %Y-%m-%d %H:%M]
 	Set ignore time from date <-> to date.
 	If no parameter is set, the ignore time will be deleted.
 	""")
@@ -491,7 +491,7 @@ def modifySchedule(element,typ,scheduleJson,elementName:str=""):
 					verbose and print(f"{element} is no number")
 			elif typ == datetime.datetime:
 				try:
-					datetime.datetime.strptime(sys.argv[indexOfElement], "%Y-%m-%d %H:%M")
+					datetime.datetime.strptime(sys.argv[indexOfElement], dateFormate)
 					scheduleJson[elementName] = sys.argv[indexOfElement]
 					changed = True
 				except Exception as err:
@@ -843,6 +843,7 @@ def changeLanguage(language:str):
 
 #Main
 verbose = False
+dateFormate = "%Y-%m-%d %H:%M"
 sys.argv.pop(0) #Remove Path
 if len(sys.argv) < 1:
 	printHelp()
@@ -1225,7 +1226,6 @@ for i, origItem in enumerate(sys.argv):
 			else: tmp = tmp + " " + sys.argv[i]
 		splitedString = tmp.split(" ")
 		if len(splitedString) == 4:
-			dateFormate = "%d.%m.%Y %H:%M"
 			try:
 				piScreenUtils.logging.info("Set cron ignore time")
 				ignoreCronFrom = datetime.datetime.strptime(splitedString[0] + " " + splitedString[1],dateFormate)

@@ -515,12 +515,12 @@ class cronEntry():
 			self.parameter = jsonObj["parameter"]
 		if "start" in jsonObj:
 			try:
-				self.start = datetime.datetime.strptime(jsonObj["start"], "%Y-%m-%d %H:%M")
+				self.start = datetime.datetime.strptime(jsonObj["start"], scheduleDateFormate)
 			except ValueError:
 				pass
 		if "end" in jsonObj:
 			try:
-				self.end = datetime.datetime.strptime(jsonObj["end"], "%Y-%m-%d %H:%M")
+				self.end = datetime.datetime.strptime(jsonObj["end"], scheduleDateFormate)
 			except ValueError:
 				pass
 		if "pattern" in jsonObj:
@@ -1100,13 +1100,13 @@ def checkSchedule():
 				except Exception as err:
 					piScreenUtils.logging.error("Wrong datetime format in ignoreCronFrom")
 					piScreenUtils.logging.debug(err)
-					ignoreCronFrom = datetime.datetime.strptime("01.01.1900 00:00",scheduleDateFormate)
+					ignoreCronFrom = datetime.datetime.strptime("1900-01-01 00:00",scheduleDateFormate)
 			if "ignoreCronTo" in schedule:
 				try: ignoreCronTo = datetime.datetime.strptime(schedule["ignoreCronTo"],scheduleDateFormate)
 				except Exception as err:
 					piScreenUtils.logging.error("Wrong datetime format in ignoreCronTo")
 					piScreenUtils.logging.debug(err)
-					ignoreCronTo = datetime.datetime.strptime("01.01.1900 00:00",scheduleDateFormate)
+					ignoreCronTo = datetime.datetime.strptime("1900-01-01 00:00",scheduleDateFormate)
 			loadTrigger()
 		except Exception as err:
 			piScreenUtils.logging.critical("Schedulefile seems to be demaged and could not be loaded as JSON object")
@@ -1125,9 +1125,9 @@ settingsFileModify = 0
 scheduleFileModify = 0
 settings = json.dumps({})
 schedule = json.dumps({})
-scheduleDateFormate = "%d.%m.%Y %H:%M"
-ignoreCronFrom = datetime.datetime.strptime("01.01.1900 00:00",scheduleDateFormate)
-ignoreCronTo = datetime.datetime.strptime("01.01.1900 00:00",scheduleDateFormate)
+scheduleDateFormate = "%Y-%m-%d %H:%M"
+ignoreCronFrom = datetime.datetime.strptime("1900-01-01 00:00",scheduleDateFormate)
+ignoreCronTo = datetime.datetime.strptime("1900-01-01 00:00",scheduleDateFormate)
 allTrigger = []
 displayProtocol = ""
 displayOrientation:int = 0
