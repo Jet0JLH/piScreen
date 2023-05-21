@@ -256,7 +256,7 @@ function showScheduleModal(scheduleEntryId) {
 				</div>
 			</td>
 			<td style='width: 50%;'>
-				<button id="scheduleEntryButtonExecute" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeScheduleEntry(${scheduleEntryId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='scheduleEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
+				<button id="scheduleEntryButtonExecute" class="disableOnDisconnect btn btn-outline-info mt-2" onclick='executeScheduleEntry(${scheduleEntryId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='scheduleEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
 			</td>
 		</tr>
 		<tr>
@@ -416,10 +416,10 @@ function executeLastCron() {
 function scheduleEntrySaved(saved) {
 	let scheduleEntryButtonElement = getElement("scheduleEntryButtonExecute");
 	if (saved) {
-		scheduleEntryButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2";
+		scheduleEntryButtonElement.className = "disableOnDisconnect btn btn-outline-info mt-2";
 		if (prevItemsEnabled) scheduleEntryButtonElement.disabled = false;
 	} else {
-		scheduleEntryButtonElement.className = "btn btn-outline-warning mt-2";
+		scheduleEntryButtonElement.className = "btn btn-outline-info mt-2";
 		scheduleEntryButtonElement.disabled = true;
 	}
 }
@@ -884,7 +884,7 @@ function showTriggerModal(triggerEntryId=-1, newTrigger=false) {
 		</td>
 		<td colspan="2" style='width: 50%;'>
 			<span class='ms-2'>ID: </span><span id='triggerId'>${triggerEntryId}</span>
-			<button id="triggerEntryButtonExecute" class="btn btn-outline-warning mb-3" onclick='' style='float: right;' hidden><i class='bi bi-play pe-2'></i><span id='triggerEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
+			<button id="triggerEntryButtonExecute" class="btn btn-outline-info mb-3" onclick='' style='float: right;' hidden><i class='bi bi-play pe-2'></i><span id='triggerEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
 		</td>
 	</tr>
 	<tr>
@@ -1090,12 +1090,12 @@ function startupTriggerSaved(saved) {
 	if (saved) {
 		saveButtonElement.className = "disableOnDisconnect btn btn-success mt-2";
 		saveButtonElement.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='saved'>" + getLanguageAsText("saved") + "</span>";
-		executeButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2";
+		executeButtonElement.className = "disableOnDisconnect btn btn-outline-info mt-2";
 		executeButtonElement.disabled = false;
 	} else {
 		saveButtonElement.className = "disableOnDisconnect btn btn-outline-success mt-2";
 		saveButtonElement.innerHTML = "<i class='bi bi-save pe-2'></i><span lang-data='save'>" + getLanguageAsText("save") + "</span>";
-		executeButtonElement.className = "btn btn-outline-warning mt-2";
+		executeButtonElement.className = "btn btn-outline-info mt-2";
 		executeButtonElement.disabled = true;
 	}
 
@@ -1107,12 +1107,12 @@ function triggerSaved(saved) {
 	if (saved) {
 		saveButtonElement.className = "disableOnDisconnect btn btn-success m-1";
 		saveButtonElement.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='saved'>" + getLanguageAsText("saved") + "</span>";
-		//executeButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2";
+		//executeButtonElement.className = "disableOnDisconnect btn btn-outline-info mt-2";
 		//executeButtonElement.disabled = false;
 	} else {
 		saveButtonElement.className = "disableOnDisconnect btn btn-outline-success m-1";
 		saveButtonElement.innerHTML = "<i class='bi bi-save pe-2'></i><span lang-data='save'>" + getLanguageAsText("save") + "</span>";
-		//executeButtonElement.className = "btn btn-outline-warning mt-2";
+		//executeButtonElement.className = "btn btn-outline-info mt-2";
 		//executeButtonElement.disabled = true;
 	}
 }
@@ -1291,7 +1291,7 @@ function showCommandsetModal(commandsetId=0) {
 			</td>
 			<td colspan="2" style='width: 50%;'>
 				<span class='ms-2'>ID: </span><span id='commandsetId'>${commandsetId}</span>
-				<button id="commandsetEntryButtonExecute" class="disableOnDisconnect btn btn-outline-warning mb-3" onclick='executeCommandsetEntry(${commandsetId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='commandsetEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
+				<button id="commandsetEntryButtonExecute" class="disableOnDisconnect btn btn-outline-info mb-3" onclick='executeCommandsetEntry(${commandsetId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='commandsetEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
 			</td>
 		</tr>
 	</table>
@@ -1313,10 +1313,10 @@ function executeCommandsetEntry() {
 function commandsetEntrySaved(saved) {
 	let commandsetEntryButtonElement = getElement("commandsetEntryButtonExecute");
 	if (saved) {
-		commandsetEntryButtonElement.className = "disableOnDisconnect btn btn-outline-warning mt-2";
+		commandsetEntryButtonElement.className = "disableOnDisconnect btn btn-outline-info mt-2";
 		if (prevItemsEnabled) commandsetEntryButtonElement.disabled = false;
 	} else {
-		commandsetEntryButtonElement.className = "btn btn-outline-warning mt-2";
+		commandsetEntryButtonElement.className = "btn btn-outline-info mt-2";
 		commandsetEntryButtonElement.disabled = true;
 	}
 }

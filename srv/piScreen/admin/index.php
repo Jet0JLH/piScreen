@@ -239,7 +239,7 @@
 					</div>
 					<div>
 						<button id="startupTriggerSaveButton" class="disableOnDisconnect btn btn-success mt-2" onclick='saveStartupTrigger();'><i class='bi bi-check2 pe-2'></i><span lang-data="saved">Speichern</span></button>
-						<button id="startupTriggerExecuteButton" class="disableOnDisconnect btn btn-outline-warning mt-2" onclick='executeStartupTrigger();'><i class='bi bi-play pe-2'></i><span id='executestartupTriggerSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
+						<button id="startupTriggerExecuteButton" class="disableOnDisconnect btn btn-outline-info mt-2" onclick='executeStartupTrigger();'><i class='bi bi-play pe-2'></i><span id='executestartupTriggerSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
 					</div>
 				</div>
 			</div>
@@ -289,7 +289,7 @@
 								</div>
 								<div>
 									<button id='newScheduleEntry' class='disableOnDisconnect btn btn-outline-success mt-2' onclick='showScheduleModal(Math.floor(Math.random() * 9999) - 10000 );'><i class='bi bi-plus-lg pe-2'></i><span lang-data='new-entry'>Neuer Eintrag</span></button>
-									<button id='lastCronButton' class='disableOnDisconnect btn btn-outline-warning mt-2 px-2' onclick="sendHTTPRequest('GET', 'cmd.php?id=22', true);"><i class='bi bi-play pe-2'></i><span lang-data='lastcron'>Letzter Eintrag ausführen</span></button>
+									<button id='lastCronButton' class='disableOnDisconnect btn btn-outline-info mt-2 px-2' onclick="sendHTTPRequest('GET', 'cmd.php?id=22', true);"><i class='bi bi-play pe-2'></i><span lang-data='lastcron'>Letzter Eintrag ausführen</span></button>
 								</div>
 							</div>
 							<div class="carousel-item">
@@ -586,7 +586,7 @@ for (let w = 0; w < 5; w++) {
 									<h5 class="d-inline"><span id="fileExplorerRootFolder" class="badge rounded-pill bg-secondary">Ordner</span></h5>
 								</div>
 								<div class="d-inline" style="float: right;">
-									<button id="fileExplorerExecuteFile" class="btn btn-sm btn-outline-warning m-1" onclick='executeFileExplorerFile();' disabled><i class='bi bi-play pe-2'></i><span id='fileExplorerExecuteFileSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
+									<button id="fileExplorerExecuteFile" class="btn btn-sm btn-outline-info m-1" onclick='executeFileExplorerFile();' disabled><i class='bi bi-play pe-2'></i><span id='fileExplorerExecuteFileSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">Ausführen</span></button>
 									<button class='disableOnDisconnect btn btn-sm btn-outline-danger m-1' onclick='deleteSelectedFiles();'><i class='bi bi-trash pe-2'></i><span lang-data="delete">Löschen</span></button>
 									<button class='disableOnDisconnect btn btn-sm btn-outline-success m-1' onclick='selectFileToUpload();'><i class='bi bi-upload pe-2'></i><span lang-data="upload">Hochladen</span></button>
 								</div>
