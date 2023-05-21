@@ -1616,6 +1616,7 @@ function showFileExplorerModal(selectedMode=modeVLC, multiselect=true, returnEle
 <button class='btn btn-outline-success' onclick="applySelectedFile();" data-bs-dismiss='modal' lang-data='apply'>${getLanguageAsText("apply")}</button>`;
 	}
 	fileExplorerReturnElement = returnElement;
+	getElement("fileExplorerExecuteFile").disabled = true;
 	fileExplorerModal.show();
 }
 
@@ -1702,6 +1703,7 @@ function selectFileItem(element) {
 		}
 		fileExplorerSelectSingleFile(element, true);
 	}
+	disableExecuteFileExplorerFile();
 }
 
 function fileExplorerSelectSingleFile(element, select=true) {//when false, unselect
@@ -1792,6 +1794,29 @@ function dropFileIntoFileExplorer(ev) {
 	xmlhttp.onloadend = () => {getFilesInFolder(currentFileExplorerMode)};
 	xmlhttp.open("POST", 'cmd.php?id=25&mode=' + currentFileExplorerMode, true);
 	xmlhttp.send(formData);
+}
+
+function disableExecuteFileExplorerFile() {
+	let selectedElements = document.querySelectorAll("[fileexplorerfileselected='true']");
+	if (selectedElements.length > 1 || selectedElements.length == 0) {
+		getElement("fileExplorerExecuteFile").disabled = true;
+		return;
+	}
+	getElement("fileExplorerExecuteFile").disabled = false;
+}
+
+function executeFileExplorerFile() {
+	let selectedElement = document.querySelector("[fileexplorerfileselected='true']");
+	let commandId = 0;
+	if (currentFileExplorerMode == modeFirefox) commandId = 40;
+	else if (currentFileExplorerMode == modeVLC) commandId = 50;
+	else if (currentFileExplorerMode == modeImpress) commandId = 60;
+	else {
+		showModal(getLanguageAsText("error"), getLanguageAsText("execute-mode-general-disabled"), true, true, getLanguageAsText("ok"));
+		return;
+	}
+	getElement("fileExplorerExecuteFileSpinner").hidden = false;
+	sendHTTPRequest("GET", 'cmd.php?id=35&commandid=' + commandId + '&parameter=\"/srv/piScreen/admin/data/' + modes[currentFileExplorerMode] + "/" + selectedElement.children[1].innerText + "\"", true, () => {getElement("fileExplorerExecuteFileSpinner").hidden = true;});
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2198,6 +2223,7 @@ window.onload = function() {
 					getElement("screenVlcAudioInfo").hidden = true;
 					break;
 				case modeVLC:
+					getElement("screenContent").innerHTML = jsonData.modeInfo.info.source.split("/")[jsonData.modeInfo.info.source.split("/").length - 1];
 					getElement("currentVideoTimeTable").hidden = false;
 					getElement("screenVlcAudioInfo").hidden = false;
 					getElement("currentVideoTime").innerHTML = msToTime(jsonData.modeInfo.info.time);
@@ -2221,6 +2247,7 @@ window.onload = function() {
 					prevVlcVideoState = jsonData.modeInfo.info.state;
 					break;
 				case modeImpress:
+					getElement("screenContent").innerHTML = jsonData.modeInfo.info.file.split("/")[jsonData.modeInfo.info.file.split("/").length - 1];
 					getElement("currentVideoTimeTable").hidden = true;
 					getElement("screenVlcAudioInfo").hidden = true;
 					break;
@@ -2285,7 +2312,6 @@ window.onbeforeunload = function () {
 function changeMode(modeInfo) {
 	switch (modeInfo.mode) {
 		case modeFirefox:
-			getElement("screenContent").innerHTML = modeInfo.info.url;
 			getElement("modeControl").innerHTML = `<h5 class="my-2">Firefox</h5>
 <div class='col-6'>
 	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartBrowser();'><span id='restartBrowserSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-repeat btn-icon-xxl'></i><br><span lang-data='restart-browser'>${getLanguageAsText("restart-browser")}</span></button>
@@ -2298,7 +2324,6 @@ function changeMode(modeInfo) {
 			rearrangeGui();
 			break;
 		case modeVLC:
-			getElement("screenContent").innerHTML = modeInfo.info.source.split("/")[modeInfo.info.source.split("/").length - 1];
 			getElement("modeControl").innerHTML = `<h5 class="my-2">VLC</h5>
 <div class='col-6'>
 	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartVlcVideo();'><span id='restartVlcSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-skip-backward btn-icon-xxl'></i><br><span lang-data='restart-vlc-video'>${getLanguageAsText("restart-vlc-video")}</span></button>
@@ -2321,7 +2346,6 @@ function changeMode(modeInfo) {
 			break;
 		case modeImpress:
 			if (getElement("videoVolumeControlDiv") != null) getElement("videoVolumeControlDiv").outerHTML = "";
-			getElement("screenContent").innerHTML = modeInfo.info.file.split("/")[modeInfo.info.file.split("/").length - 1];
 			getElement("modeControl").innerHTML = `<h5 class="my-2">Impress</h5>
 <div class='col-6'>
 	<button class='disableOnDisconnect btn btn-danger w-100' onclick='restartImpress();'><span id='restartImpressSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><i class='bi bi-arrow-repeat btn-icon-xxl'></i><br><span lang-data='restart-impress'>${getLanguageAsText("restart-impress")}</span></button>

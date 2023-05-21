@@ -200,6 +200,7 @@
         "delete": "Delete",
         "rename": "Rename",
         "apply": "Apply",
+        "execute-mode-general-disabled": "In mode \"general\" execution is disabled.",
 
         "lastcron": "Execute last cron entry",
         "connection-lost": "Connection to server lost!",

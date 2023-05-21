@@ -380,4 +380,11 @@
 	elseif ($_GET['id'] == 34) { //Set ignore time schedule
 		executeCommand("$syscall --set-ignore-cron " . $_GET["fromto"], true);
 	}
+	elseif ($_GET['id'] == 35) { //Execute command once
+		$parameterString = "$syscall --schedule-manually-command --command " . $_GET["commandid"];
+		if ($_GET["parameter"]) {
+			$parameterString .= " --parameter " . $_GET["parameter"];
+		}
+		executeCommand($parameterString, true);
+	}
 ?>

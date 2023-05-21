@@ -200,6 +200,7 @@
         "delete": "Löschen",
         "rename": "Umbenennen",
         "apply": "Anwenden",
+        "execute-mode-general-disabled": "Ausführen im Modus \"general\" nicht möglich.",
 
         "lastcron": "Zuletzt ausgeführten Eintrag ausführen",
         "connection-lost": "Verbindung zum Server unterbrochen!",
