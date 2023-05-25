@@ -841,7 +841,7 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 	elif cmd == 3: #Write Log
 		parameter = parameter.split(":-:")
 		if len(parameter) >= 2:
-			os.system(f'{piScreenUtils.paths.syscall} --write-log --level {parameter[0]} "{parameter[1]}"')
+			os.system(f'{piScreenUtils.paths.syscall} --do-write-log --level {parameter[0]} "{parameter[1]}"')
 		else:
 			piScreenUtils.logging.error("Wrong structure of log command parameter")
 	elif cmd == 10: #Universal Call
@@ -855,26 +855,26 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 11: #Reboot
 		if scheduleSaveMode: time.sleep(300) ; piScreenUtils.logging.info("We are in save mode. Reboot starts in 300s")
-		os.system(f"sudo {piScreenUtils.paths.syscall} --reboot")
+		os.system(f"sudo {piScreenUtils.paths.syscall} --do-reboot")
 	elif cmd == 12: #Shutdown
 		if scheduleSaveMode: time.sleep(300) ; piScreenUtils.logging.info("We are in save mode. Shutdown starts in 300s")
-		os.system(f"sudo {piScreenUtils.paths.syscall} --shutdown")
+		os.system(f"sudo {piScreenUtils.paths.syscall} --do-shutdown")
 	elif cmd == 13: #Call commandset
 		if parameter:
 			commandsetTask(parameter)
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
-	elif cmd == 30: #Control display [0 = Standby, 1 = On]
+	elif cmd == 20: #Control display [0 = Off, 1 = On]
 		if piScreenUtils.isInt(parameter):
 			if int(parameter) == 0:
-				os.system(piScreenUtils.paths.syscall + " --screen-standby")
+				os.system(piScreenUtils.paths.syscall + " --set-display off")
 			else:
-				os.system(piScreenUtils.paths.syscall + " --screen-on")
+				os.system(piScreenUtils.paths.syscall + " --set-display on")
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
-	elif cmd == 31: #Switch display input
-		os.system(piScreenUtils.paths.syscall + " --screen-switch-input")
-	elif cmd == 32: #Change display protocol [0 = CEC, 1 = DDC]
+	elif cmd == 21: #Switch display input
+		os.system(piScreenUtils.paths.syscall + " --set-display-input")
+	elif cmd == 22: #Change display protocol [0 = CEC, 1 = DDC]
 		if piScreenUtils.isInt(parameter):
 			if int(parameter):
 				os.system(piScreenUtils.paths.syscall + " --set-display-protocol cec")
@@ -888,29 +888,25 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 41: #RestartBrowser
-		os.system(f'{piScreenUtils.paths.syscall} --restart-browser')
+		os.system(f'{piScreenUtils.paths.syscall} --do-firefox-restart')
 	elif cmd == 42: #ReloadBrowser
-		os.system(f'{piScreenUtils.paths.syscall} --refresh-browser')
-	elif cmd == 43: #CloseBrowser
-		os.system(f"{piScreenUtils.paths.syscall} --stop-browser")
+		os.system(f'{piScreenUtils.paths.syscall} --do-firefox-refresh')
 	elif cmd == 50: #StartVLC
 		if parameter:
 			os.system(f'{piScreenUtils.paths.syscall} --start-vlc "{parameter}"')
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 51: #RestartVLC
-		os.system(f"{piScreenUtils.paths.syscall} --restart-vlc")
-	elif cmd == 52: #StopVLC
-		os.system(f"{piScreenUtils.paths.syscall} --stop-vlc")
+		os.system(f"{piScreenUtils.paths.syscall} --do-vlc-restart")
 	elif cmd == 53: #Pause/PlayVLC
-		os.system(f"{piScreenUtils.paths.syscall} --play-pause-vlc")
+		os.system(f"{piScreenUtils.paths.syscall} --do-vlc-toggle-play-pause")
 	elif cmd == 54: #PlayVLC
-		os.system(f"{piScreenUtils.paths.syscall} --play-vlc")
+		os.system(f"{piScreenUtils.paths.syscall} --do-vlc-play")
 	elif cmd == 55: #PauseVLC
-		os.system(f"{piScreenUtils.paths.syscall} --pause-vlc")
+		os.system(f"{piScreenUtils.paths.syscall} --do-vlc-pause")
 	elif cmd == 56: #VolumeVLC
 		if parameter:
-			os.system(f'{piScreenUtils.paths.syscall} --volume-vlc "{parameter}"')
+			os.system(f'{piScreenUtils.paths.syscall} --set-vlc-volume "{parameter}"')
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 60: #StartImpress
@@ -919,9 +915,7 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 61: #RestartImpress
-		os.system(f"{piScreenUtils.paths.syscall} --restart-impress")
-	elif cmd == 62: #StopImpress
-		os.system(f"{piScreenUtils.paths.syscall} --stop-impress")
+		os.system(f"{piScreenUtils.paths.syscall} --do-impress-restart")
 
 ############################
 ### Socket communication ###

@@ -6,66 +6,19 @@ os.chdir(skriptPath)
 
 
 def printHelp():
-	print("This tool is desigend for syscalls.\nSo you have one script, which controlls everything and get every info about.")
-	print("""
+	print("""This tool is desigend for syscalls.
+So you have one script, which controlls everything and get every info about.
+
+=== General ===
 -h or --help
 	Show this information
--v
+-v or --verbose
 	Shows detailed informations during execution
---start-browser <URL>
-	Starts the Browser or navigate it to new location if already open
---stop-browser
-	Stops the Browser when active
---restart-browser
-	Restart the Browser when active
---refresh-browser
-	Refresh browser when active
---start-vlc <file>
-	Starts VLC Player
---stop-vlc
-	Stops VLC Player when active
---restart-vlc
-	Restarts the media in VLC Player when active
---play-pause-vlc
-	Pause/Play the video if mode is VLC
---pause-vlc
-	Pause the video if mode is VLC
---play-vlc
-	Play the video if mode is VLC
---volume-vlc <value>
-	Set the audio volume to the given value
---start-impress <file>
-	Starts Libreoffice Impress
---stop-impress
-	Stops Libreoffice Impress when active
---restart-impress
-	Restarts Libreoffice Impress when active
---reboot
-	Restarts the Device
---shutdown
-	Shutdown the Device
---configure-desktop [<--mode> <mode>] [<--wallpaper> <path>] [<--bg-color> <hexColor>]
-	Configure the desktop wallpaper.
-	Possible modes are: color|stretch|fit|crop|center|tile|screen
-	Hex colors has 6 characters and starts with a hash. Keep in mind, this character has to be escaped with a backslash!
---get-desktop-configuration
-	Returns the full desktop configuration
 --get-status
 	Returns a JSON String with statusinfos
---screen-on
-	Turns the screen on
---screen-standby
-	Turns the screen in standby
---screen-off
-	Turns the screen off
---screen-switch-input
-	Tells the display to change the input to our system,
-	if it is not currently displayed
---get-website
-	Get the current in settings configured website
---get-mode
-	Get the current mode [firefox|vlc|impress|none]
---set-pw <user> [-f <file with password>] [password]
+--set-language <countryCode>
+	Changes website language
+--set-password <user> [-f <file with password>] [password]
 	Change the password for the weblogin user. Removes the old password.
 	You can set the password directly --change-pw <user> <password>
 	or you can set the password by file --change-pw <user> -f <file>
@@ -77,57 +30,109 @@ def printHelp():
 --do-upgrade [--draft] [--pre-release]
 	Check for updates, download install files if release is available and do upgrade.
 	Sudo rights are requiered!
---set-display-protocol <protocol>
-	Set the display protocol to CEC, DDC or MANUALLY.
+--do-write-log <--level <debug/info/warning/error/critical>> <message>
+	Writes a logentry.
+
+=== Hostcontrol ===
+--do-reboot
+	Restarts the Device
+--do-shutdown
+	Shutdown the Device
+--get-desktop-configuration
+	Returns the full desktop configuration
+--set-desktop-configuration [<--mode> <mode>] [<--wallpaper> <path>] [<--background-color> <hexColor>]
+	Configure the desktop wallpaper.
+	Possible modes are: color|stretch|fit|crop|center|tile|screen
+	Hex colors has 6 characters and starts with a hash. Keep in mind, this character has to be escaped with a backslash!
+
+=== Display ===
 --get-display-protocol
 	Retuns the current activ display protocol. CEC or DDC
---set-display-orientation [--no-save] <orientation ID>
+--set-display-protocol <protocol>
+	Set the display protocol to CEC, DDC or MANUALLY.
+--get-display-orientation [--settings]
+	Returns the display orientation from os.
+	If parameter --settings is given, it returns the display orientation in settings file.
+--set-display-orientation [--no-save] <orientationID>
 	0 = 0 degrees
 	1 = 90 degrees
 	2 = 180 degrees
 	3 = 270 degrees
 	If --no-save is set, the orientation will be not permanent.
---get-display-orientation-settings
-	Returns the display orientation in settingsfile.
---get-display-orientation
-	Returns the display orientation from os.
---schedule-firstrun
-	Start schedule firstrun manually.
---schedule-lastcron
-	Start last crontab entry
---schedule-manually-command <--commandID> <commandID> [<--parameter> <parameter>]
+--set-display <[on][off]>
+	Set the display to on or off. Using the set display protocol
+--set-display-input
+	Tells the display to change the input to our system, if it is not currently displayed.
+	Currently only available on cec
+
+=== Modes ===
+--get-mode
+	Get the current mode [firefox|vlc|impress|none]
+--stop-mode
+	Stops the current running mode and switches back to 'none'
+ == Firefox ==
+--start-firefox <URL>
+	Starts the Browser or navigate it to new location if already open
+--do-firefox-restart
+	Restart the Browser when active
+--do-firefox-refresh
+	Refresh browser when active
+ == VLC ==
+--start-vlc <pathToFile>
+	Starts VLC Player
+--do-vlc-restart
+	Restarts VLC Player
+--do-vlc-play
+	Play the video if mode is VLC
+--do-vlc-pause
+	Pause the video if mode is VLC
+--do-vlc-toggle-play-pause
+	Pause/Play the video if mode is VLC
+--set-vlc-volume <valueInPercent>
+	Set the audio volume to the given value
+ == Impress ==
+--start-impress <pathToFile>
+	Starts Libreoffice Impress
+--do-impress-restart
+	Restarts Libreoffice Impress when active
+
+=== Schedule ===
+--run-command-manually <--command <commandID>> [<--parameter <parameter>>]
 	Runs a single command selected by commandid
---schedule-manually-commandset <--id> <id>
-	Runs the commandset selected by id in schedule
---schedule-manually-cron <--index> <index>
+== Cron ==
+--run-firstrun
+	Start schedule firstrun manually.
+--run-lastcron
+	Start last crontab entry
+--run-cron-manually <--index <cronIndex>>
 	Runs the cron entry selected by index in schedule
---add-cron <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"YYYY-MM-DD hh:mm">] [--end <"YYYY-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>] [--comment <comment>]
+--add-cron-entry <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"YYYY-MM-DD hh:mm">] [--end <"YYYY-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>] [--description <description>]
 	Add a cronentry to schedule.json.
---update-cron <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["YYYY-MM-DD hh:mm"]] [--end ["YYYY-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>] [--comment <comment>]
+--update-cron-entry <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["YYYY-MM-DD hh:mm"]] [--end ["YYYY-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>] [--description <description>]
 	Update a cronentry by index in schedule.json.
---delete-cron <--index <cronIndex>>
+--delete-cron-entry <--index <cronIndex>>
 	Delete a cronentry by index from schedule.json.
---add-trigger <--trigger <triggerID>> [--enabled <true/false>] [--first-state-dont-trigger <true/false>] [--run-once <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>] [--comment <comment>]
-	Add a trigger to schedule.json.
-	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
---update-trigger <--index <triggerIndex>> [--trigger <triggerID>] [--enabled <true/false>] [--first-state-dont-trigger <true/false>] [--run-once <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>] [--comment <comment>]
-	Update a trigger by index in schedule.json.
-	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
---delete-trigger <--index <triggerIndex>>
-	Delete a trigger by index from schedule.json.
---add-commandset <--name <name>> [--command <commandID> [parameter]]
-	Add a commandset to schedule.json.
---update-commandset <--id <id>> [--name <name>] [--command <commandID> [parameter]]
-	Update a commandset by id in schedule.json.
---delete-commandset <--id <id>>
-	Delete a commandset by id from schedule.json.
---write-log <--level <debug/info/warning/error/critical>> <message>
-	Writes a logentry.
---set-language <countryCode>
-	Changes website language
---set-ignore-cron [%Y-%m-%d %H:%M %Y-%m-%d %H:%M]
+--set-cron-ignore-timespan [%Y-%m-%d %H:%M %Y-%m-%d %H:%M]
 	Set ignore time from date <-> to date.
 	If no parameter is set, the ignore time will be deleted.
+== Commandset ==
+--run-commandset-manually <--id <commandsetID>>
+	Runs the commandset selected by id in schedule
+--add-commandset-entry <--description <description>> [--command <commandID> [parameter]]
+	Add a commandset to schedule.json.
+--update-commandset-entry <--id <id>> [--description <description>] [--command <commandID> [parameter]]
+	Update a commandset by id in schedule.json.
+--delete-commandset-entry <--id <id>>
+	Delete a commandset by id from schedule.json.
+== Trigger ==
+--add-trigger-entry <--trigger <triggerID>> [--enabled <true/false>] [--first-state-dont-trigger <true/false>] [--run-once <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>] [--description <description>]
+	Add a trigger to schedule.json.
+	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
+--update-trigger-entry <--index <triggerIndex>> [--trigger <triggerID>] [--enabled <true/false>] [--first-state-dont-trigger <true/false>] [--run-once <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>] [--description <description>]
+	Update a trigger by index in schedule.json.
+	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
+--delete-trigger-entry <--index <triggerIndex>>
+	Delete a trigger by index from schedule.json.
 	""")
 
 def sendToCore(data:dict) -> dict:
@@ -160,29 +165,12 @@ def loadSchedule():
 def loadManifest():
 	return json.load(open(piScreenUtils.paths.manifest))
 
-def endAllModes():
-	piScreenUtils.logging.debug("End all modes")
-	try:
-		if os.path.exists(piScreenUtils.paths.modeFirefox):
-			os.remove(piScreenUtils.paths.modeFirefox)
-			os.system("killall -q -SIGTERM firefox-esr")
-		if os.path.exists(piScreenUtils.paths.modeVLC):
-			os.remove(piScreenUtils.paths.modeVLC)
-			os.system("killall -q -SIGTERM vlc")
-		if os.path.exists(piScreenUtils.paths.modeImpress):
-			os.remove(piScreenUtils.paths.modeImpress)
-			os.system("killall -q -SIGTERM soffice.bin")
-	except Exception as err:
-		piScreenUtils.logging.error("Unable to end mode")
-		piScreenUtils.logging.debug(err)
-	
-
 def startBrowser(parameter):
 	piScreenUtils.logging.info(f"Navigate browser to {parameter}")
 	sendToCore({"cmd":3,"parameter":{"mode":1,"parameter":parameter}})
 
-def stopBrowser():
-	piScreenUtils.logging.info("Stop browser")
+def stopMode():
+	piScreenUtils.logging.info("Stop mode")
 	sendToCore({"cmd":3,"parameter":{"mode":0,"parameter":""}})
 
 def restartBrowser():
@@ -193,21 +181,9 @@ def startVLC(parameter,soft=False):
 	piScreenUtils.logging.info(f"Load VLC file {parameter}")
 	sendToCore({"cmd":3,"parameter":{"mode":2,"parameter":parameter}})
 
-def stopVLC():
-	piScreenUtils.logging.info("Stop VLC")
-	sendToCore({"cmd":3,"parameter":{"mode":0,"parameter":""}})
-
-def restartVLC():
-	piScreenUtils.logging.info("Restart VLC")
-	os.system("killall -q -SIGTERM vlc")
-
 def startImpress(parameter):
 	piScreenUtils.logging.info(f"Load Impress file {parameter}")
 	sendToCore({"cmd":3,"parameter":{"mode":3,"parameter":parameter}})
-
-def stopImpress():
-	piScreenUtils.logging.info("Stop impress")
-	sendToCore({"cmd":3,"parameter":{"mode":0,"parameter":""}})
 
 def restartImpress():
 	piScreenUtils.logging.info("Restart impress")
@@ -255,8 +231,8 @@ def configureDesktop():
 					piScreenUtils.logging.warning("Wallpaper File doesn't exist")
 					verbose and print("Wallpaper File doesn't exist")
 		time.sleep(0.5)
-		if f"--bg-color" in sys.argv:
-			indexOfElement = sys.argv.index(f"--bg-color") + 1
+		if f"--background-color" in sys.argv:
+			indexOfElement = sys.argv.index(f"--background-color") + 1
 			if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
 				piScreenUtils.logging.warning("No parameter given")
 				verbose and print("No parameter given")
@@ -300,9 +276,6 @@ def getStatus():
 	if "data" in status: return json.dumps(status["data"])
 	else: return json.dumps({})
 
-def getWebsite():
-	if os.path.exists(piScreenUtils.paths.modeFirefox): print(open(piScreenUtils.paths.modeFirefox,"r").read())
-
 def getMode():
 	if os.path.exists(piScreenUtils.paths.modeFirefox):
 		return "firefox"
@@ -316,9 +289,6 @@ def screenOn():
 	piScreenUtils.logging.info("Send display on command to core")
 	verbose and print("Send display on command to core")
 	sendToCore({"cmd":5,"parameter":1})
-
-def screenStandby():
-	screenOff()
 
 def screenOff():
 	piScreenUtils.logging.info("Send display off command to core")
@@ -525,7 +495,7 @@ def addCron():
 				changed = modifySchedule("pattern","pattern",item) or changed
 				changed = modifySchedule("command",int,item) or changed
 				changed = modifySchedule("parameter",None,item) or changed
-				changed = modifySchedule("comment",None,item) or changed
+				changed = modifySchedule("description",None,item) or changed
 				if changed:
 					try:
 						scheduleJson = loadSchedule()
@@ -575,7 +545,7 @@ def updateCron():
 							changed = modifySchedule("pattern","pattern",scheduleJson["cron"][index]) or changed
 							changed = modifySchedule("command",int,scheduleJson["cron"][index]) or changed
 							changed = modifySchedule("parameter",None,scheduleJson["cron"][index]) or changed
-							changed = modifySchedule("comment",None,scheduleJson["cron"][index]) or changed
+							changed = modifySchedule("description",None,scheduleJson["cron"][index]) or changed
 							if changed:
 								scheduleFile = open(piScreenUtils.paths.schedule, "w")
 								scheduleFile.write(json.dumps(scheduleJson,indent=4))
@@ -620,7 +590,7 @@ def addTrigger():
 				changed = modifySchedule("trigger",int,item) or changed
 				changed = modifySchedule("first-state-dont-trigger",bool,item,"firstStateDontTrigger") or changed
 				changed = modifySchedule("run-once",bool,item,"runOnce") or changed
-				changed = modifySchedule("comment",None,item) or changed
+				changed = modifySchedule("description",None,item) or changed
 				for i2 in sys.argv:
 					if i2.startswith("--command:") and len(i2) > 10:
 						if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
@@ -681,7 +651,7 @@ def updateTrigger():
 							changed = modifySchedule("trigger",int,item) or changed
 							changed = modifySchedule("first-state-dont-trigger",bool,item,"firstStateDontTrigger") or changed
 							changed = modifySchedule("run-once",bool,item,"runOnce") or changed
-							changed = modifySchedule("comment",None,item) or changed
+							changed = modifySchedule("description",None,item) or changed
 							for i2 in sys.argv:
 								if i2.startswith("--command:") and len(i2) > 10:
 									if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
@@ -733,14 +703,14 @@ def updateTrigger():
 
 def addCommandset(update):
 	if i + 2 < len(sys.argv):
-		if "--name" in sys.argv or update:
+		if "--description" in sys.argv or update:
 			import random
 			item = {}
 			if update and modifySchedule("id",int,item):
 				deleteCommandset()
 			else:
 				item["id"] = random.randint(100000,999999)
-			modifySchedule("name",str,item)
+			modifySchedule("description",str,item)
 			item["commands"] = []
 			for x in range(len(sys.argv)):
 				if sys.argv[x] == "--command":
@@ -849,8 +819,11 @@ if len(sys.argv) < 1:
 	printHelp()
 
 if "-v" in sys.argv:
-    verbose = True
-    sys.argv.remove("-v")
+	verbose = True
+	sys.argv.remove("-v")
+if "--verbose" in sys.argv:
+	verbose = True
+	sys.argv.remove("--verbose")
 
 for i, origItem in enumerate(sys.argv):
 	item = origItem.lower()
@@ -859,35 +832,33 @@ for i, origItem in enumerate(sys.argv):
 		item == "--help"
 	):
 		printHelp()
-	elif item == "--start-browser":
+	elif item == "--stop-mode":
+		stopMode()
+	elif item == "--start-firefox":
 		if i + 1 < len(sys.argv):
 			startBrowser(sys.argv[i + 1])
 		else:
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
-	elif item == "--restart-browser":
+	elif item == "--do-firefox-restart":
 		restartBrowser()
-	elif item == "--refresh-browser":
+	elif item == "--do-firefox-refresh":
 		sendToCore({"cmd":4,"parameter":{"mode":1,"parameter":"refresh"}})
-	elif item == "--stop-browser":
-		stopBrowser()
 	elif item == "--start-vlc":
 		if i + 1 < len(sys.argv):
 			startVLC(sys.argv[i + 1])
 		else:
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
-	elif item == "--restart-vlc":
+	elif item == "--do-vlc-restart":
 		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"restart"}})
-	elif item == "--stop-vlc":
-		stopVLC()
-	elif item == "--play-pause-vlc":
+	elif item == "--do-vlc-toggle-play-pause":
 		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"play/pause"}})
-	elif item == "--pause-vlc":
+	elif item == "--do-vlc-pause":
 		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"pause"}})
-	elif item == "--play-vlc":
+	elif item == "--do-vlc-play":
 		sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":"play"}})
-	elif item == "--volume-vlc":
+	elif item == "--set-vlc-volume":
 		if i + 1 < len(sys.argv):
 			if piScreenUtils.isInt(sys.argv[i + 1]):
 				sendToCore({"cmd":4,"parameter":{"mode":2,"parameter":f"volume{sys.argv[i + 1]}"}})
@@ -903,33 +874,30 @@ for i, origItem in enumerate(sys.argv):
 		else:
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
-	elif item == "--restart-impress":
+	elif item == "--do-impress-restart":
 		restartImpress()
-	elif item == "--stop-impress":
-		stopImpress()
-	elif item == "--reboot":
+	elif item == "--do-reboot":
 		reboot()
-	elif item == "--shutdown":
+	elif item == "--do-shutdown":
 		shutdown()
-	elif item == "--configure-desktop":
+	elif item == "--set-desktop-configuration":
 		configureDesktop()
 	elif item == "--get-desktop-configuration":
 		getDekstopConfig()
 	elif item == "--get-status":
 		print(getStatus())
-	elif item == "--screen-on":
-		screenOn()
-	elif item == "--screen-standby":
-		screenStandby()
-	elif item == "--screen-off":
-		screenOff()
-	elif item == "--screen-switch-input":
+	elif item == "--set-display":
+		if "on" in sys.argv:
+			screenOn()
+		elif "off" in sys.argv:
+			screenOff()
+		else:
+			verbose and print("You need to give the parameter 'on' or 'off'")
+	elif item == "--set-display-input":
 		screenSwitchInput()
-	elif item == "--get-website":
-		getWebsite()
 	elif item == "--get-mode":
 		print(getMode())
-	elif item == "--set-pw":
+	elif item == "--set-password":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 2].lower() == "-f": #Check file Mode
 				verbose and print("Set weblogin password with file")
@@ -1025,23 +993,24 @@ for i, origItem in enumerate(sys.argv):
 		else:
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
-	elif item == "--get-display-orientation-settings":
-		settingsJson = loadSettings()
-		try:
-			print(settingsJson["settings"]["display"]["orientation"])
-		except Exception as err:
-			piScreenUtils.logging.error("Can not read displayorientation from settings")
-			piScreenUtils.logging.debug(err)
-			print(0)
 	elif item == "--get-display-orientation":
-		print(getDisplayOrientation())
-	elif item == "--schedule-firstrun":
+		if "--settings" in sys.argv:
+			settingsJson = loadSettings()
+			try:
+				print(settingsJson["settings"]["display"]["orientation"])
+			except Exception as err:
+				piScreenUtils.logging.error("Can not read displayorientation from settings")
+				piScreenUtils.logging.debug(err)
+				print(0)
+		else:
+			print(getDisplayOrientation())
+	elif item == "--run-firstrun":
 		piScreenUtils.logging.info("Send command for schedule firstrun")
 		sendToCore({"cmd":6,"parameter":{}})
-	elif item == "--schedule-lastcron":
+	elif item == "--run-lastcron":
 		piScreenUtils.logging.info("Send command for schedule last cron")
 		sendToCore({"cmd":7,"parameter":{}})
-	elif item == "--schedule-manually-command":
+	elif item == "--run-command-manually":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--command":
 				if piScreenUtils.isInt(sys.argv[i + 2]):
@@ -1069,7 +1038,7 @@ for i, origItem in enumerate(sys.argv):
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 			exit(1)
-	elif item == "--schedule-manually-commandset":
+	elif item == "--run-commandset-manually":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--id":
 				if piScreenUtils.isInt(sys.argv[i + 2]):
@@ -1087,7 +1056,7 @@ for i, origItem in enumerate(sys.argv):
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 			exit(1)
-	elif item == "--schedule-manually-cron":
+	elif item == "--run-cron-manually":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--index":
 				if piScreenUtils.isInt(sys.argv[i + 2]):
@@ -1105,11 +1074,11 @@ for i, origItem in enumerate(sys.argv):
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 			exit(1)
-	elif item == "--add-cron":
+	elif item == "--add-cron-entry":
 		addCron()
-	elif item == "--update-cron":
+	elif item == "--update-cron-entry":
 		updateCron()
-	elif item == "--delete-cron":
+	elif item == "--delete-cron-entry":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--index":
 				if piScreenUtils.isInt(sys.argv[i + 2]):
@@ -1144,17 +1113,17 @@ for i, origItem in enumerate(sys.argv):
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 			exit(1)
-	elif item == "--add-commandset":
+	elif item == "--add-commandset-entry":
 		addCommandset(False)
-	elif item == "--update-commandset":
+	elif item == "--update-commandset-entry":
 		updateCommandset()
-	elif item == "--delete-commandset":
+	elif item == "--delete-commandset-entry":
 		deleteCommandset()
-	elif item == "--add-trigger":
+	elif item == "--add-trigger-entry":
 		addTrigger()
-	elif item == "--update-trigger":
+	elif item == "--update-trigger-entry":
 		updateTrigger()
-	elif item == "--delete-trigger":
+	elif item == "--delete-trigger-entry":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 1] == "--index":
 				if piScreenUtils.isInt(sys.argv[i + 2]):
@@ -1189,7 +1158,7 @@ for i, origItem in enumerate(sys.argv):
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 			exit(1)
-	elif item == "--write-log":
+	elif item == "--do-write-log":
 		if "--level" in sys.argv:
 			index = sys.argv.index("--level") + 1
 			if index + 1 < len(sys.argv):
@@ -1218,8 +1187,8 @@ for i, origItem in enumerate(sys.argv):
 			changeLanguage(sys.argv[i + 1])
 		else:
 			piScreenUtils.logging.warning("Not enough arguments")
-	elif item == "--set-ignore-cron":
-		index = sys.argv.index("--set-ignore-cron") + 1
+	elif item == "--set-cron-ignore-timespan":
+		index = sys.argv.index("--set-cron-ignore-timespan") + 1
 		tmp = ""
 		for i in range(index,len(sys.argv)):
 			if tmp == "": tmp = sys.argv[i]

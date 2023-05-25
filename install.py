@@ -168,7 +168,6 @@ def configureDesktop():
 	printInfo("Configure desktop",style=1)
 	try:
 		printInfo("Remove desktop wallpaper")
-		#info["dry"] or os.system(f"{piScreenUtils.paths.syscall} --configure-desktop --mode color")
 		info["dry"] or os.system(f"export DISPLAY=:0;export XAUTHORITY=/home/pi/.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --wallpaper-mode=color")
 	except: printError("Unable to set desktop wallpaper")
 	try:
