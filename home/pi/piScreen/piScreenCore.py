@@ -864,7 +864,9 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 			commandsetTask(parameter)
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
-	elif cmd == 20: #Control display [0 = Off, 1 = On]
+	elif cmd == 20: #End all modes
+		os.system(piScreenUtils.paths.syscall + " --stop-mode")
+	elif cmd == 30: #Control display [0 = Off, 1 = On]
 		if piScreenUtils.isInt(parameter):
 			if int(parameter) == 0:
 				os.system(piScreenUtils.paths.syscall + " --set-display off")
@@ -872,9 +874,9 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 				os.system(piScreenUtils.paths.syscall + " --set-display on")
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
-	elif cmd == 21: #Switch display input
+	elif cmd == 31: #Switch display input
 		os.system(piScreenUtils.paths.syscall + " --set-display-input")
-	elif cmd == 22: #Change display protocol [0 = CEC, 1 = DDC]
+	elif cmd == 32: #Change display protocol [0 = CEC, 1 = DDC]
 		if piScreenUtils.isInt(parameter):
 			if int(parameter):
 				os.system(piScreenUtils.paths.syscall + " --set-display-protocol cec")
