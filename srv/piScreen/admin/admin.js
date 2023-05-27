@@ -244,7 +244,7 @@ function showScheduleModal(scheduleEntryId) {
 	if (obj.end) {
 		endTime = end.split(" ")[1];
 	}
-
+	
 	getElement("scheduleModalTitle").innerHTML = `<i class="bi bi-asterisk bigIcon pe-2"></i><span lang-data="cron-entry">${getLanguageAsText("cron-entry")}</span><span id='currentScheduleEntryId' hidden>${scheduleEntryId}</span>`;
 	getElement("scheduleModalBody").innerHTML = `<table class="table-sm" style='width: 100%;'>
 	<div id='scheduleEntry'>
@@ -256,7 +256,7 @@ function showScheduleModal(scheduleEntryId) {
 				</div>
 			</td>
 			<td style='width: 50%;'>
-				<button id="scheduleEntryButtonExecute" class="disableOnDisconnect btn btn-outline-info mt-2" onclick='executeScheduleEntry(${scheduleEntryId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='scheduleEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
+				<button id="scheduleEntryButtonExecute" class="disableOnDisconnect executeButton btn ${isInDarkmode() ? "btn-outline-warning" : "btn-outline-primary"} mt-2" onclick='executeScheduleEntry(${scheduleEntryId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='scheduleEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
 			</td>
 		</tr>
 		<tr>
@@ -416,10 +416,10 @@ function executeLastCron() {
 function scheduleEntrySaved(saved) {
 	let scheduleEntryButtonElement = getElement("scheduleEntryButtonExecute");
 	if (saved) {
-		scheduleEntryButtonElement.className = "disableOnDisconnect btn btn-outline-info mt-2";
+		scheduleEntryButtonElement.className = `disableOnDisconnect executeButton btn ${isInDarkmode() ? "btn-outline-warning" : "btn-outline-primary"} mt-2`;
 		if (prevItemsEnabled) scheduleEntryButtonElement.disabled = false;
 	} else {
-		scheduleEntryButtonElement.className = "btn btn-outline-info mt-2";
+		scheduleEntryButtonElement.className = `btn executeButton ${isInDarkmode() ? "btn-outline-warning" : "btn-outline-primary"} mt-2`;
 		scheduleEntryButtonElement.disabled = true;
 	}
 }
@@ -884,7 +884,6 @@ function showTriggerModal(triggerEntryId=-1, newTrigger=false) {
 		</td>
 		<td colspan="2" style='width: 50%;'>
 			<span class='ms-2'>ID: </span><span id='triggerId'>${triggerEntryId}</span>
-			<button id="triggerEntryButtonExecute" class="btn btn-outline-info mb-3" onclick='' style='float: right;' hidden><i class='bi bi-play pe-2'></i><span id='triggerEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
 		</td>
 	</tr>
 	<tr>
@@ -1090,12 +1089,12 @@ function startupTriggerSaved(saved) {
 	if (saved) {
 		saveButtonElement.className = "disableOnDisconnect btn btn-success mt-2";
 		saveButtonElement.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='saved'>" + getLanguageAsText("saved") + "</span>";
-		executeButtonElement.className = "disableOnDisconnect btn btn-outline-info mt-2";
+		executeButtonElement.className = `disableOnDisconnect executeButton btn ${isInDarkmode() ? "btn-outline-warning" : "btn-outline-primary"} mt-2`;
 		executeButtonElement.disabled = false;
 	} else {
 		saveButtonElement.className = "disableOnDisconnect btn btn-outline-success mt-2";
 		saveButtonElement.innerHTML = "<i class='bi bi-save pe-2'></i><span lang-data='save'>" + getLanguageAsText("save") + "</span>";
-		executeButtonElement.className = "btn btn-outline-info mt-2";
+		executeButtonElement.className = `btn ${isInDarkmode() ? "btn-outline-warning" : "btn-outline-primary"} executeButton mt-2`;
 		executeButtonElement.disabled = true;
 	}
 
@@ -1103,17 +1102,12 @@ function startupTriggerSaved(saved) {
 
 function triggerSaved(saved) {
 	let saveButtonElement = getElement("triggerButtonSave");
-	//let executeButtonElement = getElement("triggerExecuteButton");
 	if (saved) {
 		saveButtonElement.className = "disableOnDisconnect btn btn-success m-1";
 		saveButtonElement.innerHTML = "<i class='bi bi-check2 pe-2'></i><span lang-data='saved'>" + getLanguageAsText("saved") + "</span>";
-		//executeButtonElement.className = "disableOnDisconnect btn btn-outline-info mt-2";
-		//executeButtonElement.disabled = false;
 	} else {
 		saveButtonElement.className = "disableOnDisconnect btn btn-outline-success m-1";
 		saveButtonElement.innerHTML = "<i class='bi bi-save pe-2'></i><span lang-data='save'>" + getLanguageAsText("save") + "</span>";
-		//executeButtonElement.className = "btn btn-outline-info mt-2";
-		//executeButtonElement.disabled = true;
 	}
 }
 
@@ -1291,7 +1285,7 @@ function showCommandsetModal(commandsetId=0) {
 			</td>
 			<td colspan="2" style='width: 50%;'>
 				<span class='ms-2'>ID: </span><span id='commandsetId'>${commandsetId}</span>
-				<button id="commandsetEntryButtonExecute" class="disableOnDisconnect btn btn-outline-info mb-3" onclick='executeCommandsetEntry(${commandsetId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='commandsetEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
+				<button id="commandsetEntryButtonExecute" class="disableOnDisconnect executeButton btn ${isInDarkmode() ? "btn-outline-warning" : "btn-outline-primary"} mb-3" onclick='executeCommandsetEntry(${commandsetId});' style='float: right;'><i class='bi bi-play pe-2'></i><span id='commandsetEntryButtonExecuteSpinner' class='spinner-border spinner-border-sm' role='status' hidden='true'></span><span lang-data="execute">${getLanguageAsText("execute")}</span></button>
 			</td>
 		</tr>
 	</table>
@@ -1313,10 +1307,10 @@ function executeCommandsetEntry() {
 function commandsetEntrySaved(saved) {
 	let commandsetEntryButtonElement = getElement("commandsetEntryButtonExecute");
 	if (saved) {
-		commandsetEntryButtonElement.className = "disableOnDisconnect btn btn-outline-info mt-2";
+		commandsetEntryButtonElement.className = `disableOnDisconnect executeButton btn ${isInDarkmode() ? "btn-outline-warning" : "btn-outline-primary"} mt-2`;
 		if (prevItemsEnabled) commandsetEntryButtonElement.disabled = false;
 	} else {
-		commandsetEntryButtonElement.className = "btn btn-outline-info mt-2";
+		commandsetEntryButtonElement.className = `btn ${isInDarkmode() ? "btn-outline-warning" : "btn-outline-primary"} executeButton mt-2`;
 		commandsetEntryButtonElement.disabled = true;
 	}
 }
@@ -2512,6 +2506,7 @@ function setDarkMode(dark) {
 	let languageSelect = getElement("languageSelect");
 	let buttonsToToggle = document.getElementsByClassName("toggleDarkLight");
 	let closeButtons = document.getElementsByClassName("btn-close");
+	let executeButtons = document.getElementsByClassName("executeButton"); 
 	if (dark) {
 		theme.href = "/bootstrap/darkpan-1.0.0/css/bootstrap.min.css";
 		languageSelect.classList.replace("border-dark", "border-light");
@@ -2521,6 +2516,9 @@ function setDarkMode(dark) {
 		}
 		for (let i = 0; i < closeButtons.length; i++) {
 			closeButtons[i].classList.replace("btn-close-dark", "btn-close-white");
+		}
+		for (let i = 0; i < executeButtons.length; i++) {
+			executeButtons[i].classList.replace("btn-outline-primary", "btn-outline-warning");
 		}
 		getElement("infoVideoProgressbarWrapper").style.backgroundColor = "#373737cf";
 	} else {
@@ -2532,6 +2530,9 @@ function setDarkMode(dark) {
 		}
 		for (let i = 0; i < closeButtons.length; i++) {
 			closeButtons[i].classList.replace("btn-close-white", "btn-close-dark");
+		}
+		for (let i = 0; i < executeButtons.length; i++) {
+			executeButtons[i].classList.replace("btn-outline-warning", "btn-outline-primary");
 		}
 		getElement("infoVideoProgressbarWrapper").style.backgroundColor = "#cecece82";
 	}
