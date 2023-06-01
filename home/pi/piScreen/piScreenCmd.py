@@ -11,13 +11,13 @@ So you have one script, which controlls everything and get every info about.
 
 === General ===
 -h or --help
-	Show this information
+	Show this information.
 -v or --verbose
-	Shows detailed informations during execution
+	Shows detailed informations during execution.
 --get-status
-	Returns a JSON String with statusinfos
+	Returns a JSON String with statusinfos.
 --set-language <countryCode>
-	Changes website language
+	Changes website language.
 --set-password <user> [-f <file with password>] [password]
 	Change the password for the weblogin user. Removes the old password.
 	You can set the password directly --change-pw <user> <password>
@@ -25,8 +25,8 @@ So you have one script, which controlls everything and get every info about.
 	File will be erased after command!
 	Special characters in password are only in file mode available!
 --check-update [--draft] [--pre-release]
-	Check for updates on Github
-	If you are using --draft or --pre-release parameter, then you check this channels too
+	Check for updates on Github.
+	If you are using --draft or --pre-release parameter, then you check this channels too.
 --do-upgrade [--draft] [--pre-release]
 	Check for updates, download install files if release is available and do upgrade.
 	Sudo rights are requiered!
@@ -35,11 +35,11 @@ So you have one script, which controlls everything and get every info about.
 
 === Hostcontrol ===
 --do-reboot
-	Restarts the Device
+	Restarts the Device.
 --do-shutdown
-	Shutdown the Device
+	Shutdown the Device.
 --get-desktop-configuration
-	Returns the full desktop configuration
+	Returns the full desktop configuration.
 --set-desktop-configuration [<--mode> <mode>] [<--wallpaper> <path>] [<--background-color> <hexColor>]
 	Configure the desktop wallpaper.
 	Possible modes are: color|stretch|fit|crop|center|tile|screen
@@ -47,7 +47,7 @@ So you have one script, which controlls everything and get every info about.
 
 === Display ===
 --get-display-protocol
-	Retuns the current activ display protocol. CEC or DDC
+	Retuns the current activ display protocol. CEC or DDC.
 --set-display-protocol <protocol>
 	Set the display protocol to CEC, DDC or MANUALLY.
 --get-display-orientation [--settings]
@@ -60,52 +60,52 @@ So you have one script, which controlls everything and get every info about.
 	3 = 270 degrees
 	If --no-save is set, the orientation will be not permanent.
 --set-display <[on][off]>
-	Set the display to on or off. Using the set display protocol
+	Set the display to on or off. Using the set display protocol.
 --set-display-input
 	Tells the display to change the input to our system, if it is not currently displayed.
-	Currently only available on cec
+	Currently only available on cec.
 
 === Modes ===
 --get-mode
-	Get the current mode [firefox|vlc|impress|none]
+	Get the current mode. [firefox|vlc|impress|none]
 --stop-mode
-	Stops the current running mode and switches back to 'none'
+	Stops the current running mode and switches back to 'none'.
  == Firefox ==
 --start-firefox <URL>
-	Starts the Browser or navigate it to new location if already open
+	Starts the Browser or navigate it to new location if already open.
 --do-firefox-restart
-	Restart the Browser when active
+	Restart the Browser when active.
 --do-firefox-refresh
-	Refresh browser when active
+	Refresh browser when active.
  == VLC ==
 --start-vlc <pathToFile>
-	Starts VLC Player
+	Starts VLC Player.
 --do-vlc-restart
-	Restarts VLC Player
+	Restarts VLC Player.
 --do-vlc-play
-	Play the video if mode is VLC
+	Play the video if mode is VLC.
 --do-vlc-pause
-	Pause the video if mode is VLC
+	Pause the video if mode is VLC.
 --do-vlc-toggle-play-pause
-	Pause/Play the video if mode is VLC
+	Pause/Play the video if mode is VLC.
 --set-vlc-volume <valueInPercent>
-	Set the audio volume to the given value
+	Set the audio volume to the given value.
  == Impress ==
 --start-impress <pathToFile>
-	Starts Libreoffice Impress
+	Starts Libreoffice Impress.
 --do-impress-restart
-	Restarts Libreoffice Impress when active
+	Restarts Libreoffice Impress when active.
 
 === Schedule ===
 --run-command-manually <--command <commandID>> [<--parameter <parameter>>]
-	Runs a single command selected by commandid
-== Cron ==
+	Runs a single command selected by commandid.
+ == Cron ==
 --run-firstrun
 	Start schedule firstrun manually.
 --run-lastcron
-	Start last crontab entry
+	Start last cron entry.
 --run-cron-manually <--index <cronIndex>>
-	Runs the cron entry selected by index in schedule
+	Runs the cron entry selected by index in schedule.
 --add-cron-entry <--pattern <pattern>> [--enabled <false/true>] [--commandset <commandsetID>] [--start <"YYYY-MM-DD hh:mm">] [--end <"YYYY-MM-DD hh:mm">] [--command <commandID>] [--parameter <parameter>] [--description <description>]
 	Add a cronentry to schedule.json.
 --update-cron-entry <--index <cronIndex>> [--enabled [false/true]] [--commandset [commandsetID]] [--start ["YYYY-MM-DD hh:mm"]] [--end ["YYYY-MM-DD hh:mm"]] [--command [commandID]] [--parameter [parameter]] [--pattern <pattern>] [--description <description>]
@@ -115,22 +115,22 @@ So you have one script, which controlls everything and get every info about.
 --set-cron-ignore-timespan [%Y-%m-%d %H:%M %Y-%m-%d %H:%M]
 	Set ignore time from date <-> to date.
 	If no parameter is set, the ignore time will be deleted.
-== Commandset ==
+ == Commandset ==
 --run-commandset-manually <--id <commandsetID>>
-	Runs the commandset selected by id in schedule
+	Runs the commandset selected by id in schedule.
 --add-commandset-entry <--description <description>> [--command <commandID> [parameter]]
 	Add a commandset to schedule.json.
 --update-commandset-entry <--id <id>> [--description <description>] [--command <commandID> [parameter]]
 	Update a commandset by id in schedule.json.
 --delete-commandset-entry <--id <id>>
 	Delete a commandset by id from schedule.json.
-== Trigger ==
+ == Trigger ==
 --add-trigger-entry <--trigger <triggerID>> [--enabled <true/false>] [--first-state-dont-trigger <true/false>] [--run-once <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>] [--description <description>]
 	Add a trigger to schedule.json.
-	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
+	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>].
 --update-trigger-entry <--index <triggerIndex>> [--trigger <triggerID>] [--enabled <true/false>] [--first-state-dont-trigger <true/false>] [--run-once <true/false>] [--command:<caseName> <commandID>] [--parameter:<caseName> <parameter>] [--commandset:<caseName> <commandsetID>] [--description <description>]
 	Update a trigger by index in schedule.json.
-	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>]
+	If the trigger needs additional parameters, so you can add them like this: [--<parameterName> <parameterValue>].
 --delete-trigger-entry <--index <triggerIndex>>
 	Delete a trigger by index from schedule.json.
 	""")
@@ -1230,7 +1230,7 @@ for i, origItem in enumerate(sys.argv):
 		else:
 			verbose and print("Not enough arguments")
 			piScreenUtils.logging.warning("Not enough arguments")
-	elif item == "--core-stop":
+	elif item == "--stop-core":
 		#Secret command to send stop message to piScreenCore.py
 		if sendToCore({"cmd":1})["code"] == 0:
 			verbose and print("Core will stop")
@@ -1238,3 +1238,5 @@ for i, origItem in enumerate(sys.argv):
 		else:
 			verbose and print("Core doesn't seem to respond")
 			piScreenUtils.logging.info("Core doesn't seem to respond")
+	else:
+		print("Command unknown")

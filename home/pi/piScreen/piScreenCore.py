@@ -886,7 +886,7 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 40: #StartBrowser
 		if parameter:
-			os.system(f'{piScreenUtils.paths.syscall} --start-browser "{parameter}"')
+			os.system(f'{piScreenUtils.paths.syscall} --start-firefox "{parameter}"')
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 41: #RestartBrowser
