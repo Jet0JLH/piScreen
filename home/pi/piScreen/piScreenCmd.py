@@ -1238,5 +1238,3 @@ for i, origItem in enumerate(sys.argv):
 		else:
 			verbose and print("Core doesn't seem to respond")
 			piScreenUtils.logging.info("Core doesn't seem to respond")
-	else:
-		print("Command unknown")
