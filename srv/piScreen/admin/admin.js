@@ -116,7 +116,7 @@ function loadScheduleJson(jsonString) {
 		for (let j = 0; j < commandsetObj.commands.length; j++) {//commands
 			commandsetCommandsArray.push([commandsetObj.commands[j].command, commandsetObj.commands[j].parameter]);
 		}
-		generateCommandsetEntry(commandsetObj.name, commandsetCommandsArray, commandsetObj.id, true);
+		generateCommandsetEntry(commandsetObj.description, commandsetCommandsArray, commandsetObj.id, true);
 	}
 	
 	getElement("scheduleEntryCollectionList").innerHTML = "";
@@ -195,7 +195,7 @@ function generateNewScheduleEntry(scheduleEntryId=-1, scheduleEntryObject) {//en
 </div>
 <i class='bi bi-terminal bigIcon pe-2'></i><span lang-data="command">${getLanguageAsText("command")}</span>: ${getLanguageAsText(commandCollection[scheduleEntryObject.command][0])}<br>
 <i class='bi bi-node-plus bigIcon pe-2'></i><span lang-data="parameter">${getLanguageAsText("parameter")}</span>: ${scheduleEntryObject.parameter.length > 50 ? scheduleEntryObject.parameter.substring(0, 40) + "..." : scheduleEntryObject.parameter}<br><br>
-<i class='bi bi-file-ruled bigIcon pe-2'></i><span lang-data="commandset">${getLanguageAsText("commandset")}</span>: ${commandsetExists(scheduleEntryObject.commandset) ? getCommandsetName(scheduleEntryObject.commandset) : "---"}<br><br>
+<i class='bi bi-file-ruled bigIcon pe-2'></i><span lang-data="commandset">${getLanguageAsText("commandset")}</span>: ${commandsetExists(scheduleEntryObject.commandset) ? getCommandsetDescription(scheduleEntryObject.commandset) : "---"}<br><br>
 <table style='width: 100%;'>
 	<tr>
 		${scheduleEntryObject.start == undefined ? "" : "<td style='width: 50%;'><i class='bi bi-stopwatch bigIcon pe-2'></i><span lang-data='valid-from'>" + getLanguageAsText('valid-from') + "</span>: </td>"}
@@ -811,7 +811,7 @@ function generateTriggerEntry(triggerObj) {
 	<p><i class='bi bi-lightning bigIcon pe-2'></i>${getLanguageAsText(triggerCollection[triggerObj.trigger][0])}</p>
 	<p><span lang-data="active">${getLanguageAsText("active")}</span>: ${triggerObj.enabled ? "<i class='bi bi-check-lg bigIcon pe-2' style='color: green;'></i>" : "<i class='bi bi-x-lg bigIcon pe-2' style='color: red;'></i>"}</p>
 </div>
-<i class='bi bi-chat-left-quote bigIcon pe-2'></i><span lang-data="description">${getLanguageAsText("description")}</span>: ${triggerObj.comment == undefined ? "-" : triggerObj.comment}`;
+<i class='bi bi-chat-left-quote bigIcon pe-2'></i><span lang-data="description">${getLanguageAsText("description")}</span>: ${triggerObj.description == undefined ? "-" : triggerObj.description}`;
 	getElement("triggerCollectionList").appendChild(triggerEntryObj);
 }
 
@@ -896,7 +896,7 @@ function showTriggerModal(triggerEntryId=-1, newTrigger=false) {
 		</td>
 		<td style='width: 50%;'>
 			<div class='form-floating mb-3'>
-				<input id='triggerEntryDescription' type='text' class='disableOnDisconnect form-control border border-secondary' value='${obj.comment == undefined ? "" : obj.comment}' onkeyup='triggerSaved(false);'>
+				<input id='triggerEntryDescription' type='text' class='disableOnDisconnect form-control border border-secondary' value='${obj.description == undefined ? "" : obj.description}' onkeyup='triggerSaved(false);'>
 				<label for='triggerEntryDescription' lang-data='description'>${getLanguageAsText("description")}</label>
 			</div>
 		</td>
@@ -988,7 +988,7 @@ function addCaseRow(triggerCase, commandset=0, command=0, parameter="") {
 		<tr>
 			<td style='width: 45%;'>
 				<div class='form-floating p-1'>
-					<select id='triggerEntryCommandSelect${triggerCase}' class='disableOnDisconnect form-select border border-secondary commandSelect' onchange='triggerSaved(false); addParameterToTriggerCaseCommand("${triggerCase}", value);'>
+					<select id='triggerEntryCommandSelect${triggerCase}' class='disableOnDisconnect form-select border border-secondary triggerCommandSelect' onchange='triggerSaved(false); addParameterToTriggerCaseCommand("${triggerCase}", value);'>
 					</select>
 					<label for="triggerEntryCommandSelect${triggerCase}" lang-data="choose-command">${getLanguageAsText("choose-command")}</label>
 				</div>
@@ -1002,7 +1002,7 @@ function addCaseRow(triggerCase, commandset=0, command=0, parameter="") {
 		<tr>
 			<td colspan="2">
 				<div class='form-floating p-1'>
-					<select id='triggerEntryCommandsetSelect${triggerCase}' class='disableOnDisconnect form-select border border-secondary commandsetSelect' onchange="triggerSaved(false);" value='${commandset}'>
+					<select id='triggerEntryCommandsetSelect${triggerCase}' class='disableOnDisconnect form-select border border-secondary triggerCommandsetSelect' onchange="triggerSaved(false);" value='${commandset}'>
 					</select>
 					<label for="triggerEntryCommandsetSelect${triggerCase}" lang-data="choose-commandset">${getLanguageAsText("choose-commandset")}</label>
 				</div>
@@ -1131,13 +1131,13 @@ function saveStartupTrigger() {
 }
 
 function saveTrigger() {
-	let commandSelects = document.getElementsByClassName("commandSelect");
-	let commandsetSelects = document.getElementsByClassName("commandsetSelect");
+	let triggerCommandSelects = document.getElementsByClassName("triggerCommandSelect");
+	let triggerCommandsetSelect = document.getElementsByClassName("triggerCommandsetSelect");
 	let triggerParameter = document.getElementsByClassName("triggerParameter");
 	let allCasesEmpty = true;
 	let anyTriggerParameterEmpty = false;
-	for (let i = 0; i < commandSelects.length; i++) {
-		if (commandSelects[i].value != 0 || commandsetSelects[i].value != 0) allCasesEmpty = false;
+	for (let i = 0; i < triggerCommandSelects.length; i++) {
+		if (triggerCommandSelects[i].value != 0 || triggerCommandsetSelect[i].value != 0) allCasesEmpty = false;
 	}
 	for (let i = 0; i < triggerParameter.length; i++) {
 		if (triggerParameter[i].value + "+" == "+") anyTriggerParameterEmpty = true;
@@ -1148,7 +1148,7 @@ function saveTrigger() {
 			return;
 		}
 		if (allCasesEmpty) {//if case is empty
-			showModal(getLanguageAsText("allready-done"), getLanguageAsText("save-trigger-anyway"), true, true, getLanguageAsText("cancel"), 3, getLanguageAsText("save"), () => {sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + getElement("triggerId").innerText + '&' + prepareTriggerString(true), true, () => {modal.hide(); triggerModal.hide(); getScheduleFromServer();});});
+			showModal(getLanguageAsText("already-done"), getLanguageAsText("save-trigger-anyway"), true, true, getLanguageAsText("cancel"), 3, getLanguageAsText("save"), () => {sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + getElement("triggerId").innerText + '&' + prepareTriggerString(true), true, () => {modal.hide(); triggerModal.hide(); getScheduleFromServer();});});
 			return;
 		}
 		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + getElement("triggerId").innerText + '&' + prepareTriggerString(true), true, () => {triggerModal.hide(); getScheduleFromServer();});
@@ -1159,7 +1159,7 @@ function saveTrigger() {
 			return;
 		}
 		if (allCasesEmpty) {//if case is empty
-			showModal(getLanguageAsText("allready-done"), getLanguageAsText("save-trigger-anyway"), true, true, getLanguageAsText("cancel"), 3, getLanguageAsText("save"), () => {sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareTriggerString(), true, () => {modal.hide(); triggerModal.hide(); getScheduleFromServer();});});
+			showModal(getLanguageAsText("already-done"), getLanguageAsText("save-trigger-anyway"), true, true, getLanguageAsText("cancel"), 3, getLanguageAsText("save"), () => {sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareTriggerString(), true, () => {modal.hide(); triggerModal.hide(); getScheduleFromServer();});});
 			return;
 		}
 		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareTriggerString(), true, () => {triggerModal.hide(); getScheduleFromServer();});
@@ -1168,7 +1168,7 @@ function saveTrigger() {
 
 function prepareTriggerString(update=false) {//add or update
 	let enabled = getElement("triggerEntryEnabledSwitchCheck").checked;
-	let comment = getElement("triggerEntryDescription").value;
+	let description = getElement("triggerEntryDescription").value;
 	let parameter = "";
 
 	let msg = "enabled=" + enabled.toString().trim() + "&";
@@ -1197,7 +1197,7 @@ function prepareTriggerString(update=false) {//add or update
 	}
 	let triggerParameters = document.getElementsByClassName("triggerParameter");
 	for (let i = 0; i < triggerParameters.length; i++) msg += "triggerParameter[" + i + "]=" + triggerParameters[i].id.substring("triggerParameter".length) + " " + encodeURIComponent(triggerParameters[i].value) + "&";
-	msg += "comment=\"" + encodeURIComponent(comment) + "\"&";
+	msg += "description=\"" + encodeURIComponent(description) + "\"&";
 	msg += "trigger=" + getElement("triggerSelect").value;
 
 	return msg;
@@ -1239,7 +1239,7 @@ function deleteTrigger(triggerEntryId) {
 ////////////////////////////////////   commandset functions   //////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-function generateCommandsetEntry(name=getLanguageAsText("new-commandset"), commands=[], commandsetId=0, saved=false) {
+function generateCommandsetEntry(description=getLanguageAsText("new-commandset"), commands=[], commandsetId=0, saved=false) {
 	let cId = commandsetEntryCount;
 	let newCommandsetEntryObj = document.createElement('div');
 	newCommandsetEntryObj.id = "commandsetEntry" + cId;
@@ -1248,7 +1248,7 @@ function generateCommandsetEntry(name=getLanguageAsText("new-commandset"), comma
 	newCommandsetEntryObj.style.backgroundColor = "transparent";
 	newCommandsetEntryObj.style.cursor = "pointer";
 	newCommandsetEntryObj.innerHTML = `<div class="d-flex w-100 justify-content-between">
-	<p class='m-2'><i class='bi bi-terminal bigIcon pe-2'></i>${name}</p>
+	<p class='m-2'><i class='bi bi-terminal bigIcon pe-2'></i>${description}</p>
 	<p id='commandset${cId}Id' class='m-2'>${commandsetId}</p>
 </div>`;
 	//Adding element to document
@@ -1265,7 +1265,7 @@ function showCommandsetModal(commandsetId=0) {
 	//default new entry
 	let obj = {
 		"id": commandsetId,
-		"name": getLanguageAsText("new-commandset"),
+		"description": getLanguageAsText("new-commandset"),
 		"commands": []
 	};
 	for (let i = 0; i < scheduleObj.commandsets.length; i++) {
@@ -1274,13 +1274,13 @@ function showCommandsetModal(commandsetId=0) {
 		}
 	}
 	commandsetCommandCount = 0;
-	getElement("commandsetModalTitle").innerHTML = `<i class="bi bi-terminal bigIcon pe-2"></i><span lang-data="commandset">${getLanguageAsText("commandset")}</span>: <span id='currentScheduleEntryId'>${obj.name}</span>`;
+	getElement("commandsetModalTitle").innerHTML = `<i class="bi bi-terminal bigIcon pe-2"></i><span lang-data="commandset">${getLanguageAsText("commandset")}</span>: <span id='currentScheduleEntryId'>${obj.description}</span>`;
 	getElement("commandsetModalBody").innerHTML = `<table id="commandsetEntryCommandCollection" style='width: 100%;'>
 		<tr>
 			<td style='width: 50%;'>
 				<div class='form-floating mb-3'>
-					<input id='commandsetEntryName' type='text' class='disableOnDisconnect form-control border border-secondary' value='${obj.name}' onkeyup='commandsetEntrySaved(false); showCommandsetEntryTitle();'>
-					<label for='commandsetEntryName' lang-data='description'>${getLanguageAsText("description")}</label>
+					<input id='commandsetEntryDescription' type='text' class='disableOnDisconnect form-control border border-secondary' value='${obj.description}' onkeyup='commandsetEntrySaved(false); showCommandsetEntryTitle();'>
+					<label for='commandsetEntryDescription' lang-data='description'>${getLanguageAsText("description")}</label>
 				</div>
 			</td>
 			<td colspan="2" style='width: 50%;'>
@@ -1321,7 +1321,7 @@ function addCommandToCommandset(command=0, parameter="") {
 	newCommandEntryObj.className = "border-top border-bottom border-primary commandrow";
 	newCommandEntryObj.innerHTML = `<td class='p-2' style='width: 50%;'>
 	<div class='form-floating'>
-		<select id='commandsetEntryCommandSelect${commandId}' class='disableOnDisconnect form-select border border-secondary commandSelect' onchange='commandsetEntrySaved(false); addParameterToCommandsetEntryCommand(${commandId}, value);'>
+		<select id='commandsetEntryCommandSelect${commandId}' class='disableOnDisconnect form-select border border-secondary commandsetCommandSelect' onchange='commandsetEntrySaved(false); addParameterToCommandsetEntryCommand(${commandId}, value);'>
 		</select>
 		<label for="commandsetEntryCommandSelect${commandId}" lang-data="choose-command">${getLanguageAsText("choose-command")}</label>
 	</div>
@@ -1392,13 +1392,13 @@ function addParameterToCommandsetEntryCommand(commandEntryId, commandId, paramet
 }
 
 function saveCommandsetEntry() {
-	let commandsetEntryNameElement = getElement("commandsetEntryName");
-	if (commandsetEntryNameElement.value == "") {
-		commandsetEntryNameElement.className = "disableOnDisconnect form-control border border-danger";
+	let commandsetEntryDescriptionElement = getElement("commandsetEntryDescription");
+	if (commandsetEntryDescriptionElement.value == "") {
+		commandsetEntryDescriptionElement.className = "disableOnDisconnect form-control border border-danger";
 		return;
 	}
 
-	let sendString = prepareCommandsetString(commandsetEntryNameElement.value);
+	let sendString = prepareCommandsetString(commandsetEntryDescriptionElement.value);
 	if (getCommandsetId() < 0) {//add
 		sendHTTPRequest('GET', 'cmd.php?id=19&cmd=add&' + sendString, true, () => {commandsetModal.hide(); getScheduleFromServer();});
 	} else {//update
@@ -1418,12 +1418,12 @@ function deleteCommandsetEntry() {
 	}
 }
 
-function prepareCommandsetString(commandsetName) {
-	let msg = "name=\"" + commandsetName + "\"&";
+function prepareCommandsetString(commandsetDescription) {
+	let msg = "description=\"" + commandsetDescription + "\"&";
 	let commandEntries = getElement("commandsetEntryCommandCollection").getElementsByClassName("commandrow");
 	for (let i = 0; i < commandEntries.length; i++) {
-		let commandSelect = commandEntries[i].getElementsByClassName("commandSelect")[0];
-		msg += "command" + i + "=" + commandSelect.value + "&"
+		let commandsetCommandSelect = commandEntries[i].getElementsByClassName("commandsetCommandSelect")[0];
+		msg += "command" + i + "=" + commandsetCommandSelect.value + "&"
 		let parameter = "";
 		try {
 			parameter = commandEntries[i].getElementsByClassName("commandParameter")[0].value;
@@ -1445,23 +1445,23 @@ function prepareCommandsetString(commandsetName) {
 ////////////////////////////////////////////////////////////////////////////////////////////////////
 
 function commandsetExists(commandsetId) {
-	return undefined != getCommandsetName(commandsetId);
+	return undefined != getCommandsetDescription(commandsetId);
 }
 
 function getCommandsetId() {
 	return getElement("commandsetId").textContent;
 }
 
-function getCommandsetName(commandsetId) {
+function getCommandsetDescription(commandsetId) {
 	for (let i = 0; i < scheduleObj.commandsets.length; i++) {
 		if (scheduleObj.commandsets[i].id == commandsetId) {
-			return scheduleObj.commandsets[i].name;
+			return scheduleObj.commandsets[i].description;
 		}
 	}
 }
 
 function showCommandsetEntryTitle() {
-	getElement("commandsetModalTitle").innerText = getLanguageAsText("commandset") + ": " + getElement("commandsetEntryName").value;
+	getElement("commandsetModalTitle").innerText = getLanguageAsText("commandset") + ": " + getElement("commandsetEntryDescription").value;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1873,7 +1873,7 @@ function setDisplayOn() {
 }
 
 function setDisplayOff() {
-	sendHTTPRequest('GET', 'cmd.php?id=8&cmd=0', true, () => {getElement("spinnerDisplayOff").hidden = false;});
+	sendHTTPRequest('GET', 'cmd.php?id=8&cmd=2', true, () => {getElement("spinnerDisplayOff").hidden = false;});
 }
 
 function showPiscreenInfo() {
@@ -2648,7 +2648,7 @@ function addCommandsetsToDropdown(dropdownId, selectedId=0) {
 	for (let i = 0; i < scheduleObj.commandsets.length; i++) {
 		let optionTag = document.createElement("option");
 		optionTag.value = scheduleObj.commandsets[i].id;
-		optionTag.innerText = scheduleObj.commandsets[i].name;
+		optionTag.innerText = scheduleObj.commandsets[i].description;
 		getElement(dropdownId).appendChild(optionTag);
 		if (selectedId == scheduleObj.commandsets[i].id) {
 			getElement(dropdownId).value = selectedId;

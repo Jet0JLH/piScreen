@@ -128,7 +128,7 @@
         "cancel": "Cancel",
         "alright": "Alright 😊",
         "ups": "Whoops...",
-        "allready-done": "Allready done?",
+        "already-done": "Allready done?",
         "fill-required-fields": "Some required fields may not be filled. <br>Please check the fields marked with an asterisk.",
         "save-trigger-anyway": "There is data missing in the cases. <br>Save this trigger dispite that?",
 

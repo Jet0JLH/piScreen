@@ -128,8 +128,8 @@
         "cancel": "Abbrechen",
         "alright": "Danke für die Info 😊",
         "ups": "Ups...",
-        "allready-done": "Schon fertig?",
-        "fill-required-fields": "Manche Pflichtfelder sind noch nicht befüllt. <br>Bitte kontrolliere die mit einem Sternchem markierten Felder.",
+        "already-done": "Schon fertig?",
+        "fill-required-fields": "Manche Pflichtfelder sind noch nicht befüllt. <br>Bitte kontrolliere die mit einem Sternchen markierten Felder.",
         "save-trigger-anyway": "Bei den Cases fehlen noch Daten. <br>Diesen Trigger trotzdem speichern?",
 
         "startup-trigger": "Startauslöser",

@@ -23,20 +23,18 @@
 		}
 	}
 
-	if ($_GET['id'] == 1) { //Browser
+	if ($_GET['id'] == 1) { //Firefox
 		if ($_GET['cmd'] == "restart") {
-			executeCommand("$syscall --restart-browser", true);
+			executeCommand("$syscall --do-firefox-restart", true);
 		} elseif ($_GET['cmd'] == "refresh") {
-			executeCommand("$syscall --refresh-browser", true);
+			executeCommand("$syscall --do-firefox-refresh", true);
 		}
 	}
 	elseif ($_GET['id'] == 2) { //reboot
-		//header('Location: .');
-		executeCommand("$sudoSyscall --reboot", false);
+		executeCommand("$sudoSyscall --do-reboot", false);
 	}
 	elseif ($_GET['id'] == 3) { //Shutdown
-		//header('Location: .');
-		executeCommand("$sudoSyscall --shutdown", false);
+		executeCommand("$sudoSyscall --do-shutdown", false);
 	}
 	elseif ($_GET['id'] == 4) {//Change hostname
 		$hostname = shell_exec('hostname');
@@ -48,28 +46,25 @@
 	}
 	elseif ($_GET['id'] == 5) { //Get Infos
 		header("Content-Type: application/json; charset=UTF-8");
-		executeCommand("$syscall --get-Status", true);
+		executeCommand("$syscall --get-status", true);
 	}
 	elseif ($_GET['id'] == 6) { //Check for update
 		executeCommand("$syscall --check-update", true);
 	}
 	elseif ($_GET['id'] == 7) { //Set weblogin
 		if($_POST['user'] && $_POST['pwd']) {
-			executeCommand("$syscall --set-pw '" . $_POST['user'] . "' '" . $_POST['pwd'] . "'", true);
+			executeCommand("$syscall --set-password '" . $_POST['user'] . "' '" . $_POST['pwd'] . "'", true);
 		}
 	}
 	elseif ($_GET['id'] == 8) { //Display Control
-		if ($_GET['cmd'] == 0) {
-			executeCommand("$syscall --screen-standby", true);
-		}
-		elseif ($_GET['cmd'] == 1) {
-			executeCommand("$syscall --screen-on", true);
+		if ($_GET['cmd'] == 1) {
+			executeCommand("$syscall --set-display on", true);
 		}
 		elseif ($_GET['cmd'] == 2) {
-			executeCommand("$syscall --screen-off", true);
+			executeCommand("$syscall --set-display off", true);
 		}
 		elseif ($_GET['cmd'] == 3) {
-			executeCommand("$syscall --screen-switch-input", true);
+			executeCommand("$syscall --set-display-input", true);
 		}
 	}
 	elseif ($_GET['id'] == 9) { //Set Schedule
@@ -96,8 +91,7 @@
 			if ($_GET['commandset'] != NULL) {
 				$parameterString .= " --commandset " . $_GET['commandset'];
 			}
-			//echo "$syscall --add-cron$parameterString";
-			executeCommand("$syscall --add-cron $parameterString", true);
+			executeCommand("$syscall --add-cron-entry$parameterString", true);
 
 		} elseif ($_GET['cmd'] == "update") {
 			$parameterString = " --index " . $_GET['index'];
@@ -126,17 +120,14 @@
 			if ($_GET['commandset'] != NULL) {
 				$parameterString .= " --commandset " . $_GET['commandset'];
 			}
-			//echo "$syscall --update-cron$parameterString";
-			executeCommand("$syscall --update-cron $parameterString", true);
+			executeCommand("$syscall --update-cron-entry$parameterString", true);
 
 		} elseif ($_GET['cmd'] == "delete") {
 			$parameterString = " --index " . $_GET['index'];
-			//echo "$syscall --delete-cron$parameterString";
-			executeCommand("$syscall --delete-cron $parameterString", true);
+			executeCommand("$syscall --delete-cron-entry$parameterString", true);
 		} elseif ($_GET['cmd'] == "execute") {
 			$parameterString = " --index " . $_GET['index'];
-			//echo "$syscall --schedule-manually-cron$parameterString";
-			executeCommand("$syscall --schedule-manually-cron$parameterString", true);
+			executeCommand("$syscall --run-cron-manually$parameterString", true);
 		}
 	}
 	elseif ($_GET['id'] == 10) { //Get time schedule
@@ -187,7 +178,7 @@
 		}
 	}
 	elseif ($_GET['id'] == 17) { //Get diplay orientation
-		executeCommand("$syscall --get-display-orientation-settings", true);
+		executeCommand("$syscall --get-display-orientation --settings", true);
 	}
 	elseif ($_GET['id'] == 18) { //Set entire schedule
 		try {
@@ -199,7 +190,7 @@
 	}
 	elseif ($_GET['id'] == 19) { //commandset functions
 		if ($_GET['cmd'] == "add"){
-			$parameterString = " --name " . $_GET['name'];
+			$parameterString = " --description " . $_GET['description'];
 			for ($id = 0; true; $id++) {
 				if ($_GET['command' . $id] != NULL) {
 					$parameterString .= " --command " . $_GET['command' . $id];
@@ -211,11 +202,11 @@
 				}
 			}
 			//echo "$syscall --add-commandset$parameterString";
-			executeCommand("$syscall --add-commandset$parameterString", true);
+			executeCommand("$syscall --add-commandset-entry$parameterString", true);
 		} elseif ($_GET['cmd'] == "update") {
 			$parameterString .= " --id " . $_GET['commandsetid'];
-			if ($_GET['name'] != NULL) {
-				$parameterString .= " --name " . $_GET['name'];
+			if ($_GET['description'] != NULL) {
+				$parameterString .= " --description " . $_GET['description'];
 			}
 			for ($id = 0; true; $id++) {
 				if ($_GET['command' . $id] != NULL) {
@@ -227,16 +218,13 @@
 					break;
 				}
 			}
-			//echo "$syscall --update-commandset$parameterString";
-			executeCommand("$syscall --update-commandset$parameterString", true);
+			executeCommand("$syscall --update-commandset-entry$parameterString", true);
 		} elseif ($_GET['cmd'] == "delete") {
 			$parameterString = " --id " . $_GET['commandsetid'];
-			//echo "$syscall --delete-commandset$parameterString";
-			executeCommand("$syscall --delete-commandset$parameterString", true);
+			executeCommand("$syscall --delete-commandset-entry$parameterString", true);
 		} elseif ($_GET['cmd'] == "execute") {
 			$parameterString = " --id " . $_GET['commandsetid'];
-			//echo "$syscall --schedule-manually-commandset$parameterString";
-			executeCommand("$syscall --schedule-manually-commandset$parameterString", true);
+			executeCommand("$syscall --run-commandset-manually$parameterString", true);
 		}
 	}
 	elseif ($_GET['id'] == 20) { //Trigger functions
@@ -248,8 +236,8 @@
 			if ($_GET['trigger'] != NULL) {
 				$parameterString .= " --trigger " . $_GET['trigger'];
 			}
-			if ($_GET['comment'] != NULL) {
-				$parameterString .= " --comment " . $_GET['comment'];
+			if ($_GET['description'] != NULL) {
+				$parameterString .= " --description " . $_GET['description'];
 			}
 			$cases = $_GET["cases"];
 			for ($i = 0; $i < count($cases); $i++) {
@@ -267,8 +255,8 @@
 			for ($i = 0; $i < count($triggerParameter); $i++) {
 				$parameterString .= " --" . $triggerParameter[$i];
 			}
-			//echo "$syscall --add-trigger$parameterString";
-			executeCommand("$syscall --add-trigger$parameterString", true);
+			echo "$syscall --add-trigger-entry$parameterString";
+			executeCommand("$syscall --add-trigger-entry$parameterString", true);
 
 		} elseif ($_GET['cmd'] == "update") {
 			$parameterString = " --index " . $_GET['index'];
@@ -278,8 +266,8 @@
 			if ($_GET['trigger'] != NULL) {
 				$parameterString .= " --trigger " . $_GET['trigger'];
 			}
-			if ($_GET['comment'] != NULL) {
-				$parameterString .= " --comment " . $_GET['comment'];
+			if ($_GET['description'] != NULL) {
+				$parameterString .= " --description " . $_GET['description'];
 			}
 			$cases = $_GET["cases"];
 			for ($i = 0; $i < count($cases); $i++) {
@@ -298,17 +286,16 @@
 				$parameterString .= " --" . $triggerParameter[$i];
 			}
 			//echo "$syscall --update-trigger$parameterString";
-			executeCommand("$syscall --update-trigger$parameterString", true);
+			executeCommand("$syscall --update-trigger-entry$parameterString", true);
 
 		} elseif ($_GET['cmd'] == "delete") {
 			$parameterString = " --index " . $_GET['index'];
 			//echo "$syscall --delete-trigger$parameterString";
-			executeCommand("$syscall --delete-trigger$parameterString", true);
+			executeCommand("$syscall --delete-trigger-entry$parameterString", true);
 
 		} elseif ($_GET['cmd'] == "execute") {
 			$parameterString = " --index " . $_GET['index'];
-			//echo "$syscall --schedule-manually-trigger$parameterString";
-			executeCommand("$syscall --schedule-manually-trigger$parameterString", true);
+			executeCommand("$syscall --run-trigger-manually$parameterString", true);
 		}
 	}
 	elseif ($_GET['id'] == 21) { //export schedule
@@ -316,10 +303,10 @@
 		echo file_get_contents('/home/pi/piScreen/schedule.json');
 	}
 	elseif ($_GET['id'] == 22) { //Run lastcron
-		executeCommand("$syscall --schedule-lastcron", true);
+		executeCommand("$syscall --run-lastcron", true);
 	}
 	elseif ($_GET['id'] == 23) { //Run firstrun
-		executeCommand("$syscall --schedule-firstrun", true);
+		executeCommand("$syscall --run-firstrun", true);
 	}
 	elseif ($_GET['id'] == 24) { //Get files for file explorer
 		$fileArray = scandir($fileExplorerPath . $modes[$_GET['mode']]);
@@ -353,35 +340,35 @@
 	}
 	elseif ($_GET['id'] == 28) { //VLC
 		if ($_GET['cmd'] == "restart") {
-			executeCommand("$syscall --restart-vlc", true);
+			executeCommand("$syscall --do-vlc-restart", true);
 		} elseif ($_GET['cmd'] == "play") {
-			executeCommand("$syscall --play-vlc", true);
+			executeCommand("$syscall --do-vlc-play", true);
 		} elseif ($_GET['cmd'] == "pause") {
-			executeCommand("$syscall --pause-vlc", true);
+			executeCommand("$syscall --do-vlc-pause", true);
 		} elseif ($_GET['cmd'] == "volume") {
-			executeCommand("$syscall --volume-vlc " . $_GET['value'], true);
+			executeCommand("$syscall --set-vlc-volume " . $_GET['value'], true);
 		}
 	}
 	elseif ($_GET['id'] == 29) { //Impress
-		executeCommand("$syscall --restart-impress", true);
+		executeCommand("$syscall --do-impress-restart", true);
 	}
 	elseif ($_GET['id'] == 30) { //Get background
 		executeCommand("$syscall --get-desktop-configuration", true);
 	}
 	elseif ($_GET['id'] == 31) { //Set background mode
-		executeCommand("$syscall --configure-desktop --mode " . $_GET["mode"], true);
+		executeCommand("$syscall --set-desktop-configuration --mode " . $_GET["mode"], true);
 	}
 	elseif ($_GET['id'] == 32) { //Set background color
-		executeCommand("$syscall --configure-desktop --bg-color \\#" . $_GET["color"], true);
+		executeCommand("$syscall --set-desktop-configuration --background-color \\#" . $_GET["color"], true);
 	}
 	elseif ($_GET['id'] == 33) { //Set background wallpaper
-		executeCommand("$syscall --configure-desktop --wallpaper \"" . $_GET["path"] . "\"", true);
+		executeCommand("$syscall --set-desktop-configuration --wallpaper \"" . $_GET["path"] . "\"", true);
 	}
 	elseif ($_GET['id'] == 34) { //Set ignore time schedule
-		executeCommand("$syscall --set-ignore-cron " . $_GET["fromto"], true);
+		executeCommand("$syscall --set-cron-ignore-timespan " . $_GET["fromto"], true);
 	}
 	elseif ($_GET['id'] == 35) { //Execute command once
-		$parameterString = "$syscall --schedule-manually-command --command " . $_GET["commandid"];
+		$parameterString = "$syscall --run-command-manually --command " . $_GET["commandid"];
 		if ($_GET["parameter"]) {
 			$parameterString .= " --parameter " . $_GET["parameter"];
 		}
