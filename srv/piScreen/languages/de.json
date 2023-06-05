@@ -131,6 +131,7 @@
         "already-done": "Schon fertig?",
         "fill-required-fields": "Manche Pflichtfelder sind noch nicht befüllt. <br>Bitte kontrolliere die mit einem Sternchen markierten Felder.",
         "save-trigger-anyway": "Bei den Cases fehlen noch Daten. <br>Diesen Trigger trotzdem speichern?",
+        "error-no-protocol": "Bitte das Protokoll vor der Adresse angeben!<br><br>Zum Beispiel:<br><b><u>https://</u></b>github.com/Jet0JLH/piScreen<br><b><u>http://</u></b>beispiel.de",
 
         "startup-trigger": "Startauslöser",
         "trigger": "Auslöser",

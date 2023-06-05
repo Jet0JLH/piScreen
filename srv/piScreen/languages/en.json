@@ -131,6 +131,7 @@
         "already-done": "Allready done?",
         "fill-required-fields": "Some required fields may not be filled. <br>Please check the fields marked with an asterisk.",
         "save-trigger-anyway": "There is data missing in the cases. <br>Save this trigger dispite that?",
+        "error-no-protocol": "Please provide the protocol in front of address!<br><br>For example:<br><b><u>https://</u></b>github.com/Jet0JLH/piScreen<br><b><u>http://</u></b>beispiel.de",
 
         "startup-trigger": "Startup trigger",
         "trigger": "Trigger",

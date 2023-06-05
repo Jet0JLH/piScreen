@@ -425,7 +425,12 @@ function scheduleEntrySaved(saved) {
 }
 
 function saveScheduleEntry() {
-	//send to server
+	if (getElement("scheduleEntryCommandSelect").value == 40) {
+		if (!getElement("scheduleEntryParameterInput").value.includes("://")) {
+			showModal(getLanguageAsText("error"), getLanguageAsText("error-no-protocol"), true, true, getLanguageAsText("ok"));
+			return;	
+		}
+	}	
 	if (getElement("currentScheduleEntryId").innerText < 0) {//add
 		sendHTTPRequest('GET', 'cmd.php?id=9&cmd=add&' + prepareScheduleString(), true, () => {scheduleModal.hide(); getScheduleFromServer();});
 	} else {//update
@@ -1038,10 +1043,10 @@ function addParameterToTriggerCaseCommand(triggerCase, commandId, parameter) {
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
 		if (parameter == undefined) parameter = "";
-		div.innerHTML = `<input id='triggerEntryCommand${triggerCase}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandParameter' onkeyup='triggerSaved(false);' value='${parameter}' lang-data='parameter'>`;
+		div.innerHTML = `<input id='triggerEntryCommand${triggerCase}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary triggerCommandParameter' onkeyup='triggerSaved(false);' value='${parameter}' lang-data='parameter'>`;
 	} else if (commandCollection[commandId][1] == "filemanager") {
 		div.className += " w-75";
-		div.innerHTML = `<input id='triggerEntryCommand${triggerCase}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandParameter' onkeyup='triggerSaved(false);' value='${parameter}' lang-data='parameter'>`;
+		div.innerHTML = `<input id='triggerEntryCommand${triggerCase}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary triggerCommandParameter' onkeyup='triggerSaved(false);' value='${parameter}' lang-data='parameter'>`;
 		let btn = document.createElement("button");
 		btn.id = "triggerEntryCommandFileManagerButtonOpen";
 		btn.onclick = () => showFileExplorerModal(commandCollection[commandId][2], false, getElement(`triggerEntryCommand${triggerCase}ParameterInput`));
@@ -1051,7 +1056,7 @@ function addParameterToTriggerCaseCommand(triggerCase, commandId, parameter) {
 		cell.appendChild(btn);
 		if (parameter == undefined) parameter = "";
 	} else if (Array.isArray(commandCollection[commandId][1])) {
-		let htmlSelect = `<select id='triggerEntryCommand${triggerCase}ParameterInput' onchange='triggerSaved(false);' class='disableOnDisconnect form-select border border-secondary commandParameter' value='${commandCollection[commandId][1][0][1]}'>\n`;
+		let htmlSelect = `<select id='triggerEntryCommand${triggerCase}ParameterInput' onchange='triggerSaved(false);' class='disableOnDisconnect form-select border border-secondary triggerCommandParameter' value='${commandCollection[commandId][1][0][1]}'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
 			htmlSelect += `<option value='${commandCollection[commandId][1][i][0]}' lang-data='${commandCollection[commandId][1][i][1]}'>${getLanguageAsText(commandCollection[commandId][1][i][1])}</option>\n`;
 		}
@@ -1117,6 +1122,12 @@ function executeStartupTrigger() {
 }
 
 function saveStartupTrigger() {
+	if (getElement("startupTriggerCommandSelect").value == 40) {
+		if (!getElement("startupTriggerParameterInput").value.includes("://")) {
+			showModal(getLanguageAsText("error"), getLanguageAsText("error-no-protocol"), true, true, getLanguageAsText("ok"));
+			return;	
+		}
+	}
 	if (startupTriggerIndex > -1) {
 		if (getElement("startupTriggerCommandSelect").value == 0 && getElement("startupTriggerCommandsetSelect").value == 0) {//if no command or commandset selected, delete
 			sendHTTPRequest('GET', 'cmd.php?id=20&cmd=delete&index=' + startupTriggerIndex, true, () => {startupTriggerSaved(true, 0);});
@@ -1126,7 +1137,7 @@ function saveStartupTrigger() {
 		sendHTTPRequest('GET', 'cmd.php?id=20&cmd=update&index=' + startupTriggerIndex + '&' + prepareStartupTriggerString(), true, () => {startupTriggerSaved(true, 0);});
 		return;
 	}
-	sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareStartupTriggerString(triggerId), true, () => {startupTriggerSaved(true, 0);});
+	sendHTTPRequest('GET', 'cmd.php?id=20&cmd=add&' + prepareStartupTriggerString(), true, () => {startupTriggerSaved(true, 0);});
 	startupTriggerIndex++;
 }
 
@@ -1358,10 +1369,10 @@ function addParameterToCommandsetEntryCommand(commandEntryId, commandId, paramet
 		return;
 	} else if (commandCollection[commandId][1] == "text") {
 		if (parameter == undefined) parameter = "";
-		div.innerHTML = `<input id='commandsetEntryCommand${commandEntryId}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandParameter' onkeyup='commandsetEntrySaved(false);' value='${parameter}' lang-data='parameter'>`;
+		div.innerHTML = `<input id='commandsetEntryCommand${commandEntryId}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandsetCommandParameter' onkeyup='commandsetEntrySaved(false);' value='${parameter}' lang-data='parameter'>`;
 	} else if (commandCollection[commandId][1] == "filemanager") {
 		div.className += " w-75";
-		div.innerHTML = `<input id='commandsetEntryCommand${commandEntryId}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandParameter' onkeyup='startupTriggerSaved(false);' value='${parameter}' lang-data='parameter'>`;
+		div.innerHTML = `<input id='commandsetEntryCommand${commandEntryId}ParameterInput' type='text' class='disableOnDisconnect form-control border border-secondary commandsetCommandParameter' onkeyup='startupTriggerSaved(false);' value='${parameter}' lang-data='parameter'>`;
 		let btn = document.createElement("button");
 		btn.id = "commandsetEntryCommandFileManagerButtonOpen";
 		btn.onclick = () => showFileExplorerModal(commandCollection[commandId][2], false, getElement(`commandsetEntryCommand${commandEntryId}ParameterInput`));
@@ -1371,7 +1382,7 @@ function addParameterToCommandsetEntryCommand(commandEntryId, commandId, paramet
 		cell.appendChild(btn);
 		if (parameter == undefined) parameter = "";
 	} else if (Array.isArray(commandCollection[commandId][1])) {
-		let htmlSelect = `<select id='commandsetEntryCommand${commandEntryId}ParameterInput' onchange='commandsetEntrySaved(false);' class='disableOnDisconnect form-select border border-secondary commandParameter' value='${commandCollection[commandId][1][0][1]}'>\n`;
+		let htmlSelect = `<select id='commandsetEntryCommand${commandEntryId}ParameterInput' onchange='commandsetEntrySaved(false);' class='disableOnDisconnect form-select border border-secondary commandsetCommandParameter' value='${commandCollection[commandId][1][0][1]}'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
 			htmlSelect += `<option value='${commandCollection[commandId][1][i][0]}' lang-data='${commandCollection[commandId][1][i][1]}'>${getLanguageAsText(commandCollection[commandId][1][i][1])}</option>\n`;
 		}
@@ -1396,6 +1407,17 @@ function saveCommandsetEntry() {
 	if (commandsetEntryDescriptionElement.value == "") {
 		commandsetEntryDescriptionElement.className = "disableOnDisconnect form-control border border-danger";
 		return;
+	}
+	let commandEntries = getElement("commandsetEntryCommandCollection").getElementsByClassName("commandrow");
+	for (let i = 0; i < commandEntries.length; i++) {
+		let commandsetCommandSelect = commandEntries[i].getElementsByClassName("commandsetCommandSelect")[0];
+		if (commandsetCommandSelect.value == 40) {
+			let parameter = commandEntries[i].getElementsByClassName("commandsetCommandParameter")[0].value;
+			if (!parameter.includes("://")) {
+				showModal(getLanguageAsText("error"), getLanguageAsText("error-no-protocol"), true, true, getLanguageAsText("ok"));
+				return;	
+			}
+		}	
 	}
 
 	let sendString = prepareCommandsetString(commandsetEntryDescriptionElement.value);
@@ -1423,10 +1445,10 @@ function prepareCommandsetString(commandsetDescription) {
 	let commandEntries = getElement("commandsetEntryCommandCollection").getElementsByClassName("commandrow");
 	for (let i = 0; i < commandEntries.length; i++) {
 		let commandsetCommandSelect = commandEntries[i].getElementsByClassName("commandsetCommandSelect")[0];
-		msg += "command" + i + "=" + commandsetCommandSelect.value + "&"
+		msg += "command" + i + "=" + commandsetCommandSelect.value + "&";
 		let parameter = "";
 		try {
-			parameter = commandEntries[i].getElementsByClassName("commandParameter")[0].value;
+			parameter = commandEntries[i].getElementsByClassName("commandsetCommandParameter")[0].value;
 			if (parameter != null) {
 				parameter = parameter.replaceAll("%20", " ");
 				parameter = parameter.replaceAll("\"", "\\\"");
