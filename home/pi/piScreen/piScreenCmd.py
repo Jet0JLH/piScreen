@@ -580,7 +580,7 @@ def updateCron():
 
 def addTrigger():
 	if i + 2 < len(sys.argv):
-		sys.argv.remove("--add-trigger")
+		sys.argv.remove("--add-trigger-entry")
 		if "--trigger" in sys.argv:
 			if piScreenUtils.isInt(sys.argv.index("--trigger") + 1):
 				changed = False
@@ -636,7 +636,7 @@ def addTrigger():
 
 def updateTrigger():
 	if i + 2 < len(sys.argv):
-		sys.argv.remove("--update-trigger")
+		sys.argv.remove("--update-trigger-entry")
 		if "--index" in sys.argv:
 			index = sys.argv.index("--index") + 1
 			if index < len(sys.argv):
