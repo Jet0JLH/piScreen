@@ -3,14 +3,14 @@
 	"commandsets":[
 		{
 			"id":1,
-			"name":"startup",
+			"description":"startup",
 			"commands": [
-				{
-					"command": 31
-				},
 				{
 					"command": 30,
 					"parameter": "1"
+				},
+				{
+					"command": 31
 				}
 			]
 		}

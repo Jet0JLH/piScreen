@@ -149,10 +149,12 @@ class cecHandler(threading.Thread):
 
 	def run(self):
 		global active
-		global displayAction
+		global displayActions
 		global displayActionTries
 		global displayLastValue
 		global displayForceMode
+		displayAction = 0
+		displayActions = []
 		self.device = cec.Device(cec.CECDEVICE_TV)
 		cec.add_callback(self.cecEvent,cec.EVENT_COMMAND)
 		self.updateStatus()
@@ -162,9 +164,10 @@ class cecHandler(threading.Thread):
 				for i in range(5):
 					try:
 						#Process actions
+						if len(displayActions) > 0: displayAction = displayActions[0]
 						if displayAction == 1: #On
 							if displayLastValue == "on":
-								if not displayForceMode: displayAction = 0
+								if not displayForceMode: displayAction = 0 ; del displayActions[0]
 							elif displayActionTries < 60:
 								piScreenUtils.logging.info("Set display to on")
 								self.device.power_on()
@@ -172,9 +175,10 @@ class cecHandler(threading.Thread):
 							else:
 								piScreenUtils.logging.warning("Tries to often to set display to on")
 								displayAction = 0
+								del displayActions[0]
 						elif displayAction == 2: #Off
 							if displayLastValue == "off":
-								if not displayForceMode: displayAction = 0
+								if not displayForceMode: displayAction = 0 ; del displayActions[0]
 							elif displayActionTries < 60:
 								piScreenUtils.logging.info("Set display to off")
 								self.device.transmit(cec.CEC_OPCODE_STANDBY)
@@ -182,10 +186,12 @@ class cecHandler(threading.Thread):
 							else:
 								piScreenUtils.logging.warning("Tries to often to set display to off")
 								displayAction = 0
+								del displayActions[0]
 						elif displayAction == 3: #Set Inputsource
 							piScreenUtils.logging.info("Set display active source")
 							cec.set_active_source()
 							displayAction = 0
+							del displayActions[0]
 					except Exception as err:
 						piScreenUtils.logging.error("Trouble while controling display")
 						piScreenUtils.logging.debug(err)
@@ -276,10 +282,12 @@ class ddcHandler(threading.Thread):
 
 	def run(self):
 		global active
-		global displayAction
+		global displayActions
 		global displayActionTries
 		global displayLastValue
 		global displayForceMode
+		displayAction = 0
+		displayActions = []
 		while active:
 			if displayProtocol == "ddc": piScreenUtils.logging.info("Start display control over ddc") ; displayLastValue = "Unknown"
 			while displayProtocol == "ddc" and active:
@@ -307,9 +315,10 @@ class ddcHandler(threading.Thread):
 
 							try:
 								#Process actions
+								if len(displayActions) > 0: displayAction = displayActions[0]
 								if displayAction == 1: #On
 									if displayLastValue == "on":
-										if not displayForceMode: displayAction = 0
+										if not displayForceMode: displayAction = 0 ; del displayActions[0]
 									elif displayActionTries < 60:
 										piScreenUtils.logging.info("Set display to on")
 										monitors[0].set_power_mode(mode.on)
@@ -317,9 +326,10 @@ class ddcHandler(threading.Thread):
 									else:
 										piScreenUtils.logging.warning("Tries to often to set display to on")
 										displayAction = 0
+										del displayActions[0]
 								elif displayAction == 2: #Off
 									if displayLastValue == "off":
-										if not displayForceMode: displayAction = 0
+										if not displayForceMode: displayAction = 0 ; del displayActions[0]
 									elif displayActionTries < 60:
 										piScreenUtils.logging.info("Set display to off")
 										monitors[0].set_power_mode(mode.off_hard)
@@ -327,9 +337,11 @@ class ddcHandler(threading.Thread):
 									else:
 										piScreenUtils.logging.warning("Tries to often to set display to off")
 										displayAction = 0
+										del displayActions[0]
 								elif displayAction == 3: #Set Inputsource
 									piScreenUtils.logging.info("DDC Mode doesn't support change of the display source")
 									displayAction = 0
+									del displayActions[0]
 							except Exception as err:
 								piScreenUtils.logging.error("Trouble while controling display")
 								piScreenUtils.logging.debug(err)
@@ -348,10 +360,12 @@ class manuallyHandler(threading.Thread):
 
 	def run(self):
 		global active
-		global displayAction
+		global displayActions
 		global displayActionTries
 		global displayLastValue
 		global displayForceMode
+		displayAction = 0
+		displayActions = []
 		ran = True
 		while active:
 			if displayProtocol == "manually":
@@ -382,7 +396,7 @@ class manuallyHandler(threading.Thread):
 					#Process actions
 					if displayAction == 1: #On
 						if displayLastValue == "on":
-							if not displayForceMode: displayAction = 0
+							if not displayForceMode: displayAction = 0 ; del displayActions[0]
 						elif displayActionTries < 60:
 							piScreenUtils.logging.info("Set display to on")
 							os.system("xset dpms force on")
@@ -390,9 +404,10 @@ class manuallyHandler(threading.Thread):
 						else:
 							piScreenUtils.logging.warning("Tries to often to set display to on")
 							displayAction = 0
+							del displayActions[0]
 					elif displayAction == 2: #Off
 						if displayLastValue == "off":
-							if not displayForceMode: displayAction = 0
+							if not displayForceMode: displayAction = 0 ; del displayActions[0]
 						elif displayActionTries < 60:
 							piScreenUtils.logging.info("Set display to off")
 							os.system("xset dpms force off")
@@ -400,9 +415,11 @@ class manuallyHandler(threading.Thread):
 						else:
 							piScreenUtils.logging.warning("Tries to often to set display to off")
 							displayAction = 0
+							del displayActions[0]
 					elif displayAction == 3: #Set Inputsource
 						piScreenUtils.logging.info("Manually Mode doesn't support change of the display source")
 						displayAction = 0
+						del displayActions[0]
 				except Exception as err:
 					piScreenUtils.logging.error("Trouble while controling display")
 					piScreenUtils.logging.debug(err)
@@ -951,7 +968,7 @@ def socketCmdInterpreter(data:dict) -> dict:
 	global mode
 	global parameter
 	global status
-	global displayAction
+	global displayActions
 	global displayActionTries
 	if "cmd" not in data:
 		piScreenUtils.logging.error("Recived data has no cmd field in it")
@@ -997,7 +1014,7 @@ def socketCmdInterpreter(data:dict) -> dict:
 				return {"code":3} #Wrong mode
 	elif cmd == 5: #Control display
 		if piScreenUtils.isInt(data["parameter"]):
-			displayAction = data["parameter"]
+			displayActions.append(data["parameter"])
 			displayActionTries = 0
 		else:
 			return {"code":2} #Package format is wrong
@@ -1128,7 +1145,7 @@ allTrigger = []
 displayProtocol = ""
 displayOrientation:int = 0
 displayForceMode:bool = False
-displayAction:int = 0
+displayAction = []
 displayActionTries:int = 0
 displayLastValue:str = "Unknown"
 parameter = None
@@ -1229,8 +1246,8 @@ if __name__ == "__main__":
 		status["uptime"]["days"] = int(upTime / 60 / 60 / 24)
 		status["displayState"] = displayLastValue
 		status["display"] = {}
-		status["display"]["standbySet"] = (displayAction == 2)
-		status["display"]["onSet"] = (displayAction == 1)
+		status["display"]["standbySet"] = (displayActions[0] == 2) if len(displayActions) > 0 else False
+		status["display"]["onSet"] = (displayActions[0] == 1) if len(displayActions) > 0 else False
 		status["modeInfo"] = {}
 		status["modeInfo"]["mode"] = mode
 		if mode == 1:

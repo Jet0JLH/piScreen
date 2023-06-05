@@ -26,7 +26,7 @@ ln -s "$parent_path/etc/firefox-esr/piScreen.js" /etc/firefox-esr/piScreen.js
 ln -s /media/ramdisk/piScreenScreenshot.jpg /srv/piScreen/admin/
 ln -s /media/ramdisk/piScreenScreenshot-thumb.jpg /srv/piScreen/admin/
 ln -s "$parent_path/etc/systemd/system/piScreen.service" "/etc/systemd/system/piScreen.service"
-ln -s /home/pi/piScreenDev/piScreen/home/pi/.bash_completion /home/pi/
+ln -s "$parent_path/home/pi/.bash_completion" "/home/pi/"
 mkdir -p /srv/piScreen/admin/data/general
 mkdir -p /srv/piScreen/admin/data/firefox
 mkdir -p /srv/piScreen/admin/data/vlc

@@ -743,8 +743,8 @@ def addCommandset(update):
 				verbose and print("Error with schedule.json")
 				exit(1)
 		else:
-			piScreenUtils.logging.warning("Argument --name expected")
-			verbose and print("Argument --name expected")
+			piScreenUtils.logging.warning("Argument --description expected")
+			verbose and print("Argument --description expected")
 			exit(1)
 	else:
 		piScreenUtils.logging.warning("Not enough arguments")
