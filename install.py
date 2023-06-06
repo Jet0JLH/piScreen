@@ -61,6 +61,7 @@ piScreenFiles = {
 		{"type":"file","path":"/etc/sudoers.d/050_piScreen-nopasswd","chmod":"0440"},
 		{"type":"file","path":"/etc/firefox-esr/piScreen.js"},
 		{"type":"file","path":"/home/pi/.bash_completion","chown":["pi","pi"]},
+		{"type":"mkdir","path":f"/home/pi/piScreen/certs"},
 		{"type":"mkdir","path":f"{piScreenUtils.paths.wwwDir}/admin/data/general"},
 		{"type":"mkdir","path":f"{piScreenUtils.paths.wwwDir}/admin/data/firefox"},
 		{"type":"mkdir","path":f"{piScreenUtils.paths.wwwDir}/admin/data/vlc"},
