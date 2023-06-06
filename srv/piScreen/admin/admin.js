@@ -8,7 +8,7 @@ let commandsetCommandCount = 0;
 var commandsetEntryCount = 0;
 const commandCollection = [//text, parameter
 		["---", false], ["command-sleep", "text"], ["command-lastcron", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["command-universal", "text"], ["command-restart-device", false], ["command-shutdown-device", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["command-universal", "text"], ["command-restart-device", false], ["command-shutdown-device", false], ["command-call-commandset", "commandsetdropdown"], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["command-stop-all-modes", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["command-display-state", [[0, "command-display-off"], [1, "command-display-on"]]], ["command-switch-display-input", false], ["command-change-display-protocol", [[0, "command-cec"], [1, "command-ddc"], [2, "command-manually"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["command-start-browser", "text"], ["command-restart-browser", false], ["command-refresh-browser-page", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
@@ -389,6 +389,9 @@ function addParameterToScheduleEntry(commandId, parameter) {
 		btn.innerHTML = `<i class="bi bi-folder"></i>`;
 		cell.appendChild(btn);
 		if (parameter == undefined) parameter = "";
+	} else if (commandCollection[commandId][1] == "commandsetdropdown") {
+		div.innerHTML = `<select id='scheduleEntryParameterInput' class='disableOnDisconnect form-select border border-secondary' onchange='scheduleEntrySaved(false);'>\n</select>`;
+		if (parameter == undefined) parameter = 0;
 	} else if (Array.isArray(commandCollection[commandId][1])) {
 		let htmlSelect = `<select id='scheduleEntryParameterInput' class='disableOnDisconnect form-select border border-secondary' onchange='scheduleEntrySaved(false);'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
@@ -400,6 +403,8 @@ function addParameterToScheduleEntry(commandId, parameter) {
 	}
 
 	cell.appendChild(div);
+	if (commandCollection[commandId][1] == "commandsetdropdown") addCommandsetsToDropdown("scheduleEntryParameterInput", parameter);
+
 	getElement("scheduleEntryParameterInput").value = parameter;
 
 	//add label
@@ -846,6 +851,9 @@ function addParameterToStartupTrigger(commandId, parameter) {
 		btn.innerHTML = `<i class="bi bi-folder"></i>`;
 		cell.appendChild(btn);
 		if (parameter == undefined) parameter = "";
+	} else if (commandCollection[commandId][1] == "commandsetdropdown") {
+		div.innerHTML = `<select id='startupTriggerParameterInput' class='disableOnDisconnect form-select border border-secondary' onchange='startupTriggerSaved(false);'>\n</select>`;
+		if (parameter == undefined) parameter = 0;
 	} else if (Array.isArray(commandCollection[commandId][1])) {
 		let htmlSelect = `<select id='startupTriggerParameterInput' class='disableOnDisconnect form-select border border-secondary' style='width: 100%;' onchange='startupTriggerSaved(false);'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
@@ -857,6 +865,8 @@ function addParameterToStartupTrigger(commandId, parameter) {
 	}
 
 	cell.appendChild(div);
+	if (commandCollection[commandId][1] == "commandsetdropdown") addCommandsetsToDropdown("startupTriggerParameterInput", parameter);
+
 	getElement("startupTriggerParameterInput").value = parameter;
 
 	//add label
@@ -1057,6 +1067,9 @@ function addParameterToTriggerCaseCommand(triggerCase, commandId, parameter) {
 		btn.innerHTML = `<i class="bi bi-folder"></i>`;
 		cell.appendChild(btn);
 		if (parameter == undefined) parameter = "";
+	} else if (commandCollection[commandId][1] == "commandsetdropdown") {
+		div.innerHTML = `<select id='triggerEntryCommand${triggerCase}ParameterInput' class='disableOnDisconnect form-select border border-secondary triggerCommandParameter' onchange='triggerSaved(false);'>\n</select>`;
+		if (parameter == undefined) parameter = 0;
 	} else if (Array.isArray(commandCollection[commandId][1])) {
 		let htmlSelect = `<select id='triggerEntryCommand${triggerCase}ParameterInput' onchange='triggerSaved(false);' class='disableOnDisconnect form-select border border-secondary triggerCommandParameter' value='${commandCollection[commandId][1][0][1]}'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
@@ -1068,6 +1081,8 @@ function addParameterToTriggerCaseCommand(triggerCase, commandId, parameter) {
 	}
 
 	cell.appendChild(div);
+	if (commandCollection[commandId][1] == "commandsetdropdown") addCommandsetsToDropdown("triggerEntryCommand" + triggerCase + "ParameterInput", parameter);
+
 	getElement("triggerEntryCommand" + triggerCase + "ParameterInput").value = parameter;
 
 	//add label
@@ -1383,6 +1398,9 @@ function addParameterToCommandsetEntryCommand(commandEntryId, commandId, paramet
 		btn.innerHTML = `<i class="bi bi-folder"></i>`;
 		cell.appendChild(btn);
 		if (parameter == undefined) parameter = "";
+	} else if (commandCollection[commandId][1] == "commandsetdropdown") {
+		div.innerHTML = `<select id='commandsetEntryCommand${commandEntryId}ParameterInput' class='disableOnDisconnect form-select border border-secondary commandsetCommandParameter' onchange='commandsetEntrySaved(false);'>\n</select>`;
+		if (parameter == undefined) parameter = 0;
 	} else if (Array.isArray(commandCollection[commandId][1])) {
 		let htmlSelect = `<select id='commandsetEntryCommand${commandEntryId}ParameterInput' onchange='commandsetEntrySaved(false);' class='disableOnDisconnect form-select border border-secondary commandsetCommandParameter' value='${commandCollection[commandId][1][0][1]}'>\n`;
 		for (let i = 0; i < commandCollection[commandId][1].length; i++) {
@@ -1394,6 +1412,8 @@ function addParameterToCommandsetEntryCommand(commandEntryId, commandId, paramet
 	}
 
 	cell.appendChild(div);
+	if (commandCollection[commandId][1] == "commandsetdropdown") addCommandsetsToDropdown("commandsetEntryCommand" + commandEntryId + "ParameterInput", parameter);
+
 	getElement("commandsetEntryCommand" + commandEntryId + "ParameterInput").value = parameter;
 
 	//add label
@@ -1604,7 +1624,6 @@ function saveEntireSchedule(jsonString) {
 	xmlhttp.timeout = timeoutTime;
 	xmlhttp.ontimeout = () => {showServerError("Timeout error", requestedUrl);};
 	xmlhttp.onloadend = () => {
-		console.log(xmlhttp.responseText);
 		if (!serverExecutedSuccessfully(xmlhttp.responseText)) {
 			showServerError("Error while importing time schedule", requestedUrl);
 			return;

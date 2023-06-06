@@ -193,6 +193,7 @@
         "command-universal": "[General] Universal",
         "command-restart-device": "[General] Reboot",
         "command-shutdown-device": "[General] Shutdown",
+        "command-call-commandset": "[General] Call commandset",
         "command-stop-all-modes": "[General] End all modes",
         "command-display-state": "[Display] Turn on / off",
         "command-display-off": "Display off",

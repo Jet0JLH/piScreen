@@ -194,6 +194,7 @@
         "command-restart-device": "[Allgemein] Neu starten",
         "command-shutdown-device": "[Allgemein] Herunterfahren",
         "command-stop-all-modes": "[Allgemein] Alle Modi beenden",
+        "command-call-commandset": "[Allgemein] Befehlssatz aufrufen",
         "command-display-state": "[Display] Ein- / Ausschalten",
         "command-display-off": "Display aus",
         "command-display-on": "Display an",
