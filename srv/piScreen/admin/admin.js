@@ -354,6 +354,8 @@ function addCommandsToDropdown(dropdownId) {
 	getElement(dropdownId).innerHTML = "";
 	for (let i = 0; i < commandCollection.length; i++) {
 		if (commandCollection[i][0] != "") {
+			if (dropdownId == "scheduleEntryCommandSelect" && i == 2) continue;
+			if (dropdownId.includes("commandsetEntryCommandSelect") && i == 2) continue;
 			let optionTag = document.createElement("option");
 			optionTag.value = i;
 			optionTag.setAttribute('lang-data', commandCollection[i][0]);
