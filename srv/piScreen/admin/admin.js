@@ -7,13 +7,13 @@ var timeoutTime = 5000;
 let commandsetCommandCount = 0;
 var commandsetEntryCount = 0;
 const commandCollection = [//text, parameter
-		["---", false], ["sleep", "text"], ["lastcron", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["universal", "text"], ["restart-device", false], ["shutdown-device", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["display-state", [[0, "display-off"], [1, "display-on"]]], ["switch-display-input", false], ["change-display-protocol", [[0, "cec"], [1, "ddc"], [2, "manually"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["start-browser", "text"], ["restart-browser", false], ["refresh-browser-page", false], ["stop-browser", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
-		["start-vlc-video", "filemanager", 2], ["restart-vlc-video", false], ["stop-vlc", false], ["play-pause-vlc-video", false], ["play-vlc-video", false], ["pause-vlc-video", false], ["set-volume-vlc", "text"], ["", false], ["", false], ["", false],
-		["start-impress", "filemanager", 3], ["restart-impress", false], ["stop-impress", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["---", false], ["command-sleep", "text"], ["command-lastcron", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["command-universal", "text"], ["command-restart-device", false], ["command-shutdown-device", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["command-stop-all-modes", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["command-display-state", [[0, "command-display-off"], [1, "command-display-on"]]], ["command-switch-display-input", false], ["command-change-display-protocol", [[0, "command-cec"], [1, "command-ddc"], [2, "command-manually"]]], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["command-start-browser", "text"], ["command-restart-browser", false], ["command-refresh-browser-page", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
+		["command-start-vlc-video", "filemanager", 2], ["command-restart-vlc-video", false], ["", false], ["command-play-pause-vlc-video", false], ["command-play-vlc-video", false], ["command-pause-vlc-video", false], ["command-set-volume-vlc", "text"], ["", false], ["", false], ["", false],
+		["command-start-impress", "filemanager", 3], ["command-restart-impress", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
 		["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false], ["", false],
