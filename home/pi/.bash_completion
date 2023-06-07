@@ -1,0 +1,143 @@
+piScreenCmd() {
+	local prev_arg="${COMP_WORDS[1]}"
+	case "$prev_arg" in
+		--check-update)
+			COMPREPLY=($(compgen -W "--pre-release --draft" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--do-upgrade)
+			COMPREPLY=($(compgen -W "--pre-release --draft" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--do-write-log)
+			local do_write_log="${COMP_WORDS[COMP_CWORD-1]}"
+			if [[ "$do_write_log" == "--level" ]]; then
+				COMPREPLY=($(compgen -W "debug info warning error critical" -- "${COMP_WORDS[COMP_CWORD]}"))
+			else
+				COMPREPLY=($(compgen -W "--level" -- "${COMP_WORDS[COMP_CWORD]}"))
+			fi
+			;;
+		--set-desktop-configuration)
+			local set_desktop="${COMP_WORDS[COMP_CWORD-1]}"
+			if [[ "$set_desktop" == "--mode" ]]; then
+				COMPREPLY=($(compgen -W "color stretch fit crop center tile screen" -- "${COMP_WORDS[COMP_CWORD]}"))
+			elif [[ "$set_desktop" == "--wallpaper" ]]; then
+				#COMPREPLY=($(compgen -f -o nospace -- "${COMP_WORDS[COMP_CWORD]}"))
+				#COMPREPLY=( $(compgen -W "$(for d in ${COMP_WORDS[COMP_CWORD]}* ${COMP_WORDS[COMP_CWORD]}*/*; do [[ -d "$d" ]] && echo $d/; done)" -- ${COMP_WORDS[COMP_CWORD]}) )
+				#COMPREPLY=( $(compgen -W "$(for f in ${COMP_WORDS[COMP_CWORD]}* ${COMP_WORDS[COMP_CWORD]}*/*; do [[ -e "$f" ]] && echo $f; done)" -- ${COMP_WORDS[COMP_CWORD]}) )
+				COMPREPLY=( $(compgen -W "$(for f in ${COMP_WORDS[COMP_CWORD]}*; do [[ -e "$f" ]] && echo $f; done)" -- ${COMP_WORDS[COMP_CWORD]}) )
+			else
+				COMPREPLY=($(compgen -W "--mode --wallpaper --background-color" -- "${COMP_WORDS[COMP_CWORD]}"))
+			fi
+			;;
+		--set-display-protocol)
+			COMPREPLY=($(compgen -W "CEC DDC MANUALLY" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--get-display-orientation)
+			COMPREPLY=($(compgen -W "--settings" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--set-display-orientation)
+			COMPREPLY=($(compgen -W "0 90 180 270 --no-save" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--set-display)
+			COMPREPLY=($(compgen -W "on off" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--start-vlc)
+			COMPREPLY=( $(compgen -W "$(for f in ${COMP_WORDS[COMP_CWORD]}*; do [[ -e "$f" ]] && echo $f; done)" -- ${COMP_WORDS[COMP_CWORD]}) )
+			;;
+		--start-impress)
+			COMPREPLY=( $(compgen -W "$(for f in ${COMP_WORDS[COMP_CWORD]}*; do [[ -e "$f" ]] && echo $f; done)" -- ${COMP_WORDS[COMP_CWORD]}) )
+			;;
+		--run-cron-manually)
+			COMPREPLY=($(compgen -W "--index" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--add-cron-entry)
+			COMPREPLY=($(compgen -W "--pattern --enabled --commandset --start --end --command --parameter --description" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--update-cron-entry)
+			COMPREPLY=($(compgen -W "--index --pattern --enabled --commandset --start --end --command --parameter --description" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--delete-cron-entry)
+			COMPREPLY=($(compgen -W "--index" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--run-commandset-manually)
+			COMPREPLY=($(compgen -W "--id" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--add-commandset-entry)
+			COMPREPLY=($(compgen -W "--description --command" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--update-commandset-entry)
+			COMPREPLY=($(compgen -W "--id --description --command" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--delete-commandset-entry)
+			COMPREPLY=($(compgen -W "--id" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		--add-trigger-entry)
+			local add_trigger="${COMP_WORDS[COMP_CWORD-1]}"
+			if [[ "$add_trigger" == "--enabled" ]] || [[ "$add_trigger" == "--first-state-dont-trigger" ]] || [[ "$add_trigger" == "--run-once" ]]; then
+				COMPREPLY=($(compgen -W "true false" -- "${COMP_WORDS[COMP_CWORD]}"))
+			else
+				COMPREPLY=($(compgen -W "--trigger --enabled --first-state-dont-trigger --run-once --command: --parameter: --commandset: --description" -- "${COMP_WORDS[COMP_CWORD]}"))
+			fi
+			;;
+		--update-trigger-entry)
+			local add_trigger="${COMP_WORDS[COMP_CWORD-1]}"
+			if [[ "$add_trigger" == "--enabled" ]] || [[ "$add_trigger" == "--first-state-dont-trigger" ]] || [[ "$add_trigger" == "--run-once" ]]; then
+				COMPREPLY=($(compgen -W "true false" -- "${COMP_WORDS[COMP_CWORD]}"))
+			else
+				COMPREPLY=($(compgen -W "--index --trigger --enabled --first-state-dont-trigger --run-once --command: --parameter: --commandset: --description" -- "${COMP_WORDS[COMP_CWORD]}"))
+			fi
+			;;
+		--delete-trigger-entry)
+			COMPREPLY=($(compgen -W "--id" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
+		*)
+		COMPREPLY=($(compgen -W '
+		--help
+		--get-status
+		--set-language
+		--set-password
+		--check-update
+		--do-upgrade
+		--do-write-log
+		--do-reboot
+		--do-shutdown
+		--get-desktop-configuration
+		--set-desktop-configuration
+		--get-display-protocol
+		--set-display-protocol
+		--get-display-orientation
+		--set-display-orientation
+		--set-display
+		--set-display-input
+		--get-mode
+		--stop-mode
+		--start-firefox
+		--do-firefox-restart
+		--do-firefox-refresh
+		--start-vlc
+		--do-vlc-restart
+		--do-vlc-play
+		--do-vlc-pause
+		--do-vlc-toggle-play-pause
+		--set-vlc-volume
+		--start-impress
+		--do-impress-restart
+		--run-command-manually
+		--run-firstrun
+		--run-lastcron
+		--run-cron-manually
+		--add-cron-entry
+		--update-cron-entry
+		--delete-cron-entry
+		--set-cron-ignore-timespan
+		--run-commandset-manually
+		--add-commandset-entry
+		--update-commandset-entry
+		--delete-commandset-entry
+		--add-trigger-entry
+		--update-trigger-entry
+		--delete-trigger-entry
+		' -- "${COMP_WORDS[COMP_CWORD]}"))
+		;;
+	esac
+}
+complete -F piScreenCmd /home/pi/piScreen/piScreenCmd.py

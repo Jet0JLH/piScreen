@@ -1,0 +1,17 @@
+[Unit]
+Description=piScreen Service
+After=graphical.target systemd-users-sessions.service
+
+[Service]
+Type=simple
+Restart=on-failure
+RestartSec=10
+User=pi
+WorkingDirectory=/home/pi/piScreen
+TimeoutStopSec=10
+ExecStart=/bin/bash -c "/home/pi/piScreen/piScreenCore.py" &
+ExecStop=/home/pi/piScreen/piScreenCmd.py --core-stop
+ 
+
+[Install]
+WantedBy=graphical.target

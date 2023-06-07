@@ -21,12 +21,15 @@
 	position: absolute;
 	right: 70px;
 }
-#darkmodeBtn {
+#darkmodeButton {
 	width: auto;
 	position: absolute;
 	right: 20px;
 }
 
+.commandrow:nth-child(even) {
+	background-color: rgba(128, 128, 128, 0.2);
+}
 
 @keyframes fadeout {
 	from { opacity: 1; }
@@ -40,4 +43,67 @@
 	50% {
 		opacity: 0;
 	}
+}
+
+#splashscreen {
+	position: absolute;
+	z-index: 2147483647;
+	top: 0%;
+	left: 0%;
+	height: 100%;
+	width: 100%;
+	background-color: rgb(39, 39, 39);
+	transition: all ease-in-out 500ms;
+}
+
+.prevent-scrolling {
+	height: 100%;
+	overflow: hidden;
+}
+
+.loader {
+	display: block;
+	margin: auto; 
+	position: relative; 
+	top: 50%;
+	left: 49.8%;
+}
+
+.bar {
+	display: inline-block;
+	width: 3px;
+	height: 20px;
+	background-color: rgba(255, 255, 255, .5);
+	border-radius: 10px;
+	animation: scale 1s linear infinite;
+}
+
+.bar:nth-child(2) {
+	height: 35px;
+	margin: 0 5px;
+	animation-delay: .25s;
+}
+
+.bar:nth-child(3) {
+	animation-delay: .5s;
+}
+
+@keyframes scale {
+	20% {
+		background-color: #ffff;
+		transform: scaleY(1.5);
+	}
+
+	40% {
+		transform: scaleY(1);
+	}
+}
+
+#scheduleEntryCollectionList, #commandsetCollectionList, #triggerCollectionList {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
+
+#scheduleEntryCollectionList::-webkit-scrollbar, #commandsetCollectionList::-webkit-scrollbar, #triggerCollectionList::-webkit-scrollbar { 
+    display: none;
 }
