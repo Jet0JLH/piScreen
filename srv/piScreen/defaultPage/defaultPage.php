@@ -40,8 +40,10 @@
                                 <ul>
                                     <li>Reboot  Pi</li>
                                     <li>Shutdown  Pi</li>
-                                    <li>Restart  browser</li>
-                                    <li>Display on/off</li>
+                                    <li>Toggle display state</li>
+                                    <li>Filemanager</li>
+                                    <li>Modify commandsets</li>
+                                    <li>Modify trigger</li>
                                 </ul>
                             </div>
                         </td>
@@ -53,6 +55,8 @@
                                     <li>Hostname</li>
                                     <li>Display protocol</li>
                                     <li>Display orientation</li>
+                                    <li>Desktop background</li>
+                                    <li>Import / export time schedule</li>
                                 </ul>
                             </div>
                         </td>
@@ -61,11 +65,12 @@
                                 <i class='bi-calendar2-day bigIcon'></i><br>
                                 <p><u>Plan:</u></p>
                                 <ul>
-                                    <li>Reboot  Pi</li>
-                                    <li>Restart  browser</li>
-                                    <li>Display on/off</li>
-                                    <li>Ignore schedule</li>
-                                    <li>And more...</li>
+                                    <li>General commands</li>
+                                    <li>Display control</li>
+                                    <li>Firefox control</li>
+                                    <li>VLC control</li>
+                                    <li>Impress control</li>
+                                    <li>Individual commandsets</li>
                                 </ul>
                             </div>
                         </td>
