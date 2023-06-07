@@ -6,26 +6,33 @@ Manage your info displays from anywhere.
 
   * Observe
     * Display status
+    * Display resolution
     * Uptime
     * CPU load
     * CPU temperature
     * RAM usage
+    * IP address
+    * Current mode
   * Administer
     * Reboot Pi
     * Shutdown Pi
-    * Restart browser
-    * Display on / off
+    * Toggle display state
+    * File manager
+    * Modify commandsets
+    * Modify trigger
   * Configure your Raspberry Pi settings
     * Hostname
     * Display protocol
     * Display orientation
-  * Plan with the advanced time schedule
-    * Show a webpage
-    * Reboot Pi
-    * Shutdown Pi
-    * Restart browser
-    * Display on / off
-    * Execute universal command
+    * Desktop background
+    * Import and export time schedule, commandsets and trigger
+  * Plan with the advanced event organizer
+    * General commands
+    * Display control
+    * Firefox control
+    * VLC control
+    * Impress control
+    * Individual commandsets
 
 ***
 
@@ -35,4 +42,4 @@ View the piScreen installation guide [here](https://github.com/Jet0JLH/piScreen/
 ***
 
 ## Overview
-![piScreen](https://raw.githubusercontent.com/Jet0JLH/piScreen/gh-pages/img/piScreen_pageAdmin_v2.0.0.JPG)
+![piScreen](https://raw.githubusercontent.com/Jet0JLH/piScreen/gh-pages/img/piScreen_pageAdmin_v3.0.0.JPG)
