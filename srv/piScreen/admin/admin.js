@@ -190,7 +190,7 @@ function generateNewScheduleEntry(scheduleEntryId=-1, scheduleEntryObject) {//en
 	newScheduleEntryObj.onclick = () => {showScheduleModal(scheduleEntryId);};
 	newScheduleEntryObj.style.cursor = "pointer";
 	newScheduleEntryObj.innerHTML = `<div class="d-flex w-100 justify-content-between">
-	<p><i class='bi bi-asterisk bigIcon pe-2'></i><span lang-data="cron-entry">${getLanguageAsText("cron-entry")}</span>: ${scheduleEntryObject.pattern}</p>
+	<p><i class='bi bi-asterisk bigIcon pe-2'></i><span lang-data="time-pattern">${getLanguageAsText("time-pattern")}</span>: ${scheduleEntryObject.pattern}</p>
 	<p><span lang-data="active">${getLanguageAsText("active")}</span>: ${scheduleEntryObject.enabled ? "<i class='bi bi-check-lg bigIcon pe-2' style='color: green;'></i>" : "<i class='bi bi-x-lg bigIcon pe-2' style='color: red;'></i>"}</p>
 </div>
 <i class='bi bi-terminal bigIcon pe-2'></i><span lang-data="command">${getLanguageAsText("command")}</span>: ${getLanguageAsText(commandCollection[scheduleEntryObject.command][0])}<br>
@@ -245,7 +245,7 @@ function showScheduleModal(scheduleEntryId) {
 		endTime = end.split(" ")[1];
 	}
 	
-	getElement("scheduleModalTitle").innerHTML = `<i class="bi bi-asterisk bigIcon pe-2"></i><span lang-data="cron-entry">${getLanguageAsText("cron-entry")}</span><span id='currentScheduleEntryId' hidden>${scheduleEntryId}</span>`;
+	getElement("scheduleModalTitle").innerHTML = `<i class="bi bi-asterisk bigIcon pe-2"></i><span lang-data="time-schedule-entry">${getLanguageAsText("time-schedule-entry")}</span><span id='currentScheduleEntryId' hidden>${scheduleEntryId}</span>`;
 	getElement("scheduleModalBody").innerHTML = `<table class="table-sm" style='width: 100%;'>
 	<div id='scheduleEntry'>
 		<tr>
@@ -262,12 +262,12 @@ function showScheduleModal(scheduleEntryId) {
 		<tr>
 			<td>
 				<div class="input-group mb-3">
-					<button class='disableOnDisconnect btn btn-outline-primary border-secondary border-end-0' onclick='showCronEditorModal(); scheduleModal.hide();'><i class='bi bi-pencil-square pe-2'></i><span lang-data='edit-cron-entry'>${getLanguageAsText("edit-cron-entry")}</span></button>
+					<button class='disableOnDisconnect btn btn-outline-primary border-secondary border-end-0' onclick='showCronEditorModal(); scheduleModal.hide();'><i class='bi bi-pencil-square pe-2'></i><span lang-data='edit-time-pattern'>${getLanguageAsText("edit-time-pattern")}</span></button>
 					<input id='cronentry' type="text" class="disableOnDisconnect form-control border-secondary border-start-0" value='${pattern}' onkeyup='scheduleEntrySaved(false); cronEntryError(this);'>
 				</div>
 			</td>
 			<td>
-				<i class='bi-question-octagon p-2' style='cursor: pointer;' id='cronEntryHelp' onclick='showModal(getLanguageAsText("help"), getLanguageAsText("cronHelpText"), false, true, getLanguageAsText("ok"));'></i>
+				<i class='bi-question-octagon p-2' style='cursor: pointer;' id='cronEntryHelp' onclick='showModal(getLanguageAsText("help"), getLanguageAsText("time-pattern-help-text"), false, true, getLanguageAsText("ok"));'></i>
 			</td>
 		</tr>
 		<tr>

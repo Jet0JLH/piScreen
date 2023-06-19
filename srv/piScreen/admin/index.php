@@ -341,7 +341,7 @@
 			<div class='modal-content'>
 				<div class='modal-header'>
 					<h5 id='cronEditorModalTitle' class='modal-title'>
-						<i class="bi bi-pencil-square pe-2"></i><span lang-data="edit-cron-entry">Croneintrag bearbeiten</span>
+						<i class="bi bi-pencil-square pe-2"></i><span lang-data="edit-time-pattern">Croneintrag bearbeiten</span>
 					</h5>
 					<button class='btn-close btn-close-white' data-bs-dismiss='modal'></button>
 				</div>
@@ -669,6 +669,6 @@ for (let w = 0; w < 5; w++) {
 	</div>
 </body>
 <script src='/bootstrap/js/bootstrap.bundle.min.js'></script>
-<script src='/masonry.pkgd.min.js'></script>
+<script src='masonry.pkgd.min.js'></script>
 <script src='admin.js'></script>
 </html>
