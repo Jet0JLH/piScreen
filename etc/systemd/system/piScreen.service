@@ -10,7 +10,7 @@ User=pi
 WorkingDirectory=/home/pi/piScreen
 TimeoutStopSec=10
 ExecStart=/bin/bash -c "/home/pi/piScreen/piScreenCore.py" &
-ExecStop=/home/pi/piScreen/piScreenCmd.py --core-stop
+ExecStop=/home/pi/piScreen/piScreenCmd.py --stop-core
  
 
 [Install]
