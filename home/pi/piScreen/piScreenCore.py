@@ -893,22 +893,27 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 31: #Switch display input
 		os.system(piScreenUtils.paths.syscall + " --set-display-input")
-	elif cmd == 32: #Change display protocol [0 = CEC, 1 = DDC]
+	elif cmd == 32: #Change display protocol [0 = CEC, 1 = DDC, 2 = Manually]
 		if piScreenUtils.isInt(parameter):
-			if int(parameter):
+			parameter = int(parameter)
+			if parameter == 0:
 				os.system(piScreenUtils.paths.syscall + " --set-display-protocol cec")
-			else:
+			elif parameter == 1:
 				os.system(piScreenUtils.paths.syscall + " --set-display-protocol ddc")
+			elif parameter == 2:
+				os.system(piScreenUtils.paths.syscall + " --set-display-protocol manually")
+			else:
+				piScreenUtils.logging.warning("Can not set protocol. Given number have to be in range from 0 to 2")
 		else:
-			piScreenUtils.logging.warning("There is no parameter given")
-	elif cmd == 40: #StartBrowser
+			piScreenUtils.logging.warning("There is no number as parameter given")
+	elif cmd == 40: #StartFirefox
 		if parameter:
 			os.system(f'{piScreenUtils.paths.syscall} --start-firefox "{parameter}"')
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
-	elif cmd == 41: #RestartBrowser
+	elif cmd == 41: #RestartFirefox
 		os.system(f'{piScreenUtils.paths.syscall} --do-firefox-restart')
-	elif cmd == 42: #ReloadBrowser
+	elif cmd == 42: #RefreshFirefox
 		os.system(f'{piScreenUtils.paths.syscall} --do-firefox-refresh')
 	elif cmd == 50: #StartVLC
 		if parameter:
