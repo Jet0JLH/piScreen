@@ -1,5 +1,21 @@
 #!/usr/bin/python3
 import logging, logging.handlers, __main__, os
+from enum import StrEnum
+
+
+class Paths(StrEnum):
+	RAMDISK = "/media/ramdisk/"
+	SOFTWARE_DIR = "/home/pi/piScreen/"
+	WWW_DIR = "/srv/piScreen/"
+	SETTINGS = f"{SOFTWARE_DIR}settings.json"
+	SCHEDULE = f"{SOFTWARE_DIR}schedule.json"
+	MANIFEST = f"{SOFTWARE_DIR}manifest.json"
+	SYSCALL = f"{SOFTWARE_DIR}piScreenCmd.py"
+	SCREENSHOT = f"{RAMDISK}piScreenScreenshot.jpg"
+	SCREENSHOT_THUMBNAIL = f"{RAMDISK}piScreenScreenshot-thumb.jpg"
+	LOG = f"{RAMDISK}piScreen.log"
+	LOCK_CORE = f"{RAMDISK}piScreenCore.lock"
+
 
 class paths:
 	ramdisk = "/media/ramdisk/"
