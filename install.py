@@ -4,6 +4,8 @@ from OpenSSL.crypto import FILETYPE_PEM, load_certificate
 from base64 import b64encode
 from datetime import datetime
 
+from home.pi.piScreen.piScreenUtils import Paths
+
 def printInfo(value:str,exitCode:int=-1,style=0):
 	if style == 0: print(value)
 	elif style == 1: print(f"\33[4;94m{value}\33[0m")
@@ -36,14 +38,14 @@ pipPackages = {
 }
 piScreenFiles = {
 	"user": [
-		{"type":"dir","path":f"{piScreenUtils.paths.softwareDir}certs","tmp":f"{tmpPath}/certs","chown":["pi","pi"]},
-		{"type":"file","path":f"{piScreenUtils.paths.settings}","tmp":f"{tmpPath}/settings.json","chown":["pi","pi"]},
-		{"type":"file","path":f"{piScreenUtils.paths.schedule}","tmp":f"{tmpPath}/schedule.json","chown":["pi","pi"]},
+		{"type":"dir","path":f"{Paths.SOFTWARE_DIR}certs","tmp":f"{tmpPath}/certs","chown":["pi","pi"]},
+		{"type":"file","path":f"{Paths.SETTINGS}","tmp":f"{tmpPath}/settings.json","chown":["pi","pi"]},
+		{"type":"file","path":f"{Paths.SCHEDULE}","tmp":f"{tmpPath}/schedule.json","chown":["pi","pi"]},
 		{"type":"file","path":"/etc/apache2/.piScreen_htpasswd","tmp":f"{tmpPath}/.piScreen_htpasswd","chown":["pi","pi"]},
-		{"type":"dir","path":f"{piScreenUtils.paths.wwwDir}/admin/data","tmp":f"{tmpPath}/data","chown":["pi","pi"]}
+		{"type":"dir","path":f"{Paths.WWW_DIR}/admin/data","tmp":f"{tmpPath}/data","chown":["pi","pi"]}
 	],
 	"old": [
-		{"type":"dir","path":piScreenUtils.paths.softwareDir},
+		{"type":"dir","path":Paths.SOFTWARE_DIR},
 		{"type":"dir","path":"/srv/piScreen"},
 		{"type":"file","path":"/etc/apache2/.piScreen_htpasswd"},
 		{"type":"file","path":"/etc/apache2/sites-available/piScreen.conf"},
@@ -53,7 +55,7 @@ piScreenFiles = {
 		{"type":"file","path":"/etc/systemd/system/piScreen.service"}
 	],
 	"install": [
-		{"type":"dir","path":piScreenUtils.paths.softwareDir,"chown":["pi","pi"],"chmod":"775","facl":[["pi","rwx"],["www-data","rwx"]]},
+		{"type":"dir","path":Paths.SOFTWARE_DIR,"chown":["pi","pi"],"chmod":"775","facl":[["pi","rwx"],["www-data","rwx"]]},
 		{"type":"dir","path":"/srv/piScreen","chown":["www-data","www-data"],"chmod":"775","facl":[["pi","rwx"],["www-data","rwx"]]},
 		{"type":"file","path":"/home/pi/.config/autostart/piScreenCore.desktop","chown":["root","root"],"chmod":"755","facl":[["pi","rwx"],["www-data","rwx"]]},
 		{"type":"file","path":"/etc/systemd/system/piScreen.service","chown":["root","root"],"chmod":"744"},
@@ -62,10 +64,10 @@ piScreenFiles = {
 		{"type":"file","path":"/etc/firefox-esr/piScreen.js"},
 		{"type":"file","path":"/home/pi/.bash_completion","chown":["pi","pi"]},
 		{"type":"mkdir","path":f"/home/pi/piScreen/certs"},
-		{"type":"mkdir","path":f"{piScreenUtils.paths.wwwDir}/admin/data/general"},
-		{"type":"mkdir","path":f"{piScreenUtils.paths.wwwDir}/admin/data/firefox"},
-		{"type":"mkdir","path":f"{piScreenUtils.paths.wwwDir}/admin/data/vlc"},
-		{"type":"mkdir","path":f"{piScreenUtils.paths.wwwDir}/admin/data/impress"}
+		{"type":"mkdir","path":f"{Paths.WWW_DIR}/admin/data/general"},
+		{"type":"mkdir","path":f"{Paths.WWW_DIR}/admin/data/firefox"},
+		{"type":"mkdir","path":f"{Paths.WWW_DIR}/admin/data/vlc"},
+		{"type":"mkdir","path":f"{Paths.WWW_DIR}/admin/data/impress"}
 	]
 }
 
@@ -79,8 +81,8 @@ def install():
 	restoreUserFiles()
 	convertSchedule()
 	printInfo("Update settings file")
-	mergedJson = mergeJsons(piScreenUtils.paths.settings,"./defaults/default_settings.json")
-	settingsFile = info["dry"] or open(piScreenUtils.paths.settings, "w")
+	mergedJson = mergeJsons(Paths.SETTINGS,"./defaults/default_settings.json")
+	settingsFile = info["dry"] or open(Paths.SETTINGS, "w")
 	printInfo("Write settings file")
 	info["dry"] or settingsFile.write(json.dumps(mergedJson,indent=4))
 	info["dry"] or settingsFile.close()
@@ -89,8 +91,8 @@ def install():
 	configureScreensaver()
 	configureDesktop()
 	printInfo("Create symlink for screenshot")
-	exitCode = info["dry"] or os.system(f"ln -s {piScreenUtils.paths.screenshot} /srv/piScreen/admin/")
-	exitCode = info["dry"] or os.system(f"ln -s {piScreenUtils.paths.screenshotThumbnail} /srv/piScreen/admin/")
+	exitCode = info["dry"] or os.system(f"ln -s {Paths.SCREENSHOT} /srv/piScreen/admin/")
+	exitCode = info["dry"] or os.system(f"ln -s {Paths.SCREENSHOT_THUMBNAIL} /srv/piScreen/admin/")
 	if exitCode != True and exitCode != 0: printError("Unable to create symlink for screenshot")
 
 def uninstall():
@@ -148,8 +150,8 @@ def configureRamdisk(add:bool):
 	except: printError(f"Unable to write entry in fstab")
 	try:
 		printInfo(f"{('Remove','Add')[add]} ramdisk folder")
-		if add: info["dry"] or os.makedirs(piScreenUtils.paths.ramdisk,exist_ok=True)
-		else: info["dry"] or (os.path.exists(piScreenUtils.paths.ramdisk) and os.system(f"umount -l {piScreenUtils.paths.ramdisk}") and shutil.rmtree(piScreenUtils.paths.ramdisk))
+		if add: info["dry"] or os.makedirs(Paths.RAMDISK,exist_ok=True)
+		else: info["dry"] or (os.path.exists(Paths.RAMDISK) and os.system(f"umount -l {Paths.RAMDISK}") and shutil.rmtree(Paths.RAMDISK))
 	except: printError(f"Unable to {('remove','add')[add]} ramdisk folder")
 
 def configureScreensaver():
@@ -260,9 +262,9 @@ def configureWebserver(add:bool):
 			exitCode += os.system("a2enmod -q mpm_itk")
 			if exitCode > 0: printError("Error while configure apache2 mods and sites")
 		try:
-			if not os.path.exists(f"{piScreenUtils.paths.softwareDir}certs"):
+			if not os.path.exists(f"{Paths.SOFTWARE_DIR}certs"):
 				printInfo("Create cert dir")
-				os.mkdir(f"{piScreenUtils.paths.softwareDir}certs")
+				os.mkdir(f"{Paths.SOFTWARE_DIR}certs")
 		except: printError("Unable to create cert dir")
 		if os.path.exists("/etc/apache2/.piScreen_htpasswd"): printInfo("Weblogin allready configured")
 		else:
@@ -270,16 +272,16 @@ def configureWebserver(add:bool):
 			while info["dry"] == False and exitCode != 0:
 				printInfo("Configure user pi for weblogin")
 				exitCode = os.system("htpasswd -c /etc/apache2/.piScreen_htpasswd pi")
-		if os.path.exists(f"{piScreenUtils.paths.softwareDir}certs/server.key") and os.path.exists(f"{piScreenUtils.paths.softwareDir}certs/server.csr") and os.path.exists(f"{piScreenUtils.paths.softwareDir}certs/server.crt"):
+		if os.path.exists(f"{Paths.SOFTWARE_DIR}certs/server.key") and os.path.exists(f"{Paths.SOFTWARE_DIR}certs/server.csr") and os.path.exists(f"{Paths.SOFTWARE_DIR}certs/server.crt"):
 			printInfo("Webserver certs allready exists")
 		else:
 			printInfo("Generate webserver certs")
 			if not info["dry"]:
 				exitCode = 0
-				exitCode += os.system(f"openssl genrsa -out {piScreenUtils.paths.softwareDir}certs/server.key 4096")
-				exitCode += os.system(f"openssl req -new -key {piScreenUtils.paths.softwareDir}certs/server.key -out {piScreenUtils.paths.softwareDir}certs/server.csr -sha256 -subj /C=DE/ST=BW/L=/O=PiScreen/OU=/CN=")
-				exitCode += os.system(f"openssl req -noout -text -in {piScreenUtils.paths.softwareDir}certs/server.csr")
-				exitCode += os.system(f"openssl x509 -req -days 3650 -in {piScreenUtils.paths.softwareDir}certs/server.csr -signkey {piScreenUtils.paths.softwareDir}certs/server.key -out {piScreenUtils.paths.softwareDir}certs/server.crt")
+				exitCode += os.system(f"openssl genrsa -out {Paths.SOFTWARE_DIR}certs/server.key 4096")
+				exitCode += os.system(f"openssl req -new -key {Paths.SOFTWARE_DIR}certs/server.key -out {Paths.SOFTWARE_DIR}certs/server.csr -sha256 -subj /C=DE/ST=BW/L=/O=PiScreen/OU=/CN=")
+				exitCode += os.system(f"openssl req -noout -text -in {Paths.SOFTWARE_DIR}certs/server.csr")
+				exitCode += os.system(f"openssl x509 -req -days 3650 -in {Paths.SOFTWARE_DIR}certs/server.csr -signkey {Paths.SOFTWARE_DIR}certs/server.key -out {Paths.SOFTWARE_DIR}certs/server.crt")
 				if exitCode > 0: printError("Error while generating webserver certs")
 	else:
 		info["dry"] or os.system("a2dissite -q piScreen")
@@ -303,7 +305,7 @@ def configureWebbrowser():
 	if not certOverridePath.endswith("cert_override.txt"):
 		printError("There is no default firefox profile!")
 	else:
-		entry = getEntry("localhost", 443, f"{piScreenUtils.paths.softwareDir}certs/server.crt")
+		entry = getEntry("localhost", 443, f"{Paths.SOFTWARE_DIR}certs/server.crt")
 		if not os.path.exists(certOverridePath):
 			try:
 				printInfo("Create empty firefox cert override file")
@@ -440,7 +442,7 @@ def convertSchedule():
 	printInfo("Load schedule file")
 	try:
 		changed = False
-		scheduleJson = json.load(open(piScreenUtils.paths.schedule))
+		scheduleJson = json.load(open(Paths.SCHEDULE))
 		if scheduleJson["structureVersion"] == "0.1":
 			printInfo("Structure version is 0.1 and will be converted to 0.2")
 			changed = True
@@ -456,7 +458,7 @@ def convertSchedule():
 		if changed:
 			printInfo("Schedule is now converted and will be written to file")
 			if not info["dry"]:
-				scheduleFile = open(piScreenUtils.paths.schedule, "w")
+				scheduleFile = open(Paths.SCHEDULE, "w")
 				scheduleFile.write(json.dumps(scheduleJson,indent=4))
 				scheduleFile.close()
 		else:
@@ -464,13 +466,13 @@ def convertSchedule():
 	except:
 		printError("Unable to convert schedule")
 		try:
-			if os.path.exists(piScreenUtils.paths.schedule):
+			if os.path.exists(Paths.SCHEDULE):
 				printInfo("Remove schedule")
-				info["dry"] or os.unlink(piScreenUtils.paths.schedule)
+				info["dry"] or os.unlink(Paths.SCHEDULE)
 			printInfo("Restore default schedule")
-			info["dry"] or shutil.copyfile("./defaults/default_schedule.json",piScreenUtils.paths.schedule)
+			info["dry"] or shutil.copyfile("./defaults/default_schedule.json",Paths.SCHEDULE)
 			for item in piScreenFiles["user"]:
-				if item["path"] == piScreenUtils.paths.schedule: setRights(item)
+				if item["path"] == Paths.SCHEDULE: setRights(item)
 		except:
 			printError("Unable to reset schedule to default")
 
@@ -506,9 +508,9 @@ if __name__ == "__main__":
 		printError("Unable to load mainifest.json! Installationfile is corrupted",1)
 	try:
 		printInfo("Check if piScreen is allready installed",style=1)
-		if os.path.exists(piScreenUtils.paths.manifest):
+		if os.path.exists(Paths.MANIFEST):
 			printInfo("piScreen is allready installed. Load old manifest")
-			info["manifestOld"] = json.load(open(piScreenUtils.paths.manifest))
+			info["manifestOld"] = json.load(open(Paths.MANIFEST))
 			printInfo(f"Version {info['manifestOld']['version']['major']}.{info['manifestOld']['version']['minor']}.{info['manifestOld']['version']['patch']} current installed")
 			if info['manifestNew']['version']['major'] > info['manifestOld']['version']['major'] or (info['manifestNew']['version']['major'] == info['manifestOld']['version']['major'] and info['manifestNew']['version']['minor'] > info['manifestOld']['version']['minor']) or (info['manifestNew']['version']['major'] == info['manifestOld']['version']['major'] and info['manifestNew']['version']['minor'] == info['manifestOld']['version']['minor'] and info['manifestNew']['version']['patch'] > info['manifestOld']['version']['patch']):
 				printInfo("It's a old version. Update is possible")

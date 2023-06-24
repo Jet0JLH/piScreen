@@ -1,5 +1,6 @@
 #!/usr/bin/python3 -u
 import json, sys, os, time, datetime, socket, piScreenUtils
+from piScreenUtils import Paths
 
 skriptPath = os.path.dirname(os.path.abspath(__file__))
 os.chdir(skriptPath)
@@ -157,13 +158,13 @@ def checkForRootPrivileges():
 	return True
 
 def loadSettings():
-	return json.load(open(piScreenUtils.paths.settings))
+	return json.load(open(Paths.SETTINGS))
 
 def loadSchedule():
-	return json.load(open(piScreenUtils.paths.schedule))
+	return json.load(open(Paths.SCHEDULE))
 
 def loadManifest():
-	return json.load(open(piScreenUtils.paths.manifest))
+	return json.load(open(Paths.MANIFEST))
 
 def startBrowser(parameter):
 	piScreenUtils.logging.info(f"Navigate browser to {parameter}")
@@ -277,6 +278,7 @@ def getStatus():
 	else: return json.dumps({})
 
 def getMode():
+	# TODO: The following paths do *not* exist!
 	if os.path.exists(piScreenUtils.paths.modeFirefox):
 		return "firefox"
 	elif os.path.exists(piScreenUtils.paths.modeVLC):
@@ -406,7 +408,7 @@ def setDisplayProtocol(protocol):
 		verbose and print(f"Write {protocol} as display protocol in settings.json")
 		settingsJson = loadSettings()
 		settingsJson["settings"]["display"]["protocol"] = protocol
-		settingsFile = open(piScreenUtils.paths.settings, "w")
+		settingsFile = open(Paths.SETTINGS, "w")
 		settingsFile.write(json.dumps(settingsJson,indent=4))
 		settingsFile.close()
 	else:
@@ -500,7 +502,7 @@ def addCron():
 					try:
 						scheduleJson = loadSchedule()
 						scheduleJson["cron"].append(item)
-						scheduleFile = open(piScreenUtils.paths.schedule, "w")
+						scheduleFile = open(Paths.SCHEDULE, "w")
 						scheduleFile.write(json.dumps(scheduleJson,indent=4))
 						scheduleFile.close()
 						piScreenUtils.logging.info("Changed schedule.json")
@@ -547,7 +549,7 @@ def updateCron():
 							changed = modifySchedule("parameter",None,scheduleJson["cron"][index]) or changed
 							changed = modifySchedule("description",None,scheduleJson["cron"][index]) or changed
 							if changed:
-								scheduleFile = open(piScreenUtils.paths.schedule, "w")
+								scheduleFile = open(Paths.SCHEDULE, "w")
 								scheduleFile.write(json.dumps(scheduleJson,indent=4))
 								scheduleFile.close()
 								piScreenUtils.logging.info("Changed schedule.json")
@@ -607,7 +609,7 @@ def addTrigger():
 					try:
 						scheduleJson = loadSchedule()
 						scheduleJson["trigger"].append(item)
-						scheduleFile = open(piScreenUtils.paths.schedule, "w")
+						scheduleFile = open(Paths.SCHEDULE, "w")
 						scheduleFile.write(json.dumps(scheduleJson,indent=4))
 						scheduleFile.close()
 						piScreenUtils.logging.info("Changed schedule.json")
@@ -670,7 +672,7 @@ def updateTrigger():
 									cases.append(case)
 								for case in cases:
 									if item["cases"][case] == {}: del item["cases"][case]
-								scheduleFile = open(piScreenUtils.paths.schedule, "w")
+								scheduleFile = open(Paths.SCHEDULE, "w")
 								scheduleFile.write(json.dumps(scheduleJson,indent=4))
 								scheduleFile.close()
 								piScreenUtils.logging.info("Changed schedule.json")
@@ -731,7 +733,7 @@ def addCommandset(update):
 			try:
 				scheduleJson = loadSchedule()
 				scheduleJson["commandsets"].append(item)
-				scheduleFile = open(piScreenUtils.paths.schedule, "w")
+				scheduleFile = open(Paths.SCHEDULE, "w")
 				scheduleFile.write(json.dumps(scheduleJson,indent=4))
 				scheduleFile.close()
 				piScreenUtils.logging.info("Changed schedule.json")
@@ -780,7 +782,7 @@ def deleteCommandset():
 								max = max - 1
 								break
 					if found:
-						scheduleFile = open(piScreenUtils.paths.schedule, "w")
+						scheduleFile = open(Paths.SCHEDULE, "w")
 						scheduleFile.write(json.dumps(scheduleJson,indent=4))
 						scheduleFile.close()
 						piScreenUtils.logging.info("Changed schedule.json")
@@ -807,7 +809,7 @@ def changeLanguage(language:str):
 	piScreenUtils.logging.info(f"Set language to {language}")
 	settingsJson = loadSettings()
 	settingsJson["settings"]["language"] = language
-	settingsFile = open(piScreenUtils.paths.settings, "w")
+	settingsFile = open(Paths.SETTINGS, "w")
 	settingsFile.write(json.dumps(settingsJson,indent=4))
 	settingsFile.close()
 
@@ -985,7 +987,7 @@ for i, origItem in enumerate(sys.argv):
 			if found and saveSettings:
 				settingsJson = loadSettings()
 				settingsJson["settings"]["display"]["orientation"] = int(sys.argv[i + 1])
-				settingsFile = open(piScreenUtils.paths.settings, "w")
+				settingsFile = open(Paths.SETTINGS, "w")
 				settingsFile.write(json.dumps(settingsJson,indent=4))
 				settingsFile.close()
 				piScreenUtils.logging.info("Write orientation in settings")
@@ -1087,7 +1089,7 @@ for i, origItem in enumerate(sys.argv):
 						index = int(sys.argv[i + 2])
 						if index < len(scheduleJson["cron"]) and index >= 0:
 							del scheduleJson["cron"][index]
-							scheduleFile = open(piScreenUtils.paths.schedule, "w")
+							scheduleFile = open(Paths.SCHEDULE, "w")
 							scheduleFile.write(json.dumps(scheduleJson,indent=4))
 							scheduleFile.close()
 							piScreenUtils.logging.info("Changed schedule.json")
@@ -1132,7 +1134,7 @@ for i, origItem in enumerate(sys.argv):
 						index = int(sys.argv[i + 2])
 						if index < len(scheduleJson["trigger"]) and index >= 0:
 							del scheduleJson["trigger"][index]
-							scheduleFile = open(piScreenUtils.paths.schedule, "w")
+							scheduleFile = open(Paths.SCHEDULE, "w")
 							scheduleFile.write(json.dumps(scheduleJson,indent=4))
 							scheduleFile.close()
 							piScreenUtils.logging.info("Changed schedule.json")
@@ -1203,7 +1205,7 @@ for i, origItem in enumerate(sys.argv):
 					scheduleJson = loadSchedule()
 					scheduleJson["ignoreCronFrom"] = ignoreCronFrom.strftime(dateFormate)
 					scheduleJson["ignoreCronTo"] = ignoreCronTo.strftime(dateFormate)
-					scheduleFile = open(piScreenUtils.paths.schedule, "w")
+					scheduleFile = open(Paths.SCHEDULE, "w")
 					scheduleFile.write(json.dumps(scheduleJson,indent=4))
 					scheduleFile.close()
 				except Exception as err:
@@ -1220,7 +1222,7 @@ for i, origItem in enumerate(sys.argv):
 				scheduleJson = loadSchedule()
 				del scheduleJson["ignoreCronFrom"]
 				del scheduleJson["ignoreCronTo"]
-				scheduleFile = open(piScreenUtils.paths.schedule, "w")
+				scheduleFile = open(Paths.SCHEDULE, "w")
 				scheduleFile.write(json.dumps(scheduleJson,indent=4))
 				scheduleFile.close()
 			except Exception as err:

@@ -51,12 +51,12 @@ if "__file__" in __main__.__dir__():
 	mainFileName = __main__.__file__[-(len(__main__.__file__)-__main__.__file__.rindex("/"))+1:]
 else:
 	mainFileName = "NoScript"
-if os.path.exists(paths.ramdisk):
+if os.path.exists(Paths.RAMDISK):
 	logging.basicConfig(
 	format=f"%(asctime)s [%(levelname)s] ({mainFileName}) %(funcName)s(%(lineno)d) | %(message)s",
 	level="INFO",
 	encoding="utf-8",
-	handlers=[logging.handlers.RotatingFileHandler(filename=paths.log,mode="a",maxBytes=5242880,backupCount=2,encoding="utf-8",delay=0)])
+	handlers=[logging.handlers.RotatingFileHandler(filename=Paths.LOG,mode="a",maxBytes=5242880,backupCount=2,encoding="utf-8",delay=0)])
 else:
     logging.basicConfig(
 	format=f"%(asctime)s [%(levelname)s] ({mainFileName}) %(funcName)s(%(lineno)d) | %(message)s",
