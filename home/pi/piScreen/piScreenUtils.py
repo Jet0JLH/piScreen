@@ -17,19 +17,6 @@ class Paths(StrEnum):
 	LOCK_CORE = f"{RAMDISK}piScreenCore.lock"
 
 
-class paths:
-	ramdisk = "/media/ramdisk/"
-	softwareDir = "/home/pi/piScreen/"
-	wwwDir = "/srv/piScreen/"
-	settings = f"{softwareDir}settings.json"
-	schedule = f"{softwareDir}schedule.json"
-	manifest = f"{softwareDir}manifest.json"
-	syscall = f"{softwareDir}piScreenCmd.py"
-	screenshot = f"{ramdisk}piScreenScreenshot.jpg"
-	screenshotThumbnail = f"{ramdisk}piScreenScreenshot-thumb.jpg"
-	log = f"{ramdisk}piScreen.log"
-	lockCore = f"{ramdisk}piScreenCore.lock"
-
 def isInt(s):
 	if s == None: return False
 	try: 
