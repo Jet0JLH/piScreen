@@ -278,13 +278,7 @@ def getStatus():
 	else: return json.dumps({})
 
 def getMode():
-	# TODO: The following paths do *not* exist!
-	if os.path.exists(piScreenUtils.paths.modeFirefox):
-		return "firefox"
-	elif os.path.exists(piScreenUtils.paths.modeVLC):
-		return "vlc"
-	elif os.path.exists(piScreenUtils.paths.modeImpress):
-		return "impress"
+	# TODO: Implement this function. (If it is this required)
 	return "none"
 
 def screenOn():
