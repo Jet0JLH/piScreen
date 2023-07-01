@@ -2700,8 +2700,8 @@ function addCommandsetsToDropdown(dropdownId, selectedId=0) {
 }
 
 function msToTime(milliseconds) {
-	let seconds = (milliseconds / 1000).toFixed();
-	let minutes = (seconds / 60).toFixed();
-	let hours = (minutes / 60).toFixed();
+	let seconds = (milliseconds / 1000) | 0;
+	let minutes = (seconds / 60) | 0;
+	let hours = (minutes / 60) | 0;
 	return addLeadingZero(hours) + ":" + addLeadingZero(minutes % 60) + ":" + addLeadingZero(seconds % 60);
 }
