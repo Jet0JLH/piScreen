@@ -27,6 +27,7 @@ ln -s /media/ramdisk/piScreenScreenshot.jpg /srv/piScreen/admin/
 ln -s /media/ramdisk/piScreenScreenshot-thumb.jpg /srv/piScreen/admin/
 ln -s "$parent_path/etc/systemd/system/piScreen.service" "/etc/systemd/system/piScreen.service"
 ln -s "$parent_path/home/pi/.bash_completion" "/home/pi/"
+ln -s "$parent_path/usr/share/plymouth/themes/pix/splash.png" "usr/share/plymouth/themes/pix/"
 mkdir -p /srv/piScreen/admin/data/general
 mkdir -p /srv/piScreen/admin/data/firefox
 mkdir -p /srv/piScreen/admin/data/vlc
