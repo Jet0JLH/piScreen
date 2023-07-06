@@ -108,7 +108,6 @@ piScreenCmd() {
 		--set-display-orientation
 		--set-display
 		--set-display-input
-		--get-mode
 		--stop-mode
 		--start-firefox
 		--do-firefox-restart

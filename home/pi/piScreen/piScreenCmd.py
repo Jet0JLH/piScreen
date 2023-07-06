@@ -67,8 +67,6 @@ So you have one script, which controlls everything and get every info about.
 	Currently only available on cec.
 
 === Modes ===
---get-mode
-	Get the current mode. [firefox|vlc|impress|none]
 --stop-mode
 	Stops the current running mode and switches back to 'none'.
  == Firefox ==
@@ -276,10 +274,6 @@ def getStatus():
 	status = sendToCore({"cmd":2})
 	if "data" in status: return json.dumps(status["data"])
 	else: return json.dumps({})
-
-def getMode():
-	# TODO: Implement this function. (If it is this required)
-	return "none"
 
 def screenOn():
 	piScreenUtils.logging.info("Send display on command to core")
@@ -891,8 +885,6 @@ for i, origItem in enumerate(sys.argv):
 			verbose and print("You need to give the parameter 'on' or 'off'")
 	elif item == "--set-display-input":
 		screenSwitchInput()
-	elif item == "--get-mode":
-		print(getMode())
 	elif item == "--set-password":
 		if i + 2 < len(sys.argv):
 			if sys.argv[i + 2].lower() == "-f": #Check file Mode
