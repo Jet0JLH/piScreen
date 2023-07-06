@@ -2,6 +2,8 @@
 import os, json, sys, time, psutil, subprocess, threading, socket, vlc, fcntl, datetime, cec, monitorcontrol, piScreenUtils
 from marionette_driver.marionette import Marionette
 
+from piScreenUtils import Paths
+
 def checkIfProcessRunning(processName):
 	for proc in psutil.process_iter():
 		try:
@@ -750,7 +752,7 @@ class trigger(threading.Thread):
 				import subprocess
 				while self.active:
 					try:
-						state = subprocess.check_output(f"{piScreenUtils.paths.syscall} --get-mode",shell=True).decode("utf-8").strip()
+						state = subprocess.check_output(f"{Paths.SYSCALL} --get-mode",shell=True).decode("utf-8").strip()
 						if self.lastState != state:
 							self.lastState = state
 							self.execute("true")
@@ -858,7 +860,7 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 	elif cmd == 3: #Write Log
 		parameter = parameter.split(":-:")
 		if len(parameter) >= 2:
-			os.system(f'{piScreenUtils.paths.syscall} --do-write-log --level {parameter[0]} "{parameter[1]}"')
+			os.system(f'{Paths.SYSCALL} --do-write-log --level {parameter[0]} "{parameter[1]}"')
 		else:
 			piScreenUtils.logging.error("Wrong structure of log command parameter")
 	elif cmd == 10: #Universal Call
@@ -872,74 +874,74 @@ def scheduleCmdInterpreter(cmd:int, parameter:str):
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 11: #Reboot
 		if scheduleSaveMode: time.sleep(300) ; piScreenUtils.logging.info("We are in save mode. Reboot starts in 300s")
-		os.system(f"sudo {piScreenUtils.paths.syscall} --do-reboot")
+		os.system(f"sudo {Paths.SYSCALL} --do-reboot")
 	elif cmd == 12: #Shutdown
 		if scheduleSaveMode: time.sleep(300) ; piScreenUtils.logging.info("We are in save mode. Shutdown starts in 300s")
-		os.system(f"sudo {piScreenUtils.paths.syscall} --do-shutdown")
+		os.system(f"sudo {Paths.SYSCALL} --do-shutdown")
 	elif cmd == 13: #Call commandset
 		if parameter:
 			commandsetTask(parameter)
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 20: #End all modes
-		os.system(piScreenUtils.paths.syscall + " --stop-mode")
+		os.system(Paths.SYSCALL + " --stop-mode")
 	elif cmd == 30: #Control display [0 = Off, 1 = On]
 		if piScreenUtils.isInt(parameter):
 			if int(parameter) == 0:
-				os.system(piScreenUtils.paths.syscall + " --set-display off")
+				os.system(Paths.SYSCALL + " --set-display off")
 			else:
-				os.system(piScreenUtils.paths.syscall + " --set-display on")
+				os.system(Paths.SYSCALL + " --set-display on")
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 31: #Switch display input
-		os.system(piScreenUtils.paths.syscall + " --set-display-input")
+		os.system(Paths.SYSCALL + " --set-display-input")
 	elif cmd == 32: #Change display protocol [0 = CEC, 1 = DDC, 2 = Manually]
 		if piScreenUtils.isInt(parameter):
 			parameter = int(parameter)
 			if parameter == 0:
-				os.system(piScreenUtils.paths.syscall + " --set-display-protocol cec")
+				os.system(Paths.SYSCALL + " --set-display-protocol cec")
 			elif parameter == 1:
-				os.system(piScreenUtils.paths.syscall + " --set-display-protocol ddc")
+				os.system(Paths.SYSCALL + " --set-display-protocol ddc")
 			elif parameter == 2:
-				os.system(piScreenUtils.paths.syscall + " --set-display-protocol manually")
+				os.system(Paths.SYSCALL + " --set-display-protocol manually")
 			else:
 				piScreenUtils.logging.warning("Can not set protocol. Given number have to be in range from 0 to 2")
 		else:
 			piScreenUtils.logging.warning("There is no number as parameter given")
 	elif cmd == 40: #StartFirefox
 		if parameter:
-			os.system(f'{piScreenUtils.paths.syscall} --start-firefox "{parameter}"')
+			os.system(f'{Paths.SYSCALL} --start-firefox "{parameter}"')
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 41: #RestartFirefox
-		os.system(f'{piScreenUtils.paths.syscall} --do-firefox-restart')
+		os.system(f'{Paths.SYSCALL} --do-firefox-restart')
 	elif cmd == 42: #RefreshFirefox
-		os.system(f'{piScreenUtils.paths.syscall} --do-firefox-refresh')
+		os.system(f'{Paths.SYSCALL} --do-firefox-refresh')
 	elif cmd == 50: #StartVLC
 		if parameter:
-			os.system(f'{piScreenUtils.paths.syscall} --start-vlc "{parameter}"')
+			os.system(f'{Paths.SYSCALL} --start-vlc "{parameter}"')
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 51: #RestartVLC
-		os.system(f"{piScreenUtils.paths.syscall} --do-vlc-restart")
+		os.system(f"{Paths.SYSCALL} --do-vlc-restart")
 	elif cmd == 53: #Pause/PlayVLC
-		os.system(f"{piScreenUtils.paths.syscall} --do-vlc-toggle-play-pause")
+		os.system(f"{Paths.SYSCALL} --do-vlc-toggle-play-pause")
 	elif cmd == 54: #PlayVLC
-		os.system(f"{piScreenUtils.paths.syscall} --do-vlc-play")
+		os.system(f"{Paths.SYSCALL} --do-vlc-play")
 	elif cmd == 55: #PauseVLC
-		os.system(f"{piScreenUtils.paths.syscall} --do-vlc-pause")
+		os.system(f"{Paths.SYSCALL} --do-vlc-pause")
 	elif cmd == 56: #VolumeVLC
 		if parameter:
-			os.system(f'{piScreenUtils.paths.syscall} --set-vlc-volume "{parameter}"')
+			os.system(f'{Paths.SYSCALL} --set-vlc-volume "{parameter}"')
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 60: #StartImpress
 		if parameter:
-			os.system(f'{piScreenUtils.paths.syscall} --start-impress "{parameter}"')
+			os.system(f'{Paths.SYSCALL} --start-impress "{parameter}"')
 		else:
 			piScreenUtils.logging.warning("There is no parameter given")
 	elif cmd == 61: #RestartImpress
-		os.system(f"{piScreenUtils.paths.syscall} --do-impress-restart")
+		os.system(f"{Paths.SYSCALL} --do-impress-restart")
 
 ############################
 ### Socket communication ###
@@ -1087,11 +1089,11 @@ def checkSettings():
 	global displayProtocol
 	global displayOrientation
 	global displayForceMode
-	newSettingsFileModify = os.path.getmtime(piScreenUtils.paths.settings)
+	newSettingsFileModify = os.path.getmtime(Paths.SETTINGS)
 	if newSettingsFileModify != settingsFileModify:
 		try:
 			piScreenUtils.logging.info("Settings seems to be changed")
-			settings = json.load(open(piScreenUtils.paths.settings))
+			settings = json.load(open(Paths.SETTINGS))
 			settingsFileModify = newSettingsFileModify
 			if "settings" in settings and "display" in settings["settings"]:
 				if "protocol" in settings["settings"]["display"]: displayProtocol = settings["settings"]["display"]["protocol"]
@@ -1107,11 +1109,11 @@ def checkSchedule():
 	global scheduleFileModify
 	global ignoreCronFrom
 	global ignoreCronTo
-	newScheduleFileModify = os.path.getmtime(piScreenUtils.paths.schedule)
+	newScheduleFileModify = os.path.getmtime(Paths.SCHEDULE)
 	if newScheduleFileModify != scheduleFileModify:
 		try:
 			piScreenUtils.logging.info("Schedule seems to be changed")
-			schedule = json.load(open(piScreenUtils.paths.schedule))
+			schedule = json.load(open(Paths.SCHEDULE))
 			scheduleFileModify = newScheduleFileModify
 			if "ignoreCronFrom" in schedule:
 				try: ignoreCronFrom = datetime.datetime.strptime(schedule["ignoreCronFrom"],scheduleDateFormate)
@@ -1159,7 +1161,7 @@ status = {"hdmi0Connected":None}
 if __name__ == "__main__":
 	piScreenUtils.logging.info("Start piScreen")
 	try:
-		lockFile = open(piScreenUtils.paths.lockCore,"w")
+		lockFile = open(Paths.LOCK_CORE,"w")
 		fcntl.lockf(lockFile, fcntl.LOCK_EX | fcntl.LOCK_NB)
 	except IOError:
 		piScreenUtils.logging.critical("There is a piScreenCore instance already running")
@@ -1242,8 +1244,8 @@ if __name__ == "__main__":
 		status["ramTotal"] = round(psutil.virtual_memory().total / 1024)
 		status["ramUsed"] = round(status["ramTotal"] - psutil.virtual_memory().available / 1024)
 		status["cpuTemp"] = round(psutil.sensors_temperatures()["cpu_thermal"][0].current * 1000)
-		if os.path.isfile(piScreenUtils.paths.screenshot):
-			status["screenshotTime"] = os.path.getctime(piScreenUtils.paths.screenshot)
+		if os.path.isfile(Paths.SCREENSHOT):
+			status["screenshotTime"] = os.path.getctime(Paths.SCREENSHOT)
 		status["uptime"] = {}
 		status["uptime"]["secs"] = int(upTime % 60)
 		status["uptime"]["mins"] = int((upTime / 60) % 60)
@@ -1282,9 +1284,9 @@ if __name__ == "__main__":
 				
 		#createScreenshot
 		try:
-			os.system(f"scrot -z -o -t 50 {piScreenUtils.paths.screenshot}.jpg")
-			os.system(f"mv {piScreenUtils.paths.screenshot}.jpg {piScreenUtils.paths.screenshot}")
-			os.system(f"mv {piScreenUtils.paths.screenshot}-thumb.jpg {piScreenUtils.paths.screenshotThumbnail}")
+			os.system(f"scrot -z -o -t 50 {Paths.SCREENSHOT}.jpg")
+			os.system(f"mv {Paths.SCREENSHOT}.jpg {Paths.SCREENSHOT}")
+			os.system(f"mv {Paths.SCREENSHOT}-thumb.jpg {Paths.SCREENSHOT_THUMBNAIL}")
 		except Exception as err:
 			piScreenUtils.logging.error("Error while creating screenshot")
 			piScreenUtils.logging.debug(err)
@@ -1298,9 +1300,9 @@ if __name__ == "__main__":
 		#checkDisplay orientation
 		try:
 			if piScreenUtils.isInt(displayOrientation):
-				if subprocess.check_output(f"{piScreenUtils.paths.syscall} --get-display-orientation",shell=True).decode("utf-8").replace("\n","") != str(displayOrientation):
+				if subprocess.check_output(f"{Paths.SYSCALL} --get-display-orientation",shell=True).decode("utf-8").replace("\n","") != str(displayOrientation):
 					piScreenUtils.logging.info("Change display orientation")
-					os.system(f"{piScreenUtils.paths.syscall} --set-display-orientation --no-save {displayOrientation}")
+					os.system(f"{Paths.SYSCALL} --set-display-orientation --no-save {displayOrientation}")
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to set display orientation")
 			piScreenUtils.logging.debug(err)
@@ -1312,4 +1314,4 @@ if __name__ == "__main__":
 	active = False
 	stopAllTrigger()
 	killAllSubprocesses()
-	os.unlink(piScreenUtils.paths.lockCore)
+	os.unlink(Paths.LOCK_CORE)
