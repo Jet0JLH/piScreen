@@ -1,9 +1,7 @@
 #!/usr/bin/python3
 import logging, logging.handlers, __main__, os
-from enum import StrEnum
 
-
-class Paths(StrEnum):
+class Paths():
 	RAMDISK = "/media/ramdisk/"
 	SOFTWARE_DIR = "/home/pi/piScreen/"
 	WWW_DIR = "/srv/piScreen/"
