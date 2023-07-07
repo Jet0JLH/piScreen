@@ -1,7 +1,12 @@
 #!/usr/bin/python3
 import logging, logging.handlers, __main__, os
+from enum import Enum
 
-class Paths():
+
+# TODO: Replace this line with `class Paths(StrEnum)' and add `from enum import StrEnum' to the
+# imports as soon as Python3.11 has been widely adopted by users of piScreen.
+# (StrEnum only is supported since Python3.11)
+class Paths(str, Enum):
 	RAMDISK = "/media/ramdisk/"
 	SOFTWARE_DIR = "/home/pi/piScreen/"
 	WWW_DIR = "/srv/piScreen/"
