@@ -10,6 +10,7 @@ cp -r piScreen/defaults/ install/
 cp -r piScreen/home/ install/
 cp -r piScreen/srv/ install/
 cp -r piScreen/etc/ install/
+cp -r piScreen/usr/ install/
 cp -r piScreen/install.py install/
 cp -r piScreen/LICENSE install/
 rm -rf install/home/pi/piScreen/certs/

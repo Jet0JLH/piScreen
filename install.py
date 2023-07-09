@@ -480,6 +480,8 @@ def convertSchedule():
 
 def killProcesses():
 	printInfo("Kill possible running piScreen processes",style=1)
+	printInfo("Try to stop service if exist")
+	os.system("systemctl stop piScreen")
 	os.system("killall piScreenCore.py")
 	os.system("killall piScreenDisplay.py")
 	os.system("killall piScreenSchedule.py")
