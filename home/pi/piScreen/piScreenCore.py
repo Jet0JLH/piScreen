@@ -373,22 +373,16 @@ class manuallyHandler(threading.Thread):
 			if displayProtocol == "manually":
 				piScreenUtils.logging.info("Start display control over manually")
 				displayLastValue = "Unknown"
-				os.system("xset +dpms")
-				os.system("xset s 0")
-				os.system("xset dpms 0 0 0")
-				ran = True
-				
+				ran = True				
 
 			while displayProtocol == "manually" and active:
 				try:
 					#Check current state
-					status = str(subprocess.check_output(["xset", "-q"]))
-					if "Monitor is Off" in status:
-						if displayLastValue != "off": displayLastValue = "off" ; piScreenUtils.logging.info("Display status changed to off")
-					elif "Monitor is On" in status:
+					status = os.system("xrandr -q | grep -oP 'HDMI-1 connected primary \K[0-9]+x[0-9]+'")
+					if status == 0:
 						if displayLastValue != "on": displayLastValue = "on" ; piScreenUtils.logging.info("Display status changed to on")
-					elif "Monitor is in Standby" in status or "Monitor is in Suspend" in status:
-						if displayLastValue != "standby": displayLastValue = "standby" ; piScreenUtils.logging.info("Display status changed to standby")
+					else:
+						if displayLastValue != "off": displayLastValue = "off" ; piScreenUtils.logging.info("Display status changed to off")
 				except Exception as err:
 					piScreenUtils.logging.error("Error while reading display state")
 					piScreenUtils.logging.debug(err)
@@ -396,12 +390,13 @@ class manuallyHandler(threading.Thread):
 
 				try:
 					#Process actions
+					if len(displayActions) > 0: displayAction = displayActions[0]
 					if displayAction == 1: #On
 						if displayLastValue == "on":
 							if not displayForceMode: displayAction = 0 ; del displayActions[0]
 						elif displayActionTries < 60:
 							piScreenUtils.logging.info("Set display to on")
-							os.system("xset dpms force on")
+							os.system("xrandr --output HDMI-1 --auto")
 							displayActionTries += 1
 						else:
 							piScreenUtils.logging.warning("Tries to often to set display to on")
@@ -412,7 +407,7 @@ class manuallyHandler(threading.Thread):
 							if not displayForceMode: displayAction = 0 ; del displayActions[0]
 						elif displayActionTries < 60:
 							piScreenUtils.logging.info("Set display to off")
-							os.system("xset dpms force off")
+							os.system("xrandr --output HDMI-1 --off")
 							displayActionTries += 1
 						else:
 							piScreenUtils.logging.warning("Tries to often to set display to off")
@@ -426,7 +421,7 @@ class manuallyHandler(threading.Thread):
 					piScreenUtils.logging.error("Trouble while controling display")
 					piScreenUtils.logging.debug(err)
 				time.sleep(2)
-			if ran: ran = False ; os.system("xset -dpms")
+			if ran: ran = False ; os.system("xrandr --output HDMI-1 --auto")
 			time.sleep(1)
 		piScreenUtils.logging.info("End manually handler")
 
@@ -1299,7 +1294,7 @@ if __name__ == "__main__":
 
 		#checkDisplay orientation
 		try:
-			if piScreenUtils.isInt(displayOrientation):
+			if piScreenUtils.isInt(displayOrientation) and displayLastValue != "off":
 				if subprocess.check_output(f"{Paths.SYSCALL} --get-display-orientation",shell=True).decode("utf-8").replace("\n","") != str(displayOrientation):
 					piScreenUtils.logging.info("Change display orientation")
 					os.system(f"{Paths.SYSCALL} --set-display-orientation --no-save {displayOrientation}")
