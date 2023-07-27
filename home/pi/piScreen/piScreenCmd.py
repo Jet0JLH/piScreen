@@ -65,6 +65,8 @@ So you have one script, which controlls everything and get every info about.
 --set-display-input
 	Tells the display to change the input to our system, if it is not currently displayed.
 	Currently only available on cec.
+--set-display-resolution <width> <height>
+	Set the display resolution to a fixed value
 
 === Modes ===
 --stop-mode
@@ -1226,3 +1228,24 @@ for i, origItem in enumerate(sys.argv):
 		else:
 			verbose and print("Core doesn't seem to respond")
 			piScreenUtils.logging.info("Core doesn't seem to respond")
+	elif item == "--set-display-resolution":
+		if len(sys.argv) > 2:
+			if piScreenUtils.isInt(sys.argv[1]) and piScreenUtils.isInt(sys.argv[2]):
+				try:
+					verbose and print(f"Set to {sys.argv[1]}x{sys.argv[2]}")
+					piScreenUtils.logging.info(f"Set to {sys.argv[1]}x{sys.argv[2]}")
+					settingsJson = loadSettings()
+					settingsJson["settings"]["display"]["width"] = int(sys.argv[1])
+					settingsJson["settings"]["display"]["height"] = int(sys.argv[2])
+					settingsFile = open(Paths.SETTINGS, "w")
+					settingsFile.write(json.dumps(settingsJson,indent=4))
+					settingsFile.close()
+				except:
+					verbose and print("Unable to write resolution to settings.json")
+					piScreenUtils.logging.info("Unable to write resolution to settings.json")
+			else:
+				verbose and print("Parameter are no int")
+				piScreenUtils.logging.warning("Parameter are no int")
+		else:
+			verbose and print("Not enough arguments")
+			piScreenUtils.logging.warning("Not enough arguments")

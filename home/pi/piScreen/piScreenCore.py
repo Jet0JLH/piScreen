@@ -1084,6 +1084,8 @@ def checkSettings():
 	global displayProtocol
 	global displayOrientation
 	global displayForceMode
+	global displayWidth
+	global displayHeight
 	newSettingsFileModify = os.path.getmtime(Paths.SETTINGS)
 	if newSettingsFileModify != settingsFileModify:
 		try:
@@ -1094,6 +1096,8 @@ def checkSettings():
 				if "protocol" in settings["settings"]["display"]: displayProtocol = settings["settings"]["display"]["protocol"]
 				if "orientation" in settings["settings"]["display"]: displayOrientation = settings["settings"]["display"]["orientation"]
 				if "force" in settings["settings"]["display"]: displayForceMode = settings["settings"]["display"]["force"]
+				if "width" in settings["settings"]["display"]: displayWidth = settings["settings"]["display"]["width"]
+				if "height" in settings["settings"]["display"]: displayHeight = settings["settings"]["display"]["height"]
 		except Exception as err:
 			piScreenUtils.logging.critical("Settingsfile seems to be demaged and could not be loaded as JSON object")
 			piScreenUtils.logging.debug(err)
@@ -1147,6 +1151,8 @@ allTrigger = []
 displayProtocol = ""
 displayOrientation:int = 0
 displayForceMode:bool = False
+displayWidth:int = 0
+displayHeight:int = 0
 displayAction = []
 displayActionTries:int = 0
 displayLastValue:str = "Unknown"
@@ -1292,7 +1298,7 @@ if __name__ == "__main__":
 		#checkSchedule
 		checkSchedule()
 
-		#checkDisplay orientation
+		#check display orientation
 		try:
 			if piScreenUtils.isInt(displayOrientation) and displayLastValue != "off":
 				if subprocess.check_output(f"{Paths.SYSCALL} --get-display-orientation",shell=True).decode("utf-8").replace("\n","") != str(displayOrientation):
@@ -1300,6 +1306,17 @@ if __name__ == "__main__":
 					os.system(f"{Paths.SYSCALL} --set-display-orientation --no-save {displayOrientation}")
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to set display orientation")
+			piScreenUtils.logging.debug(err)
+
+		#check display resolution
+		try:
+			if displayWidth > 0 and displayHeight > 0 and status["resolution"] != None and displayLastValue != "off":
+				if ((displayOrientation == 0 or displayOrientation == 2) and f"{displayWidth} x {displayHeight}" != status["resolution"]) or ((displayOrientation == 1 or displayOrientation == 3) and f"{displayHeight} x {displayWidth}" != status["resolution"]):
+					piScreenUtils.logging.info("Change display resolution")
+					os.system(f"xrandr -s {displayWidth}x{displayHeight}")
+					#Back to default is possible with the command "xrandr -s 0"
+		except Exception as err:
+			piScreenUtils.logging.error("Unable to set display resolution")
 			piScreenUtils.logging.debug(err)
 
 		#Wait for new cycle
