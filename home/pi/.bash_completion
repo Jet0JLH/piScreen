@@ -135,6 +135,7 @@ piScreenCmd() {
 		--add-trigger-entry
 		--update-trigger-entry
 		--delete-trigger-entry
+		--set-display-resolution
 		' -- "${COMP_WORDS[COMP_CWORD]}"))
 		;;
 	esac
