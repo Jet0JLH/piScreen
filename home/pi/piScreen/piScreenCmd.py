@@ -1240,6 +1240,10 @@ for i, origItem in enumerate(sys.argv):
 					settingsFile = open(Paths.SETTINGS, "w")
 					settingsFile.write(json.dumps(settingsJson,indent=4))
 					settingsFile.close()
+					if settingsJson["settings"]["display"]["width"] == 0 and settingsJson["settings"]["display"]["height"] == 0:
+						#Set resolution to default
+						os.environ["DISPLAY"] = ":0"
+						os.system("xrandr -s 0")
 				except:
 					verbose and print("Unable to write resolution to settings.json")
 					piScreenUtils.logging.info("Unable to write resolution to settings.json")

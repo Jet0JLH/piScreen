@@ -1314,7 +1314,6 @@ if __name__ == "__main__":
 				if ((displayOrientation == 0 or displayOrientation == 2) and f"{displayWidth} x {displayHeight}" != status["resolution"]) or ((displayOrientation == 1 or displayOrientation == 3) and f"{displayHeight} x {displayWidth}" != status["resolution"]):
 					piScreenUtils.logging.info("Change display resolution")
 					os.system(f"xrandr -s {displayWidth}x{displayHeight}")
-					#Back to default is possible with the command "xrandr -s 0"
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to set display resolution")
 			piScreenUtils.logging.debug(err)
