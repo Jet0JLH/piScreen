@@ -650,6 +650,7 @@ class trigger(threading.Thread):
 	mode = 0
 	lastState = None
 	runOnce = False
+	stickToCronIgnore = False
 	firstStateDontTrigger = False
 	isInFirstrun = True
 
@@ -671,6 +672,7 @@ class trigger(threading.Thread):
 			self.mode = self.config["trigger"]
 			if "runOnce" in self.config: self.runOnce = self.config["runOnce"]
 			if "firstStateDontTrigger" in self.config: self.firstStateDontTrigger = self.config["firstStateDontTrigger"]
+			if "stickToCronIgnore" in self.config: self.stickToCronIgnore = self.config["stickToCronIgnore"]
 			piScreenUtils.logging.info(f"Trigger {self.mode} is starting")
 			if self.mode == 1: #Firstrun
 				self.active = False
@@ -765,7 +767,12 @@ class trigger(threading.Thread):
 			piScreenUtils.logging.warning("Trigger is not right defined")
 			
 	def execute(self,state:str):
-		if self.isInFirstrun and self.firstStateDontTrigger: return #should not execute in firstrun
+		if self.isInFirstrun and self.firstStateDontTrigger: piScreenUtils.logging.debug(f"Trigger {self.mode} should not execute in firstrun") ; return
+		if self.stickToCronIgnore:
+			global ignoreCronFrom
+			global ignoreCronTo
+			timestamp = datetime.datetime.today()
+			if ignoreCronFrom < timestamp < ignoreCronTo: piScreenUtils.logging.debug(f"Trigger {self.mode} should not execute in cron ignore time") ; return
 		piScreenUtils.logging.info(f"Run trigger {self.mode}")
 		if "cases" not in self.config: return
 		if state not in self.config["cases"]: return
