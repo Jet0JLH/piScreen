@@ -579,6 +579,7 @@ def addTrigger():
 				item = {}
 				item["cases"] = {}
 				changed = modifySchedule("enabled",bool,item) or changed
+				changed = modifySchedule("stick-to-cron-ignore",bool,item,"stickToCronIgnore") or changed
 				changed = modifySchedule("trigger",int,item) or changed
 				changed = modifySchedule("first-state-dont-trigger",bool,item,"firstStateDontTrigger") or changed
 				changed = modifySchedule("run-once",bool,item,"runOnce") or changed
@@ -593,7 +594,7 @@ def addTrigger():
 					elif i2.startswith("--commandset:") and len(i2) > 13:
 						if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
 						changed = modifySchedule(i2[2:],int,item["cases"][i2[i2.index(":")+1:]],i2[2:i2.index(":")]) or changed
-					elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--first-state-dont-trigger","--firstStateDontTrigger","--run-once","--runOnce","--"}:
+					elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--first-state-dont-trigger","--firstStateDontTrigger","--run-once","--runOnce","--","--stick-to-cron-ignore"}:
 						changed = modifySchedule(i2[2:],None,item) or changed
 				if changed:
 					try:
@@ -640,6 +641,7 @@ def updateTrigger():
 							item = scheduleJson["trigger"][index]
 							changed = False
 							changed = modifySchedule("enabled",bool,item) or changed
+							changed = modifySchedule("stick-to-cron-ignore",bool,item,"stickToCronIgnore") or changed
 							changed = modifySchedule("trigger",int,item) or changed
 							changed = modifySchedule("first-state-dont-trigger",bool,item,"firstStateDontTrigger") or changed
 							changed = modifySchedule("run-once",bool,item,"runOnce") or changed
@@ -654,7 +656,7 @@ def updateTrigger():
 								elif i2.startswith("--commandset:") and len(i2) > 13:
 									if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
 									changed = modifySchedule(i2[2:],int,item["cases"][i2[i2.index(":")+1:]],i2[2:i2.index(":")]) or changed
-								elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--first-state-dont-trigger","--firstStateDontTrigger","--run-once","--runOnce","--"}:
+								elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--first-state-dont-trigger","--firstStateDontTrigger","--run-once","--runOnce","--","--stick-to-cron-ignore"}:
 									changed = modifySchedule(i2[2:],None,item) or changed
 							if changed:
 								cases = []
