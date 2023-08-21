@@ -233,6 +233,9 @@
 			if ($_GET['enabled'] != NULL) {
 				$parameterString .= " --enabled " . $_GET['enabled'];
 			}
+			if ($_GET['stickToCronIgnore'] != NULL) {
+				$parameterString .= " --stick-to-cron-ignore " . $_GET['stickToCronIgnore'];
+			}
 			if ($_GET['trigger'] != NULL) {
 				$parameterString .= " --trigger " . $_GET['trigger'];
 			}
@@ -262,6 +265,9 @@
 			$parameterString = " --index " . $_GET['index'];
 			if ($_GET['enabled'] != NULL) {
 				$parameterString .= " --enabled " . $_GET['enabled'];
+			}
+			if ($_GET['stickToCronIgnore'] != NULL) {
+				$parameterString .= " --stick-to-cron-ignore " . $_GET['stickToCronIgnore'];
 			}
 			if ($_GET['trigger'] != NULL) {
 				$parameterString .= " --trigger " . $_GET['trigger'];

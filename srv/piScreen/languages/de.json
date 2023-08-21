@@ -115,6 +115,7 @@
         "invert-selection": "Auswahl umkehren",
         "select-nothing": "Nichts auswählen",
         "edit-timeschedule": "Zeitplan bearbeiten",
+        "stick-to-cron-ignore": "Nicht ausführen wenn Zeitplan ignoriert wird",
 
         "saved": "Gespeichert",
         "saved-settings": "Einstellungen wurden gespeichert",
