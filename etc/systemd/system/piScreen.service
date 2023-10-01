@@ -12,7 +12,7 @@ WorkingDirectory=/home/pi/piScreen
 TimeoutStopSec=10
 ExecStart=/home/pi/piScreen/piScreenCore.py &
 ExecStop=/home/pi/piScreen/piScreenCmd.py --stop-core
- 
+Environment="PULSE_RUNTIME_PATH=/run/user/1000/pulse/" 
 
 [Install]
 WantedBy=graphical.target
