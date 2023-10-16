@@ -29,11 +29,11 @@ SHA512OID = "OID.2.16.840.1.101.3.4.2.3"
 
 tmpPath = "/tmp"
 aptPackages = {
-	"current": {"unclutter","apache2","php","cec-utils","ddcutil","firefox","vlc","libreoffice-impress","libcec-dev","build-essential","python-dev","libapache2-mpm-itk"},
+	"current": {"unclutter","apache2","php","cec-utils","ddcutil","firefox","vlc","libreoffice-impress","libcec-dev","build-essential","python-dev-is-python3","libapache2-mpm-itk","python3-cec","python3-vlc"},
 	"deprecated": {}
 }
 pipPackages = {
-	"current": {"cec", "monitorcontrol", "marionette_driver", "python-vlc"},
+	"current": {"monitorcontrol", "marionette_driver"},
 	"deprecated": {}
 }
 piScreenFiles = {
@@ -132,7 +132,7 @@ def doPackages(add:bool):
 		if add: printInfo(f"Install {item}")
 		else: printInfo(f"Uninstall {item}")
 		if add:
-			exitCode = info["dry"] or os.system(f"python3 -m pip install {item}")
+			exitCode = info["dry"] or os.system(f"python3 -m pip install {item} --break-system-packages")
 		else:
 			exitCode = info["dry"] or os.system(f"python3 -m pip uninstall {item}")
 		if exitCode != True and exitCode != 0: printError(f"Error while installing pip package {item}",1)
