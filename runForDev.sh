@@ -10,7 +10,7 @@ rm -R /home/pi/piScreen
 rm -R /srv/piScreen
 rm /etc/apache2/sites-available/piScreen.conf
 rm /home/pi/.config/autostart/piScreenCore.desktop
-rm /etc/firefox-esr/piScreen.js
+rm /etc/firefox/piScreen.js
 
 
 chmod +x ./home/pi/piScreen/*.sh
@@ -22,7 +22,7 @@ ln -s "$parent_path/etc/apache2/sites-available/piScreen.conf" /etc/apache2/site
 mkdir -p /home/pi/.config/autostart/
 ln -s "$parent_path/home/pi/.config/autostart/piScreenCore.desktop" /home/pi/.config/autostart/piScreenCore.desktop
 chown -R pi:pi /home/pi/.config/autostart/
-ln -s "$parent_path/etc/firefox-esr/piScreen.js" /etc/firefox-esr/piScreen.js
+ln -s "$parent_path/etc/firefox/piScreen.js" /etc/firefox/piScreen.js
 ln -s /media/ramdisk/piScreenScreenshot.jpg /srv/piScreen/admin/
 ln -s /media/ramdisk/piScreenScreenshot-thumb.jpg /srv/piScreen/admin/
 ln -s "$parent_path/etc/systemd/system/piScreen.service" "/etc/systemd/system/piScreen.service"
