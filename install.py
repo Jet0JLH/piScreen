@@ -29,7 +29,7 @@ SHA512OID = "OID.2.16.840.1.101.3.4.2.3"
 
 tmpPath = "/tmp"
 aptPackages = {
-	"current": {"unclutter","apache2","php7.4","cec-utils","ddcutil","firefox","vlc","libreoffice-impress","libcec-dev","build-essential","python-dev","libapache2-mpm-itk"},
+	"current": {"unclutter","apache2","php","cec-utils","ddcutil","firefox","vlc","libreoffice-impress","libcec-dev","build-essential","python-dev","libapache2-mpm-itk"},
 	"deprecated": {}
 }
 pipPackages = {
