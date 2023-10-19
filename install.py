@@ -29,11 +29,11 @@ SHA512OID = "OID.2.16.840.1.101.3.4.2.3"
 
 tmpPath = "/tmp"
 aptPackages = {
-	"current": {"unclutter","apache2","php","cec-utils","ddcutil","firefox","vlc","libreoffice-impress","libcec-dev","build-essential","python-dev-is-python3","libapache2-mpm-itk","python3-cec","python3-vlc"},
+	"current": {"unclutter","apache2","php","cec-utils","ddcutil","firefox","vlc","libreoffice-impress","libcec-dev","build-essential","python-dev-is-python3","libapache2-mpm-itk","python3-vlc"},
 	"deprecated": {}
 }
 pipPackages = {
-	"current": {"monitorcontrol", "marionette_driver"},
+	"current": {"cec","monitorcontrol", "marionette_driver"},
 	"deprecated": {}
 }
 piScreenFiles = {
