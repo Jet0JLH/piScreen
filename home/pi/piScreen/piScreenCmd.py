@@ -204,8 +204,9 @@ def configureDesktop():
 	piScreenUtils.logging.debug("Configure desktop")
 	try:
 		os.environ["DISPLAY"] = ":0"
-		os.environ["XAUTHORITY"] = "{userHomePath}.Xauthority"
+		os.environ["XAUTHORITY"] = "/home/pi/.Xauthority"
 		os.environ["XDG_RUNTIME_DIR"] = "/run/user/1000"
+		os.environ["XDG_SESSION_TYPE"] = "tty"
 		if f"--mode" in sys.argv:
 			indexOfElement = sys.argv.index(f"--mode") + 1
 			if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
