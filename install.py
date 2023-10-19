@@ -299,7 +299,7 @@ def configureWebbrowser():
 		return
 	for item in os.listdir(firefoxProfilePath):
 		if os.path.isdir(f"{firefoxProfilePath}{item}"):
-			if ".default-esr" in item:
+			if ".default-esr" in item or ".default-release":
 				printInfo("Default firefox profile found")
 				certOverridePath = f"{firefoxProfilePath}{item}/cert_override.txt"
 				break
