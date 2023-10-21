@@ -485,7 +485,7 @@ def killProcesses():
 	os.system("killall piScreenCore.py")
 	os.system("killall piScreenDisplay.py")
 	os.system("killall piScreenSchedule.py")
-	os.system("pkill firefox")
+	os.system("killall firefox")
 	os.system("killall vlc")
 	os.system("killall soffice.bin")
 

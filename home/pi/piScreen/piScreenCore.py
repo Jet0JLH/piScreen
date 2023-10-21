@@ -15,7 +15,7 @@ def checkIfProcessRunning(processName):
 
 def killAllSubprocesses():
 	os.system("killall -q unclutter")
-	os.system("pkill firefox")
+	os.system("killall -q firefox")
 	os.system("killall -q soffice.bin")
 
 #######################
@@ -61,7 +61,7 @@ class firefoxHandler(threading.Thread):
 						piScreenUtils.logging.error("Unable to create marionette session")
 						piScreenUtils.logging.debug(err)
 				time.sleep(1)
-			if checkIfProcessRunning("firefox"): os.system("pkill firefox")
+			if checkIfProcessRunning("firefox"): os.system("killall firefox")
 			self.info = {}
 			time.sleep(1)
 		piScreenUtils.logging.info("End firefox handler")
