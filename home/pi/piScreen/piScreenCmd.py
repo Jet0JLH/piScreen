@@ -176,7 +176,7 @@ def stopMode():
 
 def restartBrowser():
 	piScreenUtils.logging.info("Restart browser")
-	os.system("killall -q -SIGTERM firefox")
+	os.system("killall -q -SIGTERM firefox-esr")
 
 def startVLC(parameter,soft=False):
 	piScreenUtils.logging.info(f"Load VLC file {parameter}")

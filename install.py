@@ -29,7 +29,7 @@ SHA512OID = "OID.2.16.840.1.101.3.4.2.3"
 
 tmpPath = "/tmp"
 aptPackages = {
-	"current": {"unclutter","apache2","php","cec-utils","ddcutil","firefox","vlc","libreoffice-impress","libcec-dev","build-essential","python-dev-is-python3","libapache2-mpm-itk","python3-vlc"},
+	"current": {"unclutter","apache2","php7.4","cec-utils","ddcutil","firefox-esr","vlc","libreoffice-impress","libcec-dev","build-essential","python-dev","libapache2-mpm-itk"},
 	"deprecated": {}
 }
 pipPackages = {
@@ -51,7 +51,7 @@ piScreenFiles = {
 		{"type":"file","path":"/etc/apache2/sites-available/piScreen.conf"},
 		{"type":"file","path":"/home/pi/.config/autostart/piScreenCore.desktop"},
 		{"type":"file","path":"/etc/sudoers.d/050_piScreen-nopasswd"},
-		{"type":"file","path":"/etc/firefox/piScreen.js"},
+		{"type":"file","path":"/etc/firefox-esr/piScreen.js"},
 		{"type":"file","path":"/etc/systemd/system/piScreen.service"}
 	],
 	"install": [
@@ -61,7 +61,7 @@ piScreenFiles = {
 		{"type":"file","path":"/etc/systemd/system/piScreen.service","chown":["root","root"],"chmod":"744"},
 		{"type":"file","path":"/etc/apache2/sites-available/piScreen.conf"},
 		{"type":"file","path":"/etc/sudoers.d/050_piScreen-nopasswd","chmod":"0440"},
-		{"type":"file","path":"/etc/firefox/piScreen.js"},
+		{"type":"file","path":"/etc/firefox-esr/piScreen.js"},
 		{"type":"file","path":"/home/pi/.bash_completion","chown":["pi","pi"]},
 		{"type":"file","path":"/usr/share/plymouth/themes/pix/splash.png"},
 		{"type":"mkdir","path":f"/home/pi/piScreen/certs"},
@@ -292,7 +292,7 @@ def configureWebbrowser():
 	certOverridePath = firefoxProfilePath
 	printInfo("Configure webbrowser",style=1)
 	printInfo("Start firefox for profile generation")
-	os.system("sudo -u pi timeout 5 firefox --headless > /dev/null 2>&1")
+	os.system("sudo -u pi timeout 5 firefox-esr --headless > /dev/null 2>&1")
 	printInfo("Search for firefox profile")
 	if not os.path.exists(firefoxProfilePath):
 		printError("Unable to find firefox profiles directory")
@@ -485,7 +485,7 @@ def killProcesses():
 	os.system("killall piScreenCore.py")
 	os.system("killall piScreenDisplay.py")
 	os.system("killall piScreenSchedule.py")
-	os.system("killall firefox")
+	os.system("killall firefox-esr")
 	os.system("killall vlc")
 	os.system("killall soffice.bin")
 
