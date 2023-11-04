@@ -5,3 +5,5 @@ lockPref("places.history.enabled", false);
 lockPref("browser.cache.memory.enable", false);
 lockPref("browser.cache.disk.enable", false);
 lockPref("browser.sessionstore.resume_from_crash", false);
+lockPref("browser.messaging-system.whatsNewPanel.enabled", false)
+lockPref("browser.aboutwelcome.enabled", false)
