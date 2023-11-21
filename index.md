@@ -17,5 +17,5 @@ piScreen ist ein kleines Bastelprojekt von zwei befreundeten Hobbyentwicklern. D
 
 ## Wie wird piScreen installiert?
 1. Setze einen Raspberry Pi mit Raspberry OS (**Desktop Variante**, am besten 64 Bit) auf.
-2. Die install.zip aus dem aktuellsten [Release](https://github.com/Jet0JLH/piScreen/releases) herunterladen.
+2. Die install.zip aus dem aktuellsten [Release](https://github.com/Jet0JLH/piScreen/releases/latest) herunterladen.
 3. Die install.zip nun auspacken und die darin befindliche install.py ausführen und der Installation folgen.
