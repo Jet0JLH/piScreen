@@ -254,11 +254,13 @@
 					$parameterString .= " --commandset:" . $_GET['commandset' . $cases[$i]];
 				}
 			}
-			$triggerParameter = $_GET["triggerParameter"];
-			for ($i = 0; $i < count($triggerParameter); $i++) {
-				$parameterString .= " --" . $triggerParameter[$i];
+			if (!is_null($_GET["triggerParameter"])) {
+				$triggerParameter = $_GET["triggerParameter"];
+				for ($i = 0; $i < count($triggerParameter); $i++) {
+					$parameterString .= " --" . $triggerParameter[$i];
+				}
 			}
-			echo "$syscall --add-trigger-entry$parameterString";
+			//echo "$syscall --add-trigger-entry$parameterString";
 			executeCommand("$syscall --add-trigger-entry$parameterString", true);
 
 		} elseif ($_GET['cmd'] == "update") {
@@ -287,9 +289,11 @@
 					$parameterString .= " --commandset:" . $_GET['commandset' . $cases[$i]];
 				}
 			}
-			$triggerParameter = $_GET["triggerParameter"];
-			for ($i = 0; $i < count($triggerParameter); $i++) {
-				$parameterString .= " --" . $triggerParameter[$i];
+			if (!is_null($_GET["triggerParameter"])) {
+				$triggerParameter = $_GET["triggerParameter"];
+				for ($i = 0; $i < count($triggerParameter); $i++) {
+					$parameterString .= " --" . $triggerParameter[$i];
+				}
 			}
 			//echo "$syscall --update-trigger$parameterString";
 			executeCommand("$syscall --update-trigger-entry$parameterString", true);
