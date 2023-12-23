@@ -3,6 +3,7 @@
     <head>
         <link rel='stylesheet' href='/bootstrap/icons/bootstrap-icons.css'>
 		<link rel='stylesheet' href='default.css'>
+        <meta http-equiv="refresh" content="10">
 		<title>piScreen Defaultpage</title>
     </head>
     <body>

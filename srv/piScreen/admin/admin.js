@@ -133,6 +133,9 @@ function loadScheduleJson(jsonString) {
 			startupTriggerIndex = i;
 			if (triggerObj.enabled != undefined) getElement("startupTriggerEnabledSwitch").checked = triggerObj.enabled;
 			else getElement("startupTriggerEnabledSwitch").checked = false;
+
+			if (triggerObj.stickToCronIgnore != undefined) getElement("startupTriggerStickToCronIgnoreSwitchCheck").checked = triggerObj.stickToCronIgnore;
+			else getElement("startupTriggerStickToCronIgnoreSwitchCheck").checked = false;
 			
 			if (triggerObj.cases.true.command != undefined) {
 				getElement("startupTriggerCommandSelect").value = triggerObj.cases.true.command;
@@ -823,6 +826,7 @@ function generateTriggerEntry(triggerObj) {
 	<p><i class='bi bi-lightning bigIcon pe-2'></i>${getLanguageAsText(triggerCollection[triggerObj.trigger][0])}</p>
 	<p><span lang-data="active">${getLanguageAsText("active")}</span>: ${triggerObj.enabled ? "<i class='bi bi-check-lg bigIcon pe-2' style='color: green;'></i>" : "<i class='bi bi-x-lg bigIcon pe-2' style='color: red;'></i>"}</p>
 </div>
+<p><i class='bi bi-clock bigIcon pe-2'></i><span lang-data="stick-to-cron-ignore">${getLanguageAsText("stick-to-cron-ignore")}</span>: ${triggerObj.stickToCronIgnore?"<i class='bi bi-check-lg bigIcon pe-2' style='color: green;'></i>":"<i class='bi bi-x-lg bigIcon pe-2' style='color: red;'></i>"}</p>
 <i class='bi bi-chat-left-quote bigIcon pe-2'></i><span lang-data="description">${getLanguageAsText("description")}</span>: ${triggerObj.description == undefined ? "-" : triggerObj.description}`;
 	getElement("triggerCollectionList").appendChild(triggerEntryObj);
 }
@@ -901,6 +905,14 @@ function showTriggerModal(triggerEntryId=-1, newTrigger=false) {
 		</td>
 		<td colspan="2" style='width: 50%;'>
 			<span class='ms-2'>ID: </span><span id='triggerId'>${triggerEntryId}</span>
+		</td>
+	</tr>
+	<tr>
+		<td>
+			<div class="form-check form-switch m-2">
+				<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="triggerEntryStickToCronIgnoreSwitchCheck" onchange="triggerSaved(false);" ${obj.stickToCronIgnore ? "checked" : ""}>
+				<label class="form-check-label" for="triggerEntryStickToCronIgnoreSwitchCheck" lang-data="active">${getLanguageAsText("stick-to-cron-ignore")}</label>
+			</div>
 		</td>
 	</tr>
 	<tr>
@@ -1226,7 +1238,8 @@ function prepareTriggerString(update=false) {//add or update
 	let triggerParameters = document.getElementsByClassName("triggerParameter");
 	for (let i = 0; i < triggerParameters.length; i++) msg += "triggerParameter[" + i + "]=" + triggerParameters[i].id.substring("triggerParameter".length) + " " + encodeURIComponent(triggerParameters[i].value) + "&";
 	msg += "description=\"" + encodeURIComponent(description) + "\"&";
-	msg += "trigger=" + getElement("triggerSelect").value;
+	msg += "trigger=" + getElement("triggerSelect").value + "&";
+	msg += "stickToCronIgnore=" + getElement("triggerEntryStickToCronIgnoreSwitchCheck").checked;
 
 	return msg;
 }
@@ -1253,7 +1266,7 @@ function prepareStartupTriggerString(triggerCases=["true"]) {
 		if (commandset != 0) msg += "commandset" + triggerCases[i] + "=" + triggerCases[i] + " " + commandset + "&";
 		else msg += "commandset" + triggerCases[i] + "=" + triggerCases[i] + " &";
 	}
-
+	msg += "stickToCronIgnore=" + getElement("startupTriggerStickToCronIgnoreSwitchCheck").checked + "&"
 	msg += "trigger=1";
 
 	return msg;

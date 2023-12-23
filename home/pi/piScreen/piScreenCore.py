@@ -650,6 +650,7 @@ class trigger(threading.Thread):
 	mode = 0
 	lastState = None
 	runOnce = False
+	stickToCronIgnore = False
 	firstStateDontTrigger = False
 	isInFirstrun = True
 
@@ -671,6 +672,7 @@ class trigger(threading.Thread):
 			self.mode = self.config["trigger"]
 			if "runOnce" in self.config: self.runOnce = self.config["runOnce"]
 			if "firstStateDontTrigger" in self.config: self.firstStateDontTrigger = self.config["firstStateDontTrigger"]
+			if "stickToCronIgnore" in self.config: self.stickToCronIgnore = self.config["stickToCronIgnore"]
 			piScreenUtils.logging.info(f"Trigger {self.mode} is starting")
 			if self.mode == 1: #Firstrun
 				self.active = False
@@ -765,7 +767,12 @@ class trigger(threading.Thread):
 			piScreenUtils.logging.warning("Trigger is not right defined")
 			
 	def execute(self,state:str):
-		if self.isInFirstrun and self.firstStateDontTrigger: return #should not execute in firstrun
+		if self.isInFirstrun and self.firstStateDontTrigger: piScreenUtils.logging.debug(f"Trigger {self.mode} should not execute in firstrun") ; return
+		if self.stickToCronIgnore:
+			global ignoreCronFrom
+			global ignoreCronTo
+			timestamp = datetime.datetime.today()
+			if ignoreCronFrom < timestamp < ignoreCronTo: piScreenUtils.logging.debug(f"Trigger {self.mode} should not execute in cron ignore time") ; return
 		piScreenUtils.logging.info(f"Run trigger {self.mode}")
 		if "cases" not in self.config: return
 		if state not in self.config["cases"]: return
@@ -1084,6 +1091,8 @@ def checkSettings():
 	global displayProtocol
 	global displayOrientation
 	global displayForceMode
+	global displayWidth
+	global displayHeight
 	newSettingsFileModify = os.path.getmtime(Paths.SETTINGS)
 	if newSettingsFileModify != settingsFileModify:
 		try:
@@ -1094,6 +1103,8 @@ def checkSettings():
 				if "protocol" in settings["settings"]["display"]: displayProtocol = settings["settings"]["display"]["protocol"]
 				if "orientation" in settings["settings"]["display"]: displayOrientation = settings["settings"]["display"]["orientation"]
 				if "force" in settings["settings"]["display"]: displayForceMode = settings["settings"]["display"]["force"]
+				if "width" in settings["settings"]["display"]: displayWidth = settings["settings"]["display"]["width"]
+				if "height" in settings["settings"]["display"]: displayHeight = settings["settings"]["display"]["height"]
 		except Exception as err:
 			piScreenUtils.logging.critical("Settingsfile seems to be demaged and could not be loaded as JSON object")
 			piScreenUtils.logging.debug(err)
@@ -1147,6 +1158,8 @@ allTrigger = []
 displayProtocol = ""
 displayOrientation:int = 0
 displayForceMode:bool = False
+displayWidth:int = 0
+displayHeight:int = 0
 displayAction = []
 displayActionTries:int = 0
 displayLastValue:str = "Unknown"
@@ -1292,7 +1305,7 @@ if __name__ == "__main__":
 		#checkSchedule
 		checkSchedule()
 
-		#checkDisplay orientation
+		#check display orientation
 		try:
 			if piScreenUtils.isInt(displayOrientation) and displayLastValue != "off":
 				if subprocess.check_output(f"{Paths.SYSCALL} --get-display-orientation",shell=True).decode("utf-8").replace("\n","") != str(displayOrientation):
@@ -1300,6 +1313,16 @@ if __name__ == "__main__":
 					os.system(f"{Paths.SYSCALL} --set-display-orientation --no-save {displayOrientation}")
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to set display orientation")
+			piScreenUtils.logging.debug(err)
+
+		#check display resolution
+		try:
+			if displayWidth > 0 and displayHeight > 0 and status["resolution"] != None and displayLastValue != "off":
+				if ((displayOrientation == 0 or displayOrientation == 2) and f"{displayWidth} x {displayHeight}" != status["resolution"]) or ((displayOrientation == 1 or displayOrientation == 3) and f"{displayHeight} x {displayWidth}" != status["resolution"]):
+					piScreenUtils.logging.info("Change display resolution")
+					os.system(f"xrandr -s {displayWidth}x{displayHeight}")
+		except Exception as err:
+			piScreenUtils.logging.error("Unable to set display resolution")
 			piScreenUtils.logging.debug(err)
 
 		#Wait for new cycle

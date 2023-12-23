@@ -1,5 +1,6 @@
 #!/usr/bin/python3
 import json, os, sys, pwd, shutil, subprocess
+from time import sleep
 from OpenSSL.crypto import FILETYPE_PEM, load_certificate
 from base64 import b64encode
 from datetime import datetime
@@ -29,11 +30,11 @@ SHA512OID = "OID.2.16.840.1.101.3.4.2.3"
 
 tmpPath = "/tmp"
 aptPackages = {
-	"current": {"unclutter","apache2","php7.4","cec-utils","ddcutil","firefox-esr","vlc","libreoffice-impress","libcec-dev","build-essential","python-dev","libapache2-mpm-itk"},
+	"current": {"unclutter","apache2","php","cec-utils","ddcutil","firefox-esr","vlc","libreoffice-impress","libcec-dev","build-essential","python-dev-is-python3","libapache2-mpm-itk","python3-vlc"},
 	"deprecated": {}
 }
 pipPackages = {
-	"current": {"cec", "monitorcontrol", "marionette_driver", "python-vlc"},
+	"current": {"cec","monitorcontrol", "marionette_driver"},
 	"deprecated": {}
 }
 piScreenFiles = {
@@ -75,6 +76,7 @@ piScreenFiles = {
 def install():
 	killProcesses()
 	doPackages(True)
+	switchBackend()
 	configureRamdisk(True)
 	saveUserFiles()
 	deletePiScreenFiles()
@@ -132,7 +134,7 @@ def doPackages(add:bool):
 		if add: printInfo(f"Install {item}")
 		else: printInfo(f"Uninstall {item}")
 		if add:
-			exitCode = info["dry"] or os.system(f"python3 -m pip install {item}")
+			exitCode = info["dry"] or os.system(f"python3 -m pip install {item} --break-system-packages")
 		else:
 			exitCode = info["dry"] or os.system(f"python3 -m pip uninstall {item}")
 		if exitCode != True and exitCode != 0: printError(f"Error while installing pip package {item}",1)
@@ -173,7 +175,8 @@ def configureDesktop():
 	printInfo("Configure desktop",style=1)
 	try:
 		printInfo("Remove desktop wallpaper")
-		info["dry"] or os.system(f"export DISPLAY=:0;export XAUTHORITY=/home/pi/.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;pcmanfm --wallpaper-mode=color")
+		info["dry"] or os.system(f"export DISPLAY=:0;export XAUTHORITY=/home/pi/.Xauthority;export XDG_RUNTIME_DIR=/run/user/1000;export XDG_SESSION_TYPE=tty;pcmanfm --wallpaper-mode=color")
+		sleep(5) #If the configuration file does not exist yet, the preceding operation needs some time
 	except: printError("Unable to set desktop wallpaper")
 	try:
 		printInfo("Remove desktop icons")
@@ -310,7 +313,7 @@ def configureWebbrowser():
 		if not os.path.exists(certOverridePath):
 			try:
 				printInfo("Create empty firefox cert override file")
-				open(certOverridePath,"w").write("")
+				info["dry"] or open(certOverridePath,"w").write("")
 			except:
 				printError("Unable to create firefox certfile")
 		try:
@@ -488,6 +491,12 @@ def killProcesses():
 	os.system("killall firefox-esr")
 	os.system("killall vlc")
 	os.system("killall soffice.bin")
+
+def switchBackend():
+	if not info["dry"]:
+		printInfo("Set backend to X11")
+		if os.system("sudo raspi-config nonint do_wayland W1") != 0:
+			printError("Error while changeing to X11 backend with raspi-config")
 
 info = {"log":[]}
 if "--dry" in sys.argv: info["dry"] = True ; printInfo("Script is in dryrun")

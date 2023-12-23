@@ -115,6 +115,7 @@
         "invert-selection": "Invert selection",
         "select-nothing": "Select nothing",
         "edit-timeschedule": "Edit schedule",
+        "stick-to-cron-ignore": "Do not execute if schedule is ignored",
 
         "saved": "Saved",
         "saved-settings": "Settings saved",

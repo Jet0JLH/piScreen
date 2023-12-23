@@ -224,6 +224,10 @@
 						<label for="startupTriggerEnabledSwitch" class="px-2" lang-data='active'>Startup trigger</label>
 						<i class='bi-question-octagon p-2' style='cursor: pointer;' id='triggerHelp' data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="??" onclick='showModal(getLanguageAsText("help"), getLanguageAsText("triggerHelpText"), false, true, getLanguageAsText("ok"));'></i>
 					</div>
+					<div class='form-check form-switch m-1' style='display: flex; flex-flow: row wrap; align-items: center;'>
+						<input class="disableOnDisconnect form-check-input" type="checkbox" role="switch" id="startupTriggerStickToCronIgnoreSwitchCheck" onchange='startupTriggerSaved(false);'></input>
+						<label for="startupTriggerStickToCronIgnoreSwitchCheck" class="px-2" lang-data='stick-to-cron-ignore'>Startup trigger</label>
+					</div>
 					<div class='form-floating mb-4'>
 						<select id='startupTriggerCommandsetSelect' class='disableOnDisconnect commandsetDropdown form-select border-secondary' onchange='startupTriggerSaved(false);'>
 						</select>

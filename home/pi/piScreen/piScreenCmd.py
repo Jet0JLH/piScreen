@@ -65,6 +65,8 @@ So you have one script, which controlls everything and get every info about.
 --set-display-input
 	Tells the display to change the input to our system, if it is not currently displayed.
 	Currently only available on cec.
+--set-display-resolution <width> <height>
+	Set the display resolution to a fixed value
 
 === Modes ===
 --stop-mode
@@ -202,8 +204,9 @@ def configureDesktop():
 	piScreenUtils.logging.debug("Configure desktop")
 	try:
 		os.environ["DISPLAY"] = ":0"
-		os.environ["XAUTHORITY"] = "{userHomePath}.Xauthority"
+		os.environ["XAUTHORITY"] = "/home/pi/.Xauthority"
 		os.environ["XDG_RUNTIME_DIR"] = "/run/user/1000"
+		os.environ["XDG_SESSION_TYPE"] = "tty"
 		if f"--mode" in sys.argv:
 			indexOfElement = sys.argv.index(f"--mode") + 1
 			if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
@@ -577,6 +580,7 @@ def addTrigger():
 				item = {}
 				item["cases"] = {}
 				changed = modifySchedule("enabled",bool,item) or changed
+				changed = modifySchedule("stick-to-cron-ignore",bool,item,"stickToCronIgnore") or changed
 				changed = modifySchedule("trigger",int,item) or changed
 				changed = modifySchedule("first-state-dont-trigger",bool,item,"firstStateDontTrigger") or changed
 				changed = modifySchedule("run-once",bool,item,"runOnce") or changed
@@ -591,7 +595,7 @@ def addTrigger():
 					elif i2.startswith("--commandset:") and len(i2) > 13:
 						if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
 						changed = modifySchedule(i2[2:],int,item["cases"][i2[i2.index(":")+1:]],i2[2:i2.index(":")]) or changed
-					elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--first-state-dont-trigger","--firstStateDontTrigger","--run-once","--runOnce","--"}:
+					elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--first-state-dont-trigger","--firstStateDontTrigger","--run-once","--runOnce","--","--stick-to-cron-ignore"}:
 						changed = modifySchedule(i2[2:],None,item) or changed
 				if changed:
 					try:
@@ -638,6 +642,7 @@ def updateTrigger():
 							item = scheduleJson["trigger"][index]
 							changed = False
 							changed = modifySchedule("enabled",bool,item) or changed
+							changed = modifySchedule("stick-to-cron-ignore",bool,item,"stickToCronIgnore") or changed
 							changed = modifySchedule("trigger",int,item) or changed
 							changed = modifySchedule("first-state-dont-trigger",bool,item,"firstStateDontTrigger") or changed
 							changed = modifySchedule("run-once",bool,item,"runOnce") or changed
@@ -652,7 +657,7 @@ def updateTrigger():
 								elif i2.startswith("--commandset:") and len(i2) > 13:
 									if i2[i2.index(":")+1:] not in item["cases"]: item["cases"][i2[i2.index(":")+1:]] = {}
 									changed = modifySchedule(i2[2:],int,item["cases"][i2[i2.index(":")+1:]],i2[2:i2.index(":")]) or changed
-								elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--first-state-dont-trigger","--firstStateDontTrigger","--run-once","--runOnce","--"}:
+								elif i2.startswith("--") and i2 not in {"--index","--enabled","--trigger","--first-state-dont-trigger","--firstStateDontTrigger","--run-once","--runOnce","--","--stick-to-cron-ignore"}:
 									changed = modifySchedule(i2[2:],None,item) or changed
 							if changed:
 								cases = []
@@ -1226,3 +1231,28 @@ for i, origItem in enumerate(sys.argv):
 		else:
 			verbose and print("Core doesn't seem to respond")
 			piScreenUtils.logging.info("Core doesn't seem to respond")
+	elif item == "--set-display-resolution":
+		if len(sys.argv) > 2:
+			if piScreenUtils.isInt(sys.argv[1]) and piScreenUtils.isInt(sys.argv[2]):
+				try:
+					verbose and print(f"Set to {sys.argv[1]}x{sys.argv[2]}")
+					piScreenUtils.logging.info(f"Set to {sys.argv[1]}x{sys.argv[2]}")
+					settingsJson = loadSettings()
+					settingsJson["settings"]["display"]["width"] = int(sys.argv[1])
+					settingsJson["settings"]["display"]["height"] = int(sys.argv[2])
+					settingsFile = open(Paths.SETTINGS, "w")
+					settingsFile.write(json.dumps(settingsJson,indent=4))
+					settingsFile.close()
+					if settingsJson["settings"]["display"]["width"] == 0 and settingsJson["settings"]["display"]["height"] == 0:
+						#Set resolution to default
+						os.environ["DISPLAY"] = ":0"
+						os.system("xrandr -s 0")
+				except:
+					verbose and print("Unable to write resolution to settings.json")
+					piScreenUtils.logging.info("Unable to write resolution to settings.json")
+			else:
+				verbose and print("Parameter are no int")
+				piScreenUtils.logging.warning("Parameter are no int")
+		else:
+			verbose and print("Not enough arguments")
+			piScreenUtils.logging.warning("Not enough arguments")

@@ -72,18 +72,18 @@ piScreenCmd() {
 			;;
 		--add-trigger-entry)
 			local add_trigger="${COMP_WORDS[COMP_CWORD-1]}"
-			if [[ "$add_trigger" == "--enabled" ]] || [[ "$add_trigger" == "--first-state-dont-trigger" ]] || [[ "$add_trigger" == "--run-once" ]]; then
+			if [[ "$add_trigger" == "--enabled" ]] || [[ "$add_trigger" == "--first-state-dont-trigger" ]] || [[ "$add_trigger" == "--run-once" ]] || [[ "$add_trigger" == "--stick-to-cron-ignore" ]]; then
 				COMPREPLY=($(compgen -W "true false" -- "${COMP_WORDS[COMP_CWORD]}"))
 			else
-				COMPREPLY=($(compgen -W "--trigger --enabled --first-state-dont-trigger --run-once --command: --parameter: --commandset: --description" -- "${COMP_WORDS[COMP_CWORD]}"))
+				COMPREPLY=($(compgen -W "--trigger --enabled --first-state-dont-trigger --run-once --command: --parameter: --commandset: --description --stick-to-cron-ignore" -- "${COMP_WORDS[COMP_CWORD]}"))
 			fi
 			;;
 		--update-trigger-entry)
 			local add_trigger="${COMP_WORDS[COMP_CWORD-1]}"
-			if [[ "$add_trigger" == "--enabled" ]] || [[ "$add_trigger" == "--first-state-dont-trigger" ]] || [[ "$add_trigger" == "--run-once" ]]; then
+			if [[ "$add_trigger" == "--enabled" ]] || [[ "$add_trigger" == "--first-state-dont-trigger" ]] || [[ "$add_trigger" == "--run-once" ]] || [[ "$add_trigger" == "--stick-to-cron-ignore" ]]; then
 				COMPREPLY=($(compgen -W "true false" -- "${COMP_WORDS[COMP_CWORD]}"))
 			else
-				COMPREPLY=($(compgen -W "--index --trigger --enabled --first-state-dont-trigger --run-once --command: --parameter: --commandset: --description" -- "${COMP_WORDS[COMP_CWORD]}"))
+				COMPREPLY=($(compgen -W "--index --trigger --enabled --first-state-dont-trigger --run-once --command: --parameter: --commandset: --description --stick-to-cron-ignore" -- "${COMP_WORDS[COMP_CWORD]}"))
 			fi
 			;;
 		--delete-trigger-entry)
@@ -135,6 +135,7 @@ piScreenCmd() {
 		--add-trigger-entry
 		--update-trigger-entry
 		--delete-trigger-entry
+		--set-display-resolution
 		' -- "${COMP_WORDS[COMP_CWORD]}"))
 		;;
 	esac
