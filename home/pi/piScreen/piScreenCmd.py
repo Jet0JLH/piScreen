@@ -65,8 +65,13 @@ So you have one script, which controlls everything and get every info about.
 --set-display-input
 	Tells the display to change the input to our system, if it is not currently displayed.
 	Currently only available on cec.
---set-display-resolution <width> <height>
+--set-display-resolution [<width> <height>]
 	Set the display resolution to a fixed value
+	To reset the resolution to automatic, use no parameters
+--set-display-forcemode <true/false>
+	Enables or disables the display forcemode.
+	If eanbled, piScreen will try to keep the display in the last setted state.
+	Even if an user will try to change the state direct on the display.
 
 === Modes ===
 --stop-mode
@@ -391,20 +396,6 @@ def rmDir(path):
 		for name in dirs:
 			os.rmdir(os.path.join(root, name))
 	os.rmdir(path)
-
-def setDisplayProtocol(protocol):
-	piScreenUtils.logging.info(f"Set displayprotocol to {protocol}")
-	protocol = protocol.lower()
-	if protocol == "cec" or protocol == "ddc" or protocol == "manually":
-		verbose and print(f"Write {protocol} as display protocol in settings.json")
-		settingsJson = loadSettings()
-		settingsJson["settings"]["display"]["protocol"] = protocol
-		settingsFile = open(Paths.SETTINGS, "w")
-		settingsFile.write(json.dumps(settingsJson,indent=4))
-		settingsFile.close()
-	else:
-		piScreenUtils.logging.warning(f"{protocol} is no permitted protocol")
-		verbose and print(f"{protocol} is no permitted protocol")
 
 def getDisplayProtocol():
 	settingsJson = loadSettings()
@@ -798,14 +789,6 @@ def deleteCommandset():
 		verbose and print("Not enough arguments")
 		exit(1)
 
-def changeLanguage(language:str):
-	piScreenUtils.logging.info(f"Set language to {language}")
-	settingsJson = loadSettings()
-	settingsJson["settings"]["language"] = language
-	settingsFile = open(Paths.SETTINGS, "w")
-	settingsFile.write(json.dumps(settingsJson,indent=4))
-	settingsFile.close()
-
 #Main
 verbose = False
 dateFormate = "%Y-%m-%d %H:%M"
@@ -942,7 +925,13 @@ for i, origItem in enumerate(sys.argv):
 		downloadUpdate(draft,prerelease)
 	elif item == "--set-display-protocol":
 		if i + 1 < len(sys.argv):
-			setDisplayProtocol(sys.argv[i + 1])
+			piScreenUtils.logging.info(f"Set displayprotocol to {sys.argv[i + 1]}")
+			sys.argv[i + 1] = sys.argv[i + 1].lower()
+			if sys.argv[i + 1] == "cec" or sys.argv[i + 1] == "ddc" or sys.argv[i + 1] == "manually":
+				sendToCore({"cmd":9,"parameter":sys.argv[i + 1]})
+			else:
+				piScreenUtils.logging.warning(f"{sys.argv[i + 1]} is no permitted protocol")
+				verbose and print(f"{sys.argv[i + 1]} is no permitted protocol")
 		else:
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
@@ -950,39 +939,17 @@ for i, origItem in enumerate(sys.argv):
 		getDisplayProtocol()
 	elif item == "--set-display-orientation":
 		saveSettings = True
+		orientation = None
 		if "--no-save" in sys.argv:
 			saveSettings = False
 			sys.argv.remove("--no-save")
 		if i + 1 < len(sys.argv):
-			found = False
-			if sys.argv[i + 1] == "0":
-				found = True
-				os.system("DISPLAY=:0 xrandr -o normal")
-				piScreenUtils.logging.info("Change displayorientation to normal")
-				verbose and print("Change displayorientation to normal")
-			elif sys.argv[i + 1] == "1":
-				found = True
-				os.system("DISPLAY=:0 xrandr -o right")
-				piScreenUtils.logging.info("Change displayorientation to right")
-				verbose and print("Change displayorientation to right")
-			elif sys.argv[i + 1] == "2":
-				found = True
-				os.system("DISPLAY=:0 xrandr -o inverted")
-				piScreenUtils.logging.info("Change displayorientation to inverted")
-				verbose and print("Change displayorientation to inverted")
-			elif sys.argv[i + 1] == "3":
-				found = True
-				os.system("DISPLAY=:0 xrandr -o left")
-				piScreenUtils.logging.info("Change displayorientation to left")
-				verbose and print("Change displayorientation to left")
-			if found and saveSettings:
-				settingsJson = loadSettings()
-				settingsJson["settings"]["display"]["orientation"] = int(sys.argv[i + 1])
-				settingsFile = open(Paths.SETTINGS, "w")
-				settingsFile.write(json.dumps(settingsJson,indent=4))
-				settingsFile.close()
-				piScreenUtils.logging.info("Write orientation in settings")
-				verbose and print("Write orientation in settings")
+			try:
+				orientation = int(sys.argv[i + 1])
+				sendToCore({"cmd":10,"parameter":{"orientation":orientation,"save":saveSettings}})
+			except:
+				piScreenUtils.logging.warning("Parameter is not int")
+				verbose and print("Parameter is not int")
 		else:
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
@@ -997,6 +964,17 @@ for i, origItem in enumerate(sys.argv):
 				print(0)
 		else:
 			print(getDisplayOrientation())
+	elif item == "--set-display-forcemode":
+		if i + 1 < len(sys.argv):
+			if sys.argv[i + 1].lower() == "true": sendToCore({"cmd":12,"parameter":True})
+			elif sys.argv[i + 1].lower() == "false": sendToCore({"cmd":12,"parameter":False})
+			else: 
+				piScreenUtils.logging.warning("No bool value")
+				verbose and print("No bool value")
+		else:
+			piScreenUtils.logging.warning("Not enough arguments")
+			verbose and print("Not enough arguments")
+			exit(1)
 	elif item == "--run-firstrun":
 		piScreenUtils.logging.info("Send command for schedule firstrun")
 		sendToCore({"cmd":6,"parameter":{}})
@@ -1177,7 +1155,7 @@ for i, origItem in enumerate(sys.argv):
 			verbose and print("Argument --level expected")
 	elif item == "--set-language":
 		if i + 1 < len(sys.argv):
-			changeLanguage(sys.argv[i + 1])
+			sendToCore({"cmd":13,"parameter":sys.argv[i + 1]})
 		else:
 			piScreenUtils.logging.warning("Not enough arguments")
 	elif item == "--set-cron-ignore-timespan":
@@ -1234,25 +1212,14 @@ for i, origItem in enumerate(sys.argv):
 	elif item == "--set-display-resolution":
 		if len(sys.argv) > 2:
 			if piScreenUtils.isInt(sys.argv[1]) and piScreenUtils.isInt(sys.argv[2]):
-				try:
-					verbose and print(f"Set to {sys.argv[1]}x{sys.argv[2]}")
-					piScreenUtils.logging.info(f"Set to {sys.argv[1]}x{sys.argv[2]}")
-					settingsJson = loadSettings()
-					settingsJson["settings"]["display"]["width"] = int(sys.argv[1])
-					settingsJson["settings"]["display"]["height"] = int(sys.argv[2])
-					settingsFile = open(Paths.SETTINGS, "w")
-					settingsFile.write(json.dumps(settingsJson,indent=4))
-					settingsFile.close()
-					if settingsJson["settings"]["display"]["width"] == 0 and settingsJson["settings"]["display"]["height"] == 0:
-						#Set resolution to default
-						os.environ["DISPLAY"] = ":0"
-						os.system("xrandr -s 0")
-				except:
-					verbose and print("Unable to write resolution to settings.json")
-					piScreenUtils.logging.info("Unable to write resolution to settings.json")
+				verbose and print(f"Set to {sys.argv[1]}x{sys.argv[2]}")
+				piScreenUtils.logging.info(f"Set to {sys.argv[1]}x{sys.argv[2]}")
+				sendToCore({"cmd":11,"parameter":{"width":sys.argv[1],"height":sys.argv[2]}})
 			else:
 				verbose and print("Parameter are no int")
 				piScreenUtils.logging.warning("Parameter are no int")
+		elif len(sys.argv) == 1:
+			sendToCore({"cmd":11,"parameter":None})
 		else:
 			verbose and print("Not enough arguments")
 			piScreenUtils.logging.warning("Not enough arguments")

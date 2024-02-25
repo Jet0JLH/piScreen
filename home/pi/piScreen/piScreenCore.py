@@ -1,5 +1,5 @@
 #!/usr/bin/python3
-import os, json, sys, time, psutil, subprocess, threading, socket, vlc, fcntl, datetime, cec, monitorcontrol, piScreenUtils
+import os, json, sys, time, psutil, subprocess, threading, socket, vlc, fcntl, datetime, cec, monitorcontrol, piScreenUtils, copy
 from marionette_driver.marionette import Marionette
 
 from piScreenUtils import Paths
@@ -17,6 +17,88 @@ def killAllSubprocesses():
 	os.system("killall -q unclutter")
 	os.system("killall -q firefox-esr")
 	os.system("killall -q soffice.bin")
+	
+class JsonData:
+	def loadFile(self):
+		if not os.path.exists(self.path): piScreenUtils.logging.error(f"Unable to find {self.path}") ; return
+		try:
+			piScreenUtils.logging.debug(f"Load JSON from {self.path}")
+			self.file = json.load(open(self.path))
+			self.origFile = copy.deepcopy(self.file)
+			self.whenChanged = os.path.getmtime(self.path)
+			self.whenSaved = os.path.getmtime(self.path)
+		except: piScreenUtils.logging.error(f"Unable to load {self.path}") ; return
+
+	def saveFile(self, orig:bool=False):
+		if not os.path.exists(self.path): piScreenUtils.logging.error(f"Unable to find {self.path}") ; return
+		try:
+			with open(self.path, "w") as f:
+				if orig: 
+					piScreenUtils.logging.debug(f"Save original JSON to {self.path}")
+					json.dump(self.origFile, f, indent=4)
+				else:
+					piScreenUtils.logging.debug(f"Save JSON to {self.path}")
+					json.dump(self.file, f, indent=4)
+					self.origFile = copy.deepcopy(self.file)
+			self.whenSaved = os.path.getmtime(self.path)
+		except:
+			piScreenUtils.logging.error(f"Unable to save {self.path}")
+
+	def __init__(self, path:str, autosave:bool=False):
+		self.path = path
+		self.file = {}
+		self.origFile = {}
+		self.autosave = autosave
+		self.whenChanged = datetime.datetime.strptime("1900-01-01 00:00",scheduleDateFormate)
+		self.whenSaved = datetime.datetime.strptime("1900-01-01 00:00",scheduleDateFormate)
+		self.loadFile()
+
+	def getValue(self, keyPath:str, orig:bool=False):
+		keys = keyPath.split('/')
+		if orig: value = self.origFile 
+		else: value = self.file
+		try:
+			for key in keys:
+				value = value[key]
+			return value
+		except KeyError:
+			return None
+	
+	def setValue(self, keyPath:str, value, orig:bool=False):
+		if self.getValue(keyPath,orig) == value: piScreenUtils.logging.debug(f"Value {value} for key {keyPath} is already set") ; return
+		keys = keyPath.split('/')
+		if orig: currentDict = self.origFile
+		else: currentDict = self.file
+		for key in keys[:-1]:
+			if key not in currentDict:
+				currentDict[key] = {}
+			currentDict = currentDict[key]
+		if value is None:
+			currentDict.pop(keys[-1], None)
+		else:
+			currentDict[keys[-1]] = value
+		self.whenChanged = datetime.datetime.now()
+		if self.autosave: self.saveFile()
+
+	def hasChanged(self): return self.origFile != self.file
+
+	def hasExternalChanged(self): return os.path.getmtime(self.path) != self.whenSaved
+
+def getDisplayOrientation():
+	orientation = subprocess.check_output("DISPLAY=:0 xrandr --query --verbose | grep HDMI-1 | cut -d ' ' -f 6",shell=True).decode("utf-8").replace("\n","")
+	if orientation == "normal": return 0
+	elif orientation == "right": return 1
+	elif orientation == "inverted": return 2
+	elif orientation == "left": return 3
+	return None
+
+def setDisplayOrientation(orientation:int, save:bool=False):
+	if orientation == 0: os.system("DISPLAY=:0 xrandr -o normal") ; piScreenUtils.logging.info("Change displayorientation to normal")
+	elif orientation == 1: os.system("DISPLAY=:0 xrandr -o right") ; piScreenUtils.logging.info("Change displayorientation to right")
+	elif orientation == 2: os.system("DISPLAY=:0 xrandr -o inverted") ; piScreenUtils.logging.info("Change displayorientation to inverted")
+	elif orientation == 3: os.system("DISPLAY=:0 xrandr -o left") ; piScreenUtils.logging.info("Change displayorientation to left")
+	else: piScreenUtils.logging.error(f"{orientation} is an unknown value for display orientation") ; return
+	if save: settingsData.setValue("settings/display/orientation", orientation)
 
 #######################
 ### Mode management ###
@@ -154,22 +236,21 @@ class cecHandler(threading.Thread):
 		global displayActions
 		global displayActionTries
 		global displayLastValue
-		global displayForceMode
 		displayAction = 0
 		displayActions = []
 		self.device = cec.Device(cec.CECDEVICE_TV)
 		cec.add_callback(self.cecEvent,cec.EVENT_COMMAND)
 		self.updateStatus()
 		while active:
-			if displayProtocol == "cec": piScreenUtils.logging.info("Start display control over cec") ; displayLastValue = "Unknown"
-			while displayProtocol == "cec" and active:
+			if settingsData.getValue("settings/display/protocol") == "cec": piScreenUtils.logging.info("Start display control over cec") ; displayLastValue = "Unknown"
+			while settingsData.getValue("settings/display/protocol") == "cec" and active:
 				for i in range(5):
 					try:
 						#Process actions
 						if len(displayActions) > 0: displayAction = displayActions[0]
 						if displayAction == 1: #On
 							if displayLastValue == "on":
-								if not displayForceMode: displayAction = 0 ; del displayActions[0]
+								if not settingsData.getValue("settings/display/force"): displayAction = 0 ; del displayActions[0]
 							elif displayActionTries < 60:
 								piScreenUtils.logging.info("Set display to on")
 								self.device.power_on()
@@ -180,7 +261,7 @@ class cecHandler(threading.Thread):
 								del displayActions[0]
 						elif displayAction == 2: #Off
 							if displayLastValue == "off":
-								if not displayForceMode: displayAction = 0 ; del displayActions[0]
+								if not settingsData.getValue("settings/display/force"): displayAction = 0 ; del displayActions[0]
 							elif displayActionTries < 60:
 								piScreenUtils.logging.info("Set display to off")
 								self.device.transmit(cec.CEC_OPCODE_STANDBY)
@@ -197,7 +278,7 @@ class cecHandler(threading.Thread):
 					except Exception as err:
 						piScreenUtils.logging.error("Trouble while controling display")
 						piScreenUtils.logging.debug(err)
-					if not active or displayProtocol != "cec": break
+					if not active or settingsData.getValue("settings/display/protocol") != "cec": break
 					time.sleep(2)
 				self.updateStatus()
 			time.sleep(1)
@@ -287,12 +368,11 @@ class ddcHandler(threading.Thread):
 		global displayActions
 		global displayActionTries
 		global displayLastValue
-		global displayForceMode
 		displayAction = 0
 		displayActions = []
 		while active:
-			if displayProtocol == "ddc": piScreenUtils.logging.info("Start display control over ddc") ; displayLastValue = "Unknown"
-			while displayProtocol == "ddc" and active:
+			if settingsData.getValue("settings/display/protocol") == "ddc": piScreenUtils.logging.info("Start display control over ddc") ; displayLastValue = "Unknown"
+			while settingsData.getValue("settings/display/protocol") == "ddc" and active:
 				try:
 					monitors = monitorcontrol.get_monitors()
 					if len(monitors) <= 0: piScreenUtils.logging.warning("Unable to find display") ; displayLastValue = "Unknown"
@@ -320,7 +400,7 @@ class ddcHandler(threading.Thread):
 								if len(displayActions) > 0: displayAction = displayActions[0]
 								if displayAction == 1: #On
 									if displayLastValue == "on":
-										if not displayForceMode: displayAction = 0 ; del displayActions[0]
+										if not settingsData.getValue("settings/display/force"): displayAction = 0 ; del displayActions[0]
 									elif displayActionTries < 60:
 										piScreenUtils.logging.info("Set display to on")
 										monitors[0].set_power_mode(mode.on)
@@ -331,7 +411,7 @@ class ddcHandler(threading.Thread):
 										del displayActions[0]
 								elif displayAction == 2: #Off
 									if displayLastValue == "off":
-										if not displayForceMode: displayAction = 0 ; del displayActions[0]
+										if not settingsData.getValue("settings/display/force"): displayAction = 0 ; del displayActions[0]
 									elif displayActionTries < 60:
 										piScreenUtils.logging.info("Set display to off")
 										monitors[0].set_power_mode(mode.off_hard)
@@ -365,17 +445,16 @@ class manuallyHandler(threading.Thread):
 		global displayActions
 		global displayActionTries
 		global displayLastValue
-		global displayForceMode
 		displayAction = 0
 		displayActions = []
 		ran = True
 		while active:
-			if displayProtocol == "manually":
+			if settingsData.getValue("settings/display/protocol") == "manually":
 				piScreenUtils.logging.info("Start display control over manually")
 				displayLastValue = "Unknown"
 				ran = True				
 
-			while displayProtocol == "manually" and active:
+			while settingsData.getValue("settings/display/protocol") == "manually" and active:
 				try:
 					#Check current state
 					status = os.system("xrandr -q | grep -oP 'HDMI-1 connected primary \K[0-9]+x[0-9]+'")
@@ -393,7 +472,7 @@ class manuallyHandler(threading.Thread):
 					if len(displayActions) > 0: displayAction = displayActions[0]
 					if displayAction == 1: #On
 						if displayLastValue == "on":
-							if not displayForceMode: displayAction = 0 ; del displayActions[0]
+							if not settingsData.getValue("settings/display/force"): displayAction = 0 ; del displayActions[0]
 						elif displayActionTries < 60:
 							piScreenUtils.logging.info("Set display to on")
 							os.system("xrandr --output HDMI-1 --auto")
@@ -404,7 +483,7 @@ class manuallyHandler(threading.Thread):
 							del displayActions[0]
 					elif displayAction == 2: #Off
 						if displayLastValue == "off":
-							if not displayForceMode: displayAction = 0 ; del displayActions[0]
+							if not settingsData.getValue("settings/display/force"): displayAction = 0 ; del displayActions[0]
 						elif displayActionTries < 60:
 							piScreenUtils.logging.info("Set display to off")
 							os.system("xrandr --output HDMI-1 --off")
@@ -1025,6 +1104,7 @@ def socketCmdInterpreter(data:dict) -> dict:
 		if piScreenUtils.isInt(data["parameter"]):
 			displayActions.append(data["parameter"])
 			displayActionTries = 0
+			return returnValue
 		else:
 			return {"code":2} #Package format is wrong
 	elif cmd == 6: #scheduleDoFirstRun
@@ -1063,6 +1143,7 @@ def socketCmdInterpreter(data:dict) -> dict:
 				if "index" in data["parameter"]:
 					if piScreenUtils.isInt(data["parameter"]["index"]) and len(schedule["cron"]) > int(data["parameter"]["index"]):
 						threading.Thread(target=cronEntry(schedule["cron"][int(data["parameter"]["index"])]).run,args=(None,True)).start()
+						return returnValue
 					else:
 						piScreenUtils.logging.warning("Cron index doesn't exists")
 						return {"code":4} #Wrong index
@@ -1076,6 +1157,66 @@ def socketCmdInterpreter(data:dict) -> dict:
 		else:
 			piScreenUtils.logging.error("Type is not a int")
 			return {"code":2} #Package format is wrong
+	elif cmd == 9: #ChangeDisplayProtocol
+		if "parameter" not in data:
+			piScreenUtils.logging.error("Recived data has no needed parameter field in it")
+			return {"code":2} #Package format is wrong
+		if data["parameter"] not in ["cec", "ddc", "manually"]:
+			piScreenUtils.logging.error(f"{data['parameter']} is no valid display protocol")
+			return {"code":2} #Package format is wrong
+		settingsData.setValue("settings/display/protocol", data["parameter"])
+		return returnValue
+	elif cmd == 10: #ChangeDisplayOrientation
+		if "parameter" not in data:
+			piScreenUtils.logging.error("Recived data has no needed parameter field in it")
+			return {"code":2} #Package format is wrong
+		if "orientation" not in data["parameter"]:
+			piScreenUtils.logging.error("Recived data has no needed orientation field in parameter field")
+			return {"code":2} #Package format is wrong
+		if "save" not in data["parameter"]:
+			piScreenUtils.logging.error("Recived data has no needed save field in parameter field")
+			return {"code":2} #Package format is wrong
+		if piScreenUtils.isInt(data["parameter"]["orientation"]) != True and data["parameter"]["orientation"] in [0,1,2,3]:
+			piScreenUtils.logging.error("Orientation is not an int between 0 and 3")
+			return {"code":2} #Package format is wrong
+		if type(data["parameter"]["save"]) != bool:
+			piScreenUtils.logging.error("Save field is not an bool")
+			return {"code":2} #Package format is wrong
+		setDisplayOrientation(data["parameter"]["orientation"], data["parameter"]["save"])
+		return returnValue
+	elif cmd == 11: #ChangeResolution
+		if "parameter" not in data:
+			piScreenUtils.logging.error("Recived data has no needed parameter field in it")
+			return {"code":2} #Package format is wrong
+		if data["parameter"] == None:
+			settingsData.setValue("settings/display/width", None)
+			settingsData.setValue("settings/display/height", None)
+			os.system("xrandr -s 0")
+			return returnValue
+		if "width" not in data["parameter"] or "height" not in data["parameter"]:
+			piScreenUtils.logging.error("Recived data has no needed width or height field in it")
+			return {"code":2} #Package format is wrong
+		if not piScreenUtils.isInt(data["parameter"]["width"]) or not piScreenUtils.isInt(data["parameter"]["height"]):
+			piScreenUtils.logging.error("Width or height field is not an int")
+			return {"code":2} #Package format is wrong
+		settingsData.setValue("settings/display/width", data["parameter"]["width"])
+		settingsData.setValue("settings/display/height", data["parameter"]["height"])
+		return returnValue
+	elif cmd == 12: #ChangeForceMode
+		if "parameter" not in data:
+			piScreenUtils.logging.error("Recived data has no needed parameter field in it")
+			return {"code":2} #Package format is wrong
+		if type(data["parameter"]) != bool:
+			piScreenUtils.logging.error("Type is not a bool")
+			return {"code":2} #Package format is wrong
+		settingsData.setValue("settings/display/force", data["parameter"])
+		return returnValue
+	elif cmd == 13: #ChangeLanguage
+		if "parameter" not in data:
+			piScreenUtils.logging.error("Recived data has no needed parameter field in it")
+			return {"code":2} #Package format is wrong
+		settingsData.setValue("settings/language", data["parameter"])
+		return returnValue
 	else:
 		piScreenUtils.logging.warning("Recived cmd is unknown")
 		returnValue["code"] = 1
@@ -1084,30 +1225,6 @@ def socketCmdInterpreter(data:dict) -> dict:
 #########################
 ### Config management ###
 #########################
-
-def checkSettings():
-	global settings
-	global settingsFileModify
-	global displayProtocol
-	global displayOrientation
-	global displayForceMode
-	global displayWidth
-	global displayHeight
-	newSettingsFileModify = os.path.getmtime(Paths.SETTINGS)
-	if newSettingsFileModify != settingsFileModify:
-		try:
-			piScreenUtils.logging.info("Settings seems to be changed")
-			settings = json.load(open(Paths.SETTINGS))
-			settingsFileModify = newSettingsFileModify
-			if "settings" in settings and "display" in settings["settings"]:
-				if "protocol" in settings["settings"]["display"]: displayProtocol = settings["settings"]["display"]["protocol"]
-				if "orientation" in settings["settings"]["display"]: displayOrientation = settings["settings"]["display"]["orientation"]
-				if "force" in settings["settings"]["display"]: displayForceMode = settings["settings"]["display"]["force"]
-				if "width" in settings["settings"]["display"]: displayWidth = settings["settings"]["display"]["width"]
-				if "height" in settings["settings"]["display"]: displayHeight = settings["settings"]["display"]["height"]
-		except Exception as err:
-			piScreenUtils.logging.critical("Settingsfile seems to be demaged and could not be loaded as JSON object")
-			piScreenUtils.logging.debug(err)
 
 def checkSchedule():
 	global scheduleDateFormate
@@ -1154,12 +1271,9 @@ schedule = json.dumps({})
 scheduleDateFormate = "%Y-%m-%d %H:%M"
 ignoreCronFrom = datetime.datetime.strptime("1900-01-01 00:00",scheduleDateFormate)
 ignoreCronTo = datetime.datetime.strptime("1900-01-01 00:00",scheduleDateFormate)
+settingsData = JsonData(Paths.SETTINGS,True)
+settingsData.loadFile()
 allTrigger = []
-displayProtocol = ""
-displayOrientation:int = 0
-displayForceMode:bool = False
-displayWidth:int = 0
-displayHeight:int = 0
 displayAction = []
 displayActionTries:int = 0
 displayLastValue:str = "Unknown"
@@ -1299,28 +1413,25 @@ if __name__ == "__main__":
 			piScreenUtils.logging.error("Error while creating screenshot")
 			piScreenUtils.logging.debug(err)
 
-		#checkSettings
-		checkSettings()
-
 		#checkSchedule
 		checkSchedule()
 
 		#check display orientation
 		try:
-			if piScreenUtils.isInt(displayOrientation) and displayLastValue != "off":
-				if subprocess.check_output(f"{Paths.SYSCALL} --get-display-orientation",shell=True).decode("utf-8").replace("\n","") != str(displayOrientation):
+			if piScreenUtils.isInt(settingsData.getValue("settings/display/orientation")) and displayLastValue != "off":
+				if getDisplayOrientation() != settingsData.getValue("settings/display/orientation"):
 					piScreenUtils.logging.info("Change display orientation")
-					os.system(f"{Paths.SYSCALL} --set-display-orientation --no-save {displayOrientation}")
+					setDisplayOrientation(settingsData.getValue("settings/display/orientation"))
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to set display orientation")
 			piScreenUtils.logging.debug(err)
 
 		#check display resolution
 		try:
-			if displayWidth > 0 and displayHeight > 0 and status["resolution"] != None and displayLastValue != "off":
-				if ((displayOrientation == 0 or displayOrientation == 2) and f"{displayWidth} x {displayHeight}" != status["resolution"]) or ((displayOrientation == 1 or displayOrientation == 3) and f"{displayHeight} x {displayWidth}" != status["resolution"]):
+			if settingsData.getValue("settings/display/width") != None and settingsData.getValue("settings/display/height") != None and status["resolution"] != None and displayLastValue != "off":
+				if ((settingsData.getValue("settings/display/orientation") in [0,2]) and f"{settingsData.getValue('settings/display/width')} x {settingsData.getValue('settings/display/height')}" != status["resolution"]) or ((settingsData.getValue("settings/display/orientation") in [1,3]) and f"{settingsData.getValue('settings/display/height')} x {settingsData.getValue('settings/display/width')}" != status["resolution"]):
 					piScreenUtils.logging.info("Change display resolution")
-					os.system(f"xrandr -s {displayWidth}x{displayHeight}")
+					os.system(f"xrandr -s {settingsData.getValue('settings/display/width')}x{settingsData.getValue('settings/display/height')}")
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to set display resolution")
 			piScreenUtils.logging.debug(err)
