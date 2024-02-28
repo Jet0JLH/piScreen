@@ -162,9 +162,6 @@ def checkForRootPrivileges():
 		return False
 	return True
 
-def loadSettings():
-	return json.load(open(Paths.SETTINGS))
-
 def loadSchedule():
 	return json.load(open(Paths.SCHEDULE))
 
@@ -396,23 +393,6 @@ def rmDir(path):
 		for name in dirs:
 			os.rmdir(os.path.join(root, name))
 	os.rmdir(path)
-
-def getDisplayProtocol():
-	settingsJson = loadSettings()
-	print(settingsJson["settings"]["display"]["protocol"])
-
-def getDisplayOrientation():
-	import subprocess
-	orientation = subprocess.check_output("DISPLAY=:0 xrandr --query --verbose | grep HDMI-1 | cut -d ' ' -f 6",shell=True).decode("utf-8").replace("\n","")
-	if orientation == "normal":
-		return 0
-	elif orientation == "right":
-		return 1
-	elif orientation == "inverted":
-		return 2
-	elif orientation == "left":
-		return 3
-	return None
 
 def modifySchedule(element,typ,scheduleJson,elementName:str=""):
 	if elementName == "": elementName = element
@@ -936,7 +916,9 @@ for i, origItem in enumerate(sys.argv):
 			piScreenUtils.logging.warning("Not enough arguments")
 			verbose and print("Not enough arguments")
 	elif item == "--get-display-protocol":
-		getDisplayProtocol()
+		returnValue = sendToCore({"cmd":14,"parameter":{"displayprotocol":1}})
+		if returnValue and returnValue["code"] == 0: print(returnValue["displayprotocol"])
+		else: piScreenUtils.logging.error("Unable to get display protocol")
 	elif item == "--set-display-orientation":
 		saveSettings = True
 		orientation = None
@@ -955,15 +937,13 @@ for i, origItem in enumerate(sys.argv):
 			verbose and print("Not enough arguments")
 	elif item == "--get-display-orientation":
 		if "--settings" in sys.argv:
-			settingsJson = loadSettings()
-			try:
-				print(settingsJson["settings"]["display"]["orientation"])
-			except Exception as err:
-				piScreenUtils.logging.error("Can not read displayorientation from settings")
-				piScreenUtils.logging.debug(err)
-				print(0)
+			returnValue = sendToCore({"cmd":14,"parameter":{"displayorientationsettings":1}})
+			if returnValue and returnValue["code"] == 0: print(returnValue["displayorientationsettings"])
+			else: piScreenUtils.logging.error("Unable to get display orientation")
 		else:
-			print(getDisplayOrientation())
+			returnValue = sendToCore({"cmd":14,"parameter":{"displayorientation":1}})
+			if returnValue and returnValue["code"] == 0: print(returnValue["displayorientation"])
+			else: piScreenUtils.logging.error("Unable to get display orientation")
 	elif item == "--set-display-forcemode":
 		if i + 1 < len(sys.argv):
 			if sys.argv[i + 1].lower() == "true": sendToCore({"cmd":12,"parameter":True})

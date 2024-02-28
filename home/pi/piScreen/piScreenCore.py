@@ -1217,6 +1217,34 @@ def socketCmdInterpreter(data:dict) -> dict:
 			return {"code":2} #Package format is wrong
 		settingsData.setValue("settings/language", data["parameter"])
 		return returnValue
+	elif cmd == 14: #GetInfos
+		if "parameter" not in data:
+			piScreenUtils.logging.error("Recived data has no needed parameter field in it")
+			return {"code":2} #Package format is wrong
+		if "displayprotocol" in data["parameter"]:
+			returnValue["displayprotocol"] = settingsData.getValue("settings/display/protocol")
+		elif "displayresolutionsettings" in data["parameter"]:
+			returnValue["displayresolutionsettings"] = {}
+			returnValue["displayresolutionsettings"]["width"] = settingsData.getValue("settings/display/width")
+			returnValue["displayresolutionsettings"]["height"] = settingsData.getValue("settings/display/height")
+		elif "displayresolution" in data["parameter"]:
+			returnValue["displayresolution"] = {}
+			if status["resolution"] != None:
+				try:
+					resolutions = status["resolution"].split(" x ")
+					returnValue["displayresolution"]["width"] = resolutions[0]
+					returnValue["displayresolution"]["height"] = resolutions[1]
+				except:
+					piScreenUtils.logging.error("Unable to send current resolution")
+		elif "displayorientation" in data["parameter"]:
+			returnValue["displayorientation"] = getDisplayOrientation()
+		elif "displayorientationsettings" in data["parameter"]:
+			returnValue["displayorientationsettings"] = settingsData.getValue("settings/display/orientation")
+		elif "displayforcemode" in data["parameter"]:
+			returnValue["displayforcemode"] = settingsData.getValue("settings/display/force")
+		elif "language" in data["parameter"]:
+			returnValue["language"] = settingsData.getValue("settings/language")
+		return returnValue
 	else:
 		piScreenUtils.logging.warning("Recived cmd is unknown")
 		returnValue["code"] = 1
