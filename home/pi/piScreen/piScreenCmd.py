@@ -65,12 +65,14 @@ So you have one script, which controlls everything and get every info about.
 --set-display-input
 	Tells the display to change the input to our system, if it is not currently displayed.
 	Currently only available on cec.
---set-display-resolution [<width> <height>]
-	Set the display resolution to a fixed value
-	To reset the resolution to automatic, use no parameters
 --get-display-resolution [--settings]
 	Returns the current display resolution.
 	With the parameter --settings it will return the settings value.
+--set-display-resolution [<width> <height>]
+	Set the display resolution to a fixed value
+	To reset the resolution to automatic, use no parameters
+--get-display-forcemode
+	Returns the value of the display forcemode as True or False.
 --set-display-forcemode <true/false>
 	Enables or disables the display forcemode.
 	If eanbled, piScreen will try to keep the display in the last setted state.
@@ -947,6 +949,10 @@ for i, origItem in enumerate(sys.argv):
 			returnValue = sendToCore({"cmd":14,"parameter":{"displayorientation":1}})
 			if returnValue and returnValue["code"] == 0: print(returnValue["displayorientation"])
 			else: piScreenUtils.logging.error("Unable to get display orientation")
+	elif item == "--get-display-forcemode":
+		returnValue = sendToCore({"cmd":14,"parameter":{"displayforcemode":1}})
+		if returnValue and returnValue["code"] == 0: print(returnValue["displayforcemode"])
+		else: piScreenUtils.logging.error("Unable to get display forcemode")
 	elif item == "--set-display-forcemode":
 		if i + 1 < len(sys.argv):
 			if sys.argv[i + 1].lower() == "true": sendToCore({"cmd":12,"parameter":True})
