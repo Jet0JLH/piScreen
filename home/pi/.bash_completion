@@ -100,6 +100,7 @@ piScreenCmd() {
 		--help
 		--get-status
 		--set-language
+		--get-language
 		--set-password
 		--check-update
 		--do-upgrade

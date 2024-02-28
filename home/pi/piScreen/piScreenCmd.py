@@ -17,6 +17,8 @@ So you have one script, which controlls everything and get every info about.
 	Shows detailed informations during execution.
 --get-status
 	Returns a JSON String with statusinfos.
+--get-language
+	Returns the contryCode for the website language
 --set-language <countryCode>
 	Changes website language.
 --set-password <user> [-f <file with password>] [password]
@@ -1147,6 +1149,10 @@ for i, origItem in enumerate(sys.argv):
 			sendToCore({"cmd":13,"parameter":sys.argv[i + 1]})
 		else:
 			piScreenUtils.logging.warning("Not enough arguments")
+	elif item == "--get-language":
+		returnValue = sendToCore({"cmd":14,"parameter":{"language":1}})
+		if returnValue and returnValue["code"] == 0: print(returnValue["language"])
+		else: piScreenUtils.logging.error("Unable to get language")
 	elif item == "--set-cron-ignore-timespan":
 		index = sys.argv.index("--set-cron-ignore-timespan") + 1
 		tmp = ""
