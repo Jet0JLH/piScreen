@@ -68,6 +68,9 @@ So you have one script, which controlls everything and get every info about.
 --set-display-resolution [<width> <height>]
 	Set the display resolution to a fixed value
 	To reset the resolution to automatic, use no parameters
+--get-display-resolution [--settings]
+	Returns the current display resolution.
+	With the parameter --settings it will return the settings value.
 --set-display-forcemode <true/false>
 	Enables or disables the display forcemode.
 	If eanbled, piScreen will try to keep the display in the last setted state.
@@ -1203,3 +1206,12 @@ for i, origItem in enumerate(sys.argv):
 		else:
 			verbose and print("Not enough arguments")
 			piScreenUtils.logging.warning("Not enough arguments")
+	elif item == "--get-display-resolution":
+		if "--settings" in sys.argv:
+			returnValue = sendToCore({"cmd":14,"parameter":{"displayresolutionsettings":1}})
+			if returnValue and returnValue["code"] == 0: print(returnValue["displayresolutionsettings"])
+			else: piScreenUtils.logging.error("Unable to get display resolution")
+		else:
+			returnValue = sendToCore({"cmd":14,"parameter":{"displayresolution":1}})
+			if returnValue and returnValue["code"] == 0: print(returnValue["displayresolution"])
+			else: piScreenUtils.logging.error("Unable to get current display resolution")

@@ -43,6 +43,9 @@ piScreenCmd() {
 		--set-display-forcemode)
 			COMPREPLY=($(compgen -W "true false" -- "${COMP_WORDS[COMP_CWORD]}"))
 			;;
+		--get-display-resolution)
+			COMPREPLY=($(compgen -W "--settings" -- "${COMP_WORDS[COMP_CWORD]}"))
+			;;
 		--start-vlc)
 			COMPREPLY=( $(compgen -W "$(for f in ${COMP_WORDS[COMP_CWORD]}*; do [[ -e "$f" ]] && echo $f; done)" -- ${COMP_WORDS[COMP_CWORD]}) )
 			;;
