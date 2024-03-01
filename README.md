@@ -1,0 +1,2 @@
+This branch will be the new developed version of piScreen. It will not be backwards compatible and will be adapted to Wayland.
+It is planned that this branch will initially only appear headless without a control website.
