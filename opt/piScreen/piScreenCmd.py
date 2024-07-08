@@ -80,8 +80,10 @@ if __name__ == "__main__":
 				print(sendToCore({"cmd": 3}))
 			exit()
 		elif(item == "--set-settings"):
-			if i + 2 < len(sys.argv): #Load single value
+			if i + 2 < len(sys.argv):
 				print(sendToCore({"cmd": 4, "path": sys.argv[i + 1], "value": sys.argv[i + 2]}))
+			elif i + 1 < len(sys.argv):
+				print(sendToCore({"cmd": 4, "path": sys.argv[i + 1]}))
 			else:
 				print("Missing parameter")
 			exit()

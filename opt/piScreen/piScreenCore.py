@@ -53,7 +53,8 @@ class JsonData:
 			return None
 	
 	def setValue(self, keyPath:str, value, orig:bool=False):
-		if self.getValue(keyPath,orig) == value: piScreenUtils.logging.debug(f"Value {value} for key {keyPath} is already set") ; return
+		oldValue = self.getValue(keyPath,orig)
+		if oldValue == value: piScreenUtils.logging.debug(f"Value {value} for key {keyPath} is already set") ; return
 		keys = keyPath.split('/')
 		if orig: currentDict = self.origFile
 		else: currentDict = self.file
@@ -64,6 +65,14 @@ class JsonData:
 		if value is None:
 			currentDict.pop(keys[-1], None)
 		else:
+			try: #Try to convert value to old datatype
+				if type(oldValue) == int: value = int(value)
+				if type(oldValue) == float: value = float(value)
+				if type(oldValue) == bool:
+					if value.lower() == "true": value = True
+					elif value.lower() == "false": value = False
+			except:
+				piScreenUtils.logging.info(f"Changed setting seems to change datatype from {type(oldValue)} to String")
 			currentDict[keys[-1]] = value
 		self.whenChanged = datetime.datetime.now()
 		if self.autosave: self.saveFile()
@@ -130,6 +139,8 @@ class socketHandler(threading.Thread):
 				elif data["cmd"] == 4: #Set Settings
 					if {"path", "value"} <= data.keys():
 						settings.setValue(data["path"], data["value"])
+					elif {"path"} <= data.keys():
+						settings.setValue(data["path"], None)
 					else:
 						returnValue["code"] = 2
 
