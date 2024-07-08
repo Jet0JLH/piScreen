@@ -52,7 +52,7 @@ class JsonData:
 		except KeyError:
 			return None
 	
-	def setValue(self, keyPath:str, value, orig:bool=False):
+	def setValue(self, keyPath:str, value, convert:bool=True, orig:bool=False):
 		oldValue = self.getValue(keyPath,orig)
 		if oldValue == value: piScreenUtils.logging.debug(f"Value {value} for key {keyPath} is already set") ; return
 		keys = keyPath.split('/')
@@ -66,11 +66,12 @@ class JsonData:
 			currentDict.pop(keys[-1], None)
 		else:
 			try: #Try to convert value to old datatype
-				if type(oldValue) == int: value = int(value)
-				if type(oldValue) == float: value = float(value)
-				if type(oldValue) == bool:
-					if value.lower() == "true": value = True
-					elif value.lower() == "false": value = False
+				if convert:
+					if type(oldValue) == int: value = int(value)
+					if type(oldValue) == float: value = float(value)
+					if type(oldValue) == bool:
+						if value.lower() == "true": value = True
+						elif value.lower() == "false": value = False
 			except:
 				piScreenUtils.logging.info(f"Changed setting seems to change datatype from {type(oldValue)} to String")
 			currentDict[keys[-1]] = value
@@ -131,13 +132,27 @@ class socketHandler(threading.Thread):
 					global active
 					active = False
 				elif data["cmd"] == 2: pass #Get-Core-Status
-				elif data["cmd"] == 3: #Get Settings
+				elif data["cmd"] == 3: #Get Setting
 					if "path" in data:
 						returnValue.update({"value": settings.getValue(data["path"])})
 					else:
 						returnValue.update(settings.file)
-				elif data["cmd"] == 4: #Set Settings
-					if {"path", "value"} <= data.keys():
+				elif data["cmd"] == 4: #Set Setting
+					if {"path", "value", "type"} <= data.keys():
+						try:
+							if data["type"].lower() == "int": data["value"] = int(data["value"])
+							elif data["type"].lower() == "float": data["value"] = float(data["value"])
+							elif data["type"].lower() == "str": data["value"] = str(data["value"])
+							elif data["type"].lower() == "json": data["value"] = json.loads(data["value"])
+							elif data["type"].lower() == "bool":
+								if data["value"].lower() == "true": data["value"] = True
+								elif data["value"].lower() == "false": data["value"] = False
+								else: returnValue["code"] = 4
+							else: returnValue["code"] = 3
+						except:
+							returnValue["code"] = 5
+						if returnValue["code"] == 0: settings.setValue(data["path"], data["value"], convert=False)
+					elif {"path", "value"} <= data.keys():
 						settings.setValue(data["path"], data["value"])
 					elif {"path"} <= data.keys():
 						settings.setValue(data["path"], None)

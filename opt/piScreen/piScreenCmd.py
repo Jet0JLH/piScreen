@@ -17,8 +17,12 @@ def printHelp():
 	Sends to core the command to halt the piScreenCore service
 
 === Settings ===
---get-settings [setting/value]
+--get-setting [setting/path]
 	Get all settings or an explicit value
+
+--set-setting <setting/path> <value> [type]
+	Set value of setting. If a type is declared, the settings will be cast in this type.
+	Allowed types are int, float, bool, str and json
 
 """)
 
@@ -73,14 +77,17 @@ if __name__ == "__main__":
 		elif (item == "--get-core-status"):
 			evaluateResult(sendToCore({"cmd": 2}), [{"code": 0, "result": "Core is reachable"}], True)
 			exit()
-		elif(item == "--get-settings"):
+		elif(item == "--get-setting"):
 			if i + 1 < len(sys.argv): #Load single value
 				print(sendToCore({"cmd": 3, "path": sys.argv[i + 1]}))
 			else:
 				print(sendToCore({"cmd": 3}))
 			exit()
-		elif(item == "--set-settings"):
-			if i + 2 < len(sys.argv):
+		elif(item == "--set-setting"):
+			if i + 3 < len(sys.argv):
+				if sys.argv[i + 3].lower() in {"int", "float", "bool", "str", "json"}: print(sendToCore({"cmd": 4, "path": sys.argv[i + 1], "value": sys.argv[i + 2], "type": sys.argv[i + 3]}))
+				else: print(f"{sys.argv[i + 3]} is no valid var type")
+			elif i + 2 < len(sys.argv):
 				print(sendToCore({"cmd": 4, "path": sys.argv[i + 1], "value": sys.argv[i + 2]}))
 			elif i + 1 < len(sys.argv):
 				print(sendToCore({"cmd": 4, "path": sys.argv[i + 1]}))
