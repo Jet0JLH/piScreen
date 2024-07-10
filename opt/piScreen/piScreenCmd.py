@@ -44,22 +44,25 @@ def sendToCore(data) -> dict:
 		piScreenUtils.logging.debug(f"Socket error: {e}")
 	return returnValue
 
-def evaluateResult(data:dict, results:dict, verbose:bool=False):
+def evaluateResult(data:dict, results:dict, verbose:bool=False) -> dict:
 	#Expect results like [{"code": 0, result: "Success", "log": 0}, {"code": 1, result: "Error", "log": 3}]
-	if "code" not in data: piScreenUtils.logging.error("There is no code in recieved data") ; return
+	#log=0 (no log), log=1 (debug), log=2 (info), log=3 (warning), log=4 (error)
+	if "code" not in data: piScreenUtils.logging.error("There is no code in recieved data") ; return data
 	if data["code"] == -1:
 		verbose and print("Core dosen't respond")
-		piScreenUtils.logging.error("Core dosen't respond") ; return
+		piScreenUtils.logging.error("Core dosen't respond") ; return data
 	for result in results:
 		if result["code"] == data["code"]:
 			verbose and print(result["result"])
 			if "log" in result:
 				if result["log"] == 1: piScreenUtils.logging.debug(result["result"])
-				elif result["log"] == 2: piScreenUtils.logging.warning(result["result"])
-				elif result["log"] == 1: piScreenUtils.logging.error(result["result"])
-			return
+				elif result["log"] == 2: piScreenUtils.logging.info(result["result"])
+				elif result["log"] == 3: piScreenUtils.logging.warning(result["result"])
+				elif result["log"] == 4: piScreenUtils.logging.error(result["result"])
+			return data
 	verbose and print("Unknown result")
 	piScreenUtils.logging.debug("Unknown result")
+	return data
 
 
 if __name__ == "__main__":
@@ -85,12 +88,12 @@ if __name__ == "__main__":
 			exit()
 		elif(item == "--set-setting"):
 			if i + 3 < len(sys.argv):
-				if sys.argv[i + 3].lower() in {"int", "float", "bool", "str", "json"}: print(sendToCore({"cmd": 4, "path": sys.argv[i + 1], "value": sys.argv[i + 2], "type": sys.argv[i + 3]}))
+				if sys.argv[i + 3].lower() in {"int", "float", "bool", "str", "json"}: evaluateResult(sendToCore({"cmd": 4, "path": sys.argv[i + 1], "value": sys.argv[i + 2], "type": sys.argv[i + 3]}), [{"code": 0, "result": "Change setting successfully"}, {"code": 2, "result": "Missing parameter"}, {"code": 3, "result": "Unknown datatype", "log": 4}, {"code": 4, "result": "Datatype is not bool", "log": 3}, {"code": 5, "result": "Unable to convert datatype", "log": 3}], verbose=True)
 				else: print(f"{sys.argv[i + 3]} is no valid var type")
 			elif i + 2 < len(sys.argv):
-				print(sendToCore({"cmd": 4, "path": sys.argv[i + 1], "value": sys.argv[i + 2]}))
+				evaluateResult(sendToCore({"cmd": 4, "path": sys.argv[i + 1], "value": sys.argv[i + 2]}), [{"code": 0, "result": "Change setting successfully"}, {"code": 2, "result": "Missing parameter"}, {"code": 3, "result": "Unknown datatype", "log": 4}, {"code": 4, "result": "Datatype is not bool", "log": 3}, {"code": 5, "result": "Unable to convert datatype", "log": 3}], verbose=True)
 			elif i + 1 < len(sys.argv):
-				print(sendToCore({"cmd": 4, "path": sys.argv[i + 1]}))
+				evaluateResult(sendToCore({"cmd": 4, "path": sys.argv[i + 1]}), [{"code": 0, "result": "Change setting successfully"}, {"code": 2, "result": "Missing parameter"}, {"code": 3, "result": "Unknown datatype", "log": 4}, {"code": 4, "result": "Datatype is not bool", "log": 3}, {"code": 5, "result": "Unable to convert datatype", "log": 3}], verbose=True)
 			else:
 				print("Missing parameter")
 			exit()
