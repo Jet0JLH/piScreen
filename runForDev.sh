@@ -14,3 +14,8 @@ ln -s "$parent_path/opt/piScreen/" /opt/piScreen
 
 #Set rights
 setfacl -Rm d:u:pi:rwx /opt/piScreen
+
+#Configure Python virtual Environment
+python -m venv "$parent_path/opt/piScreen"
+source "$parent_path/opt/piScreen/bin/activate"
+pip install -r "$parent_path/opt/piScreen/requirements.txt"
