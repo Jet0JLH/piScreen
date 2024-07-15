@@ -102,6 +102,8 @@ class displayHandler(threading.Thread):
 			try:
 				self.getInfos("HDMI-A-1")
 				self.getInfos("HDMI-A-2")
+				self.checkOrientation("HDMI-A-1")
+				self.checkOrientation("HDMI-A-2")
 			except Exception as err:
 				piScreenUtils.logging.error("Error in display handler")
 				piScreenUtils.logging.debug(err)
@@ -133,6 +135,24 @@ class displayHandler(threading.Thread):
 		if foundRes == False: self.info.setValue(f"{output}/currentResolution", None)
 		if foundOrientation == False: self.info.setValue(f"{output}/orientation", None)
 
+	def checkOrientation(self, output:str):
+		wantedOrientation = settings.getValue(f"display/{output}/orientation")
+		currentOrientation = self.info.getValue(f"{output}/orientation")
+		if wantedOrientation != currentOrientation:
+			piScreenUtils.logging.debug(f"Wanted display orientation differs to current orientation. Change orientation from {currentOrientation} to {wantedOrientation}")
+			self.setOrientation(output, wantedOrientation)
+	
+	def setOrientation(self, output:str, wantedOrientation:int):
+		piScreenUtils.logging.debug(f"Change display orientation to {wantedOrientation}")
+		orientation = "normal"
+		if wantedOrientation == 1: orientation = "90"
+		elif wantedOrientation == 2: orientation = "180"
+		elif wantedOrientation == 3: orientation = "270"
+		elif wantedOrientation == 4: orientation = "flipped"
+		elif wantedOrientation == 5: orientation = "flipped-90"
+		elif wantedOrientation == 6: orientation = "flipped-180"
+		elif wantedOrientation == 7: orientation = "flipped-270"
+		return subprocess.run(["wlr-randr", "--output", output, "--transform", orientation])
 
 ############################
 ### Socket communication ###
@@ -217,16 +237,8 @@ class socketHandler(threading.Thread):
 							if data["orientation"] not in [0, 1 , 2, 3, 4, 5, 6, 7]: returnValue["code"] = 7
 							else:
 								output = "HDMI-A-1"
-								orientation = "normal"
-								if data["orientation"] == 1: orientation = "90"
-								elif data["orientation"] == 2: orientation = "180"
-								elif data["orientation"] == 3: orientation = "270"
-								elif data["orientation"] == 4: orientation = "flipped"
-								elif data["orientation"] == 5: orientation = "flipped-90"
-								elif data["orientation"] == 6: orientation = "flipped-180"
-								elif data["orientation"] == 7: orientation = "flipped-270"
 								if "output" in data: output = data["output"]
-								result = subprocess.run(["wlr-randr", "--output", output, "--transform", orientation])
+								result = dH.setOrientation(output, data["orientation"])
 								if result.returncode == 0:
 									settings.setValue(f"display/{output}/orientation", data["orientation"])
 								else:
