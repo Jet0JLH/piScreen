@@ -97,5 +97,8 @@ if __name__ == "__main__":
 			else:
 				print("Missing parameter")
 			exit()
+		elif(item == "--get-display-resolution"):
+			print(sendToCore({"cmd": 5}))
+			exit()
 	
 	printHelp()

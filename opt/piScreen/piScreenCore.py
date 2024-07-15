@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import piScreenUtils
-import os, copy, json, datetime, threading, time, socket
+import os, subprocess, copy, json, datetime, threading, time, socket
 
 ###############
 ### Classes ###
@@ -86,6 +86,43 @@ class JsonData:
 ### General functions ###
 #########################
 
+#########################
+### Display functions ###
+#########################
+
+class displayHandler(threading.Thread):
+	info = {"currentResolution": [{"x": 0, "y": 0}, {"x": 0, "y": 0}]}
+	actions = []
+
+	def __init__(self):
+		threading.Thread.__init__(self)
+		
+	def run(self):
+		while active:
+			try:
+				result = subprocess.run(["wlr-randr", "--output", "HDMI-A-1"], capture_output=True, text=True).stdout.splitlines()
+				found = False
+				for line in result:
+					if "current" in line:
+						splited = line.split()[0].split("x")
+						self.info["currentResolution"][0]["x"] = splited[0]
+						self.info["currentResolution"][0]["y"] = splited[1]
+						found = True
+				if found == False: self.info["currentResolution"][0]["x"] = 0 ; self.info["currentResolution"][0]["y"] = 0
+				result = subprocess.run(["wlr-randr", "--output", "HDMI-A-2"], capture_output=True, text=True).stdout.splitlines()
+				found = False
+				for line in result:
+					if "current" in line:
+						splited = line.split()[0].split("x")
+						self.info["currentResolution"][1]["x"] = splited[0]
+						self.info["currentResolution"][1]["y"] = splited[1]
+						found = True
+				if found == False: self.info["currentResolution"][1]["x"] = 0 ; self.info["currentResolution"][1]["y"] = 0
+			except Exception as err:
+				piScreenUtils.logging.error("Error in display handler")
+				piScreenUtils.logging.debug(err)
+			
+			time.sleep(2)
 
 ############################
 ### Socket communication ###
@@ -158,6 +195,8 @@ class socketHandler(threading.Thread):
 						settings.setValue(data["path"], None)
 					else:
 						returnValue["code"] = 2
+				elif data["cmd"] == 5: #Get-display-resolution
+					returnValue["currentResolution"] = dH.info["currentResolution"]
 
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to convert recieved command to json")
@@ -177,6 +216,7 @@ class socketHandler(threading.Thread):
 ###################
 
 active = True
+os.environ["WAYLAND_DISPLAY"] = "wayland-1"
 
 
 ############
@@ -187,6 +227,10 @@ if __name__ == "__main__":
 	piScreenUtils.logging.info("Startup core")
 	piScreenUtils.logging.debug("Loading settings")
 	settings = JsonData(piScreenUtils.Paths.SETTINGS, True)
+
+	piScreenUtils.logging.info("Start display handler")
+	dH = displayHandler()
+	dH.start()
 
 	piScreenUtils.logging.info("Start communcation socket")
 	sH = socketHandler()
