@@ -39,7 +39,7 @@ class JsonData:
 		self.autosave = autosave
 		self.whenChanged = datetime.datetime.strptime("1900-01-01 00:00", piScreenUtils.Constants.DATE_FORMATE)
 		self.whenSaved = datetime.datetime.strptime("1900-01-01 00:00",piScreenUtils.Constants.DATE_FORMATE)
-		self.loadFile()
+		if path != "": self.loadFile()
 
 	def getValue(self, keyPath:str, orig:bool=False):
 		keys = keyPath.split('/')
@@ -91,7 +91,7 @@ class JsonData:
 #########################
 
 class displayHandler(threading.Thread):
-	info = {"currentResolution": [{"x": 0, "y": 0}, {"x": 0, "y": 0}]}
+	info = JsonData("", False)
 	actions = []
 
 	def __init__(self):
@@ -105,19 +105,19 @@ class displayHandler(threading.Thread):
 				for line in result:
 					if "current" in line:
 						splited = line.split()[0].split("x")
-						self.info["currentResolution"][0]["x"] = splited[0]
-						self.info["currentResolution"][0]["y"] = splited[1]
+						self.info.setValue("0/currentResolution/x", splited[0], True)
+						self.info.setValue("0/currentResolution/y", splited[1], True)
 						found = True
-				if found == False: self.info["currentResolution"][0]["x"] = 0 ; self.info["currentResolution"][0]["y"] = 0
+				if found == False: self.info.setValue("0", None)
 				result = subprocess.run(["wlr-randr", "--output", "HDMI-A-2"], capture_output=True, text=True).stdout.splitlines()
 				found = False
 				for line in result:
 					if "current" in line:
 						splited = line.split()[0].split("x")
-						self.info["currentResolution"][1]["x"] = splited[0]
-						self.info["currentResolution"][1]["y"] = splited[1]
+						self.info.setValue("1/currentResolution/x", splited[0], True)
+						self.info.setValue("1/currentResolution/y", splited[1], True)
 						found = True
-				if found == False: self.info["currentResolution"][1]["x"] = 0 ; self.info["currentResolution"][1]["y"] = 0
+				if found == False: self.info.setValue("1", None)
 			except Exception as err:
 				piScreenUtils.logging.error("Error in display handler")
 				piScreenUtils.logging.debug(err)
@@ -196,7 +196,7 @@ class socketHandler(threading.Thread):
 					else:
 						returnValue["code"] = 2
 				elif data["cmd"] == 5: #Get-display-resolution
-					returnValue["currentResolution"] = dH.info["currentResolution"]
+					returnValue["currentResolution"] = [dH.info.getValue("0/currentResolution"), dH.info.getValue("1/currentResolution")]
 
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to convert recieved command to json")
