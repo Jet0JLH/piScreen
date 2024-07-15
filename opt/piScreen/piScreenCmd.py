@@ -16,6 +16,13 @@ def printHelp():
 --stop-core
 	Sends to core the command to halt the piScreenCore service
 
+=== Display ===
+--get-display-resolution
+	Return the current display resolution of output 1 and 2
+
+--get-display-orientation
+	Return the current display orientation of output 1 and 2
+
 === Settings ===
 --get-setting [setting/path]
 	Get all settings or an explicit value
@@ -99,6 +106,9 @@ if __name__ == "__main__":
 			exit()
 		elif(item == "--get-display-resolution"):
 			print(sendToCore({"cmd": 5}))
+			exit()
+		elif(item == "--get-display-orientation"):
+			print(sendToCore({"cmd": 7}))
 			exit()
 	
 	printHelp()

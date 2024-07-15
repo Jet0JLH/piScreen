@@ -100,29 +100,33 @@ class displayHandler(threading.Thread):
 	def run(self):
 		while active:
 			try:
-				result = subprocess.run(["wlr-randr", "--output", "HDMI-A-1"], capture_output=True, text=True).stdout.splitlines()
-				found = False
-				for line in result:
-					if "current" in line:
-						splited = line.split()[0].split("x")
-						self.info.setValue("0/currentResolution/x", splited[0], True)
-						self.info.setValue("0/currentResolution/y", splited[1], True)
-						found = True
-				if found == False: self.info.setValue("0", None)
-				result = subprocess.run(["wlr-randr", "--output", "HDMI-A-2"], capture_output=True, text=True).stdout.splitlines()
-				found = False
-				for line in result:
-					if "current" in line:
-						splited = line.split()[0].split("x")
-						self.info.setValue("1/currentResolution/x", splited[0], True)
-						self.info.setValue("1/currentResolution/y", splited[1], True)
-						found = True
-				if found == False: self.info.setValue("1", None)
+				self.getInfos("HDMI-A-1")
+				self.getInfos("HDMI-A-2")
 			except Exception as err:
 				piScreenUtils.logging.error("Error in display handler")
 				piScreenUtils.logging.debug(err)
 			
 			time.sleep(2)
+	
+	def getInfos(self, output:str):
+		result = subprocess.run(["wlr-randr", "--output", output], capture_output=True, text=True).stdout.splitlines()
+		if len(result) == 0: self.info.setValue(output, None) ; return
+		for line in result:
+			if "current" in line:
+				splited = line.split()[0].split("x")
+				self.info.setValue(f"{output}/currentResolution/x", splited[0], True)
+				self.info.setValue(f"{output}/currentResolution/y", splited[1], True)
+			elif "Transform:" in line:
+				orientation = line.split()[1]
+				if orientation == "normal": self.info.setValue(f"{output}/orientation", 0, True)
+				elif orientation == "90": self.info.setValue(f"{output}/orientation", 1, True)
+				elif orientation == "180": self.info.setValue(f"{output}/orientation", 2, True)
+				elif orientation == "270": self.info.setValue(f"{output}/orientation", 3, True)
+				elif orientation == "flipped": self.info.setValue(f"{output}/orientation", 4, True)
+				elif orientation == "flipped-90": self.info.setValue(f"{output}/orientation", 5, True)
+				elif orientation == "flipped-180": self.info.setValue(f"{output}/orientation", 6, True)
+				elif orientation == "flipped-270": self.info.setValue(f"{output}/orientation", 7, True)
+
 
 ############################
 ### Socket communication ###
@@ -196,7 +200,9 @@ class socketHandler(threading.Thread):
 					else:
 						returnValue["code"] = 2
 				elif data["cmd"] == 5: #Get-display-resolution
-					returnValue["currentResolution"] = [dH.info.getValue("0/currentResolution"), dH.info.getValue("1/currentResolution")]
+					returnValue["currentResolution"] = [dH.info.getValue("HDMI-A-1/currentResolution"), dH.info.getValue("HDMI-A-2/currentResolution")]
+				elif data["cmd"] == 7: #Get-display-orientation
+					returnValue["orientation"] = [dH.info.getValue("HDMI-A-1/orientation"), dH.info.getValue("HDMI-A-2/orientation")]
 
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to convert recieved command to json")
