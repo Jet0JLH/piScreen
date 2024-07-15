@@ -111,11 +111,14 @@ class displayHandler(threading.Thread):
 	def getInfos(self, output:str):
 		result = subprocess.run(["wlr-randr", "--output", output], capture_output=True, text=True).stdout.splitlines()
 		if len(result) == 0: self.info.setValue(output, None) ; return
+		foundRes = False
+		foundOrientation = False
 		for line in result:
 			if "current" in line:
 				splited = line.split()[0].split("x")
 				self.info.setValue(f"{output}/currentResolution/x", splited[0], True)
 				self.info.setValue(f"{output}/currentResolution/y", splited[1], True)
+				foundRes = True
 			elif "Transform:" in line:
 				orientation = line.split()[1]
 				if orientation == "normal": self.info.setValue(f"{output}/orientation", 0, True)
@@ -126,6 +129,9 @@ class displayHandler(threading.Thread):
 				elif orientation == "flipped-90": self.info.setValue(f"{output}/orientation", 5, True)
 				elif orientation == "flipped-180": self.info.setValue(f"{output}/orientation", 6, True)
 				elif orientation == "flipped-270": self.info.setValue(f"{output}/orientation", 7, True)
+				foundOrientation = True
+		if foundRes == False: self.info.setValue(f"{output}/currentResolution", None)
+		if foundOrientation == False: self.info.setValue(f"{output}/orientation", None)
 
 
 ############################
@@ -203,6 +209,28 @@ class socketHandler(threading.Thread):
 					returnValue["currentResolution"] = [dH.info.getValue("HDMI-A-1/currentResolution"), dH.info.getValue("HDMI-A-2/currentResolution")]
 				elif data["cmd"] == 7: #Get-display-orientation
 					returnValue["orientation"] = [dH.info.getValue("HDMI-A-1/orientation"), dH.info.getValue("HDMI-A-2/orientation")]
+				elif data["cmd"] == 8: #Set-display-orientation
+					if "orientation" not in data: returnValue["code"] = 2
+					else:
+						if piScreenUtils.isInt(data["orientation"]) == False: returnValue["code"] = 6
+						else:
+							if data["orientation"] not in [0, 1 , 2, 3, 4, 5, 6, 7]: returnValue["code"] = 7
+							else:
+								output = "HDMI-A-1"
+								orientation = "normal"
+								if data["orientation"] == 1: orientation = "90"
+								elif data["orientation"] == 2: orientation = "180"
+								elif data["orientation"] == 3: orientation = "270"
+								elif data["orientation"] == 4: orientation = "flipped"
+								elif data["orientation"] == 5: orientation = "flipped-90"
+								elif data["orientation"] == 6: orientation = "flipped-180"
+								elif data["orientation"] == 7: orientation = "flipped-270"
+								if "output" in data: output = data["output"]
+								result = subprocess.run(["wlr-randr", "--output", output, "--transform", orientation])
+								if result.returncode == 0:
+									settings.setValue(f"display/{output}/orientation", data["orientation"])
+								else:
+									returnValue["code"] = 1
 
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to convert recieved command to json")

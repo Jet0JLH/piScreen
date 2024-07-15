@@ -23,6 +23,10 @@ def printHelp():
 --get-display-orientation
 	Return the current display orientation of output 1 and 2
 
+--set-display-orientation <orientation> [output]
+	Set the display orientation with the value 0 to 7
+	You can set the HDMI Output interface optional
+
 === Settings ===
 --get-setting [setting/path]
 	Get all settings or an explicit value
@@ -109,6 +113,20 @@ if __name__ == "__main__":
 			exit()
 		elif(item == "--get-display-orientation"):
 			print(sendToCore({"cmd": 7}))
+			exit()
+		elif(item == "--set-display-orientation"):
+			if i + 2 < len(sys.argv):
+				if piScreenUtils.isInt(sys.argv[i + 1]):
+					print(sendToCore({"cmd": 8, "orientation": int(sys.argv[i + 1]), "output": sys.argv[i + 2]}))
+				else:
+					print("Orientation is not an integer value")
+			elif i + 1 < len(sys.argv):
+				if piScreenUtils.isInt(sys.argv[i + 1]):
+					print(sendToCore({"cmd": 8, "orientation": int(sys.argv[i + 1])}))
+				else:
+					print("Orientation is not an integer value")
+			else:
+				print("Missing parameter")
 			exit()
 	
 	printHelp()
