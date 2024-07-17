@@ -104,12 +104,22 @@ class displayHandler(threading.Thread):
 				self.getInfos("HDMI-A-2")
 				self.checkOrientation("HDMI-A-1")
 				self.checkOrientation("HDMI-A-2")
+				self.checkActions()
 			except Exception as err:
 				piScreenUtils.logging.error("Error in display handler")
 				piScreenUtils.logging.debug(err)
 			
 			time.sleep(2)
 	
+	def checkActions(self):
+		if len(self.actions) == 0: return
+		action = self.actions.pop()
+		if action["cmd"] == 0: #On/Off
+			if action["data"]["value"] == 0:
+				subprocess.run(["wlr-randr", "--output", action["data"]["output"], "--off"])
+			elif action["data"]["value"] == 1:
+				subprocess.run(["wlr-randr", "--output", action["data"]["output"], "--on"])
+ 
 	def getInfos(self, output:str):
 		result = subprocess.run(["wlr-randr", "--output", output], capture_output=True, text=True).stdout.splitlines()
 		if len(result) == 0: self.info.setValue(output, None) ; return
@@ -251,6 +261,13 @@ class socketHandler(threading.Thread):
 									returnValue["code"] = 1
 				elif data["cmd"] == 9: #Get-display-status
 					returnValue["status"] = [dH.info.getValue("HDMI-A-1/status"), dH.info.getValue("HDMI-A-2/status")]
+				elif data["cmd"] == 10: #Set-display-status
+					if "value" in data:
+						if data["value"] in [0, 1]: 
+							if "output" in data: dH.actions.push({"cmd": 0, "data": {"value": data["value"], "output": data["output"]}})
+							else: dH.actions.insert(0, {"cmd": 0, "data": {"value": data["value"], "output": "HDMI-A-1"}})
+						else: returnValue["code"] = 7
+					else: returnValue["code"] = 2
 
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to convert recieved command to json")

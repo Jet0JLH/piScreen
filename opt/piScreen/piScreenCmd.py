@@ -32,6 +32,11 @@ def printHelp():
 	0 for off
 	1 for on
 
+--set-display-status <0/1> [output]
+	Set the display status. You can set the HDMI Output interface optional.
+	0 for off
+	1 for on
+
 === Settings ===
 --get-setting [setting/path]
 	Get all settings or an explicit value
@@ -135,6 +140,20 @@ if __name__ == "__main__":
 			exit()
 		elif item == "--get-display-status":
 			print(sendToCore({"cmd": 9}))
+			exit()
+		elif item == "--set-display-status":
+			if i + 2 < len(sys.argv):
+				if piScreenUtils.isInt(sys.argv[i + 1]):
+					print(sendToCore({"cmd": 10, "value": int(sys.argv[i + 1]), "output": sys.argv[i + 2]}))
+				else:
+					print("Status is not an integer value")
+			elif i + 1 < len(sys.argv):
+				if piScreenUtils.isInt(sys.argv[i + 1]):
+					print(sendToCore({"cmd": 10, "value": int(sys.argv[i + 1])}))
+				else:
+					print("Status is not an integer value")
+			else:
+				print("Missing parameter")
 			exit()
 	
 	printHelp()
