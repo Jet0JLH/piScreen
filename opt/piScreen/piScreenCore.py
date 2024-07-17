@@ -115,6 +115,7 @@ class displayHandler(threading.Thread):
 		if len(result) == 0: self.info.setValue(output, None) ; return
 		foundRes = False
 		foundOrientation = False
+		foundStatus = False
 		for line in result:
 			if "current" in line:
 				splited = line.split()[0].split("x")
@@ -132,13 +133,18 @@ class displayHandler(threading.Thread):
 				elif orientation == "flipped-180": self.info.setValue(f"{output}/orientation", 6, True)
 				elif orientation == "flipped-270": self.info.setValue(f"{output}/orientation", 7, True)
 				foundOrientation = True
+			elif "Enabled:" in line:
+				status = line.split()[1]
+				if status == "no": self.info.setValue(f"{output}/status", 0, True)
+				elif status == "yes": self.info.setValue(f"{output}/status", 1, True)
+				foundStatus = True
 		if foundRes == False: self.info.setValue(f"{output}/currentResolution", None)
 		if foundOrientation == False: self.info.setValue(f"{output}/orientation", None)
 
 	def checkOrientation(self, output:str):
 		wantedOrientation = settings.getValue(f"display/{output}/orientation")
 		currentOrientation = self.info.getValue(f"{output}/orientation")
-		if wantedOrientation != currentOrientation:
+		if currentOrientation != None and wantedOrientation != currentOrientation:
 			piScreenUtils.logging.debug(f"Wanted display orientation differs to current orientation. Change orientation from {currentOrientation} to {wantedOrientation}")
 			self.setOrientation(output, wantedOrientation)
 	
@@ -243,6 +249,8 @@ class socketHandler(threading.Thread):
 									settings.setValue(f"display/{output}/orientation", data["orientation"])
 								else:
 									returnValue["code"] = 1
+				elif data["cmd"] == 9: #Get-display-status
+					returnValue["status"] = [dH.info.getValue("HDMI-A-1/status"), dH.info.getValue("HDMI-A-2/status")]
 
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to convert recieved command to json")

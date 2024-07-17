@@ -27,6 +27,11 @@ def printHelp():
 	Set the display orientation with the value 0 to 7
 	You can set the HDMI Output interface optional
 
+--get-display-status
+	Return the current display status.
+	0 for off
+	1 for on
+
 === Settings ===
 --get-setting [setting/path]
 	Get all settings or an explicit value
@@ -85,19 +90,19 @@ if __name__ == "__main__":
 
 	for i, origItem in enumerate(sys.argv):
 		item = origItem.lower()
-		if (item == "--stop-core"): 
+		if item == "--stop-core": 
 			evaluateResult(sendToCore({"cmd": 1}), [{"code": 0, "result": "Core will be stoped", "log": 0}])
 			exit()
 		elif (item == "--get-core-status"):
 			evaluateResult(sendToCore({"cmd": 2}), [{"code": 0, "result": "Core is reachable"}], True)
 			exit()
-		elif(item == "--get-setting"):
+		elif item == "--get-setting":
 			if i + 1 < len(sys.argv): #Load single value
 				print(sendToCore({"cmd": 3, "path": sys.argv[i + 1]}))
 			else:
 				print(sendToCore({"cmd": 3}))
 			exit()
-		elif(item == "--set-setting"):
+		elif item == "--set-setting":
 			if i + 3 < len(sys.argv):
 				if sys.argv[i + 3].lower() in {"int", "float", "bool", "str", "json"}: evaluateResult(sendToCore({"cmd": 4, "path": sys.argv[i + 1], "value": sys.argv[i + 2], "type": sys.argv[i + 3]}), [{"code": 0, "result": "Change setting successfully"}, {"code": 2, "result": "Missing parameter"}, {"code": 3, "result": "Unknown datatype", "log": 4}, {"code": 4, "result": "Datatype is not bool", "log": 3}, {"code": 5, "result": "Unable to convert datatype", "log": 3}], verbose=True)
 				else: print(f"{sys.argv[i + 3]} is no valid var type")
@@ -108,13 +113,13 @@ if __name__ == "__main__":
 			else:
 				print("Missing parameter")
 			exit()
-		elif(item == "--get-display-resolution"):
+		elif item == "--get-display-resolution":
 			print(sendToCore({"cmd": 5}))
 			exit()
-		elif(item == "--get-display-orientation"):
+		elif item == "--get-display-orientation":
 			print(sendToCore({"cmd": 7}))
 			exit()
-		elif(item == "--set-display-orientation"):
+		elif item == "--set-display-orientation":
 			if i + 2 < len(sys.argv):
 				if piScreenUtils.isInt(sys.argv[i + 1]):
 					print(sendToCore({"cmd": 8, "orientation": int(sys.argv[i + 1]), "output": sys.argv[i + 2]}))
@@ -127,6 +132,9 @@ if __name__ == "__main__":
 					print("Orientation is not an integer value")
 			else:
 				print("Missing parameter")
+			exit()
+		elif item == "--get-display-status":
+			print(sendToCore({"cmd": 9}))
 			exit()
 	
 	printHelp()
