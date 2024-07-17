@@ -104,6 +104,8 @@ class displayHandler(threading.Thread):
 				self.getInfos("HDMI-A-2")
 				self.checkOrientation("HDMI-A-1")
 				self.checkOrientation("HDMI-A-2")
+				self.checkResolution("HDMI-A-1")
+				self.checkResolution("HDMI-A-2")
 				self.checkActions()
 			except Exception as err:
 				piScreenUtils.logging.error("Error in display handler")
@@ -123,14 +125,20 @@ class displayHandler(threading.Thread):
 	def getInfos(self, output:str):
 		result = subprocess.run(["wlr-randr", "--output", output], capture_output=True, text=True).stdout.splitlines()
 		if len(result) == 0: self.info.setValue(output, None) ; return
+		foundPreferred = True
 		foundRes = False
 		foundOrientation = False
 		foundStatus = False
 		for line in result:
+			if "preferred" in line:
+				splited = line.split()[0].split("x")
+				self.info.setValue(f"{output}/preferredResolution/width", splited[0], True)
+				self.info.setValue(f"{output}/preferredResolution/height", splited[1], True)
+				foundPreferred = True
 			if "current" in line:
 				splited = line.split()[0].split("x")
-				self.info.setValue(f"{output}/currentResolution/x", splited[0], True)
-				self.info.setValue(f"{output}/currentResolution/y", splited[1], True)
+				self.info.setValue(f"{output}/currentResolution/width", splited[0], True)
+				self.info.setValue(f"{output}/currentResolution/height", splited[1], True)
 				foundRes = True
 			elif "Transform:" in line:
 				orientation = line.split()[1]
@@ -148,8 +156,10 @@ class displayHandler(threading.Thread):
 				if status == "no": self.info.setValue(f"{output}/status", 0, True)
 				elif status == "yes": self.info.setValue(f"{output}/status", 1, True)
 				foundStatus = True
+		if foundPreferred == False: self.info.setValue(f"{output}/preferredResolution", None)
 		if foundRes == False: self.info.setValue(f"{output}/currentResolution", None)
 		if foundOrientation == False: self.info.setValue(f"{output}/orientation", None)
+		if foundStatus == False: self.info.setValue(f"{output}/status", None)
 
 	def checkOrientation(self, output:str):
 		wantedOrientation = settings.getValue(f"display/{output}/orientation")
@@ -169,6 +179,23 @@ class displayHandler(threading.Thread):
 		elif wantedOrientation == 6: orientation = "flipped-180"
 		elif wantedOrientation == 7: orientation = "flipped-270"
 		return subprocess.run(["wlr-randr", "--output", output, "--transform", orientation])
+
+	def checkResolution(self, output:str):
+		wantedWidth = settings.getValue(f"display/{output}/resolution/width")
+		wantedHeight = settings.getValue(f"display/{output}/resolution/height")
+		currentWidth = self.info.getValue(f"{output}/currentResolution/width")
+		currentHeight = self.info.getValue(f"{output}/currentResolution/height")
+		preferredWidth = self.info.getValue(f"{output}/preferredResolution/width")
+		preferredHeight = self.info.getValue(f"{output}/preferredResolution/height")
+		if wantedWidth == None or wantedHeight == None:
+			if currentWidth != preferredWidth or currentHeight != preferredHeight:
+				result = subprocess.run(["wlr-randr", "--output", output, "--preferred"])
+		elif wantedWidth != currentWidth or wantedHeight != currentHeight:
+			result = subprocess.run(["wlr-randr", "--output", output, "--mode", f"{wantedWidth}x{wantedHeight}"])
+			if result.returncode != 0:
+				piScreenUtils.logging.error(f"Unable to set display resolution to {wantedWidth}x{wantedHeight}. Remove wanted resolution from config.")
+				settings.setValue(f"display/{output}/resolution", None)
+
 
 ############################
 ### Socket communication ###
@@ -243,6 +270,17 @@ class socketHandler(threading.Thread):
 						returnValue["code"] = 2
 				elif data["cmd"] == 5: #Get-display-resolution
 					returnValue["currentResolution"] = [dH.info.getValue("HDMI-A-1/currentResolution"), dH.info.getValue("HDMI-A-2/currentResolution")]
+				elif data["cmd"] == 6: #Set-display-resolution
+					output = "HDMI-A-1"
+					if "output" in data: output = data["output"]
+					if {"width", "height"} <= data.keys():
+						if type(data["width"]) == int and type(data["height"]) == int:
+							settings.setValue(f"display/{output}/resolution/width", data["width"])
+							settings.setValue(f"display/{output}/resolution/height", data["height"])
+						else:
+							returnValue["code"] = 6
+					else:
+						settings.setValue(f"display/{output}/resolution", None)
 				elif data["cmd"] == 7: #Get-display-orientation
 					returnValue["orientation"] = [dH.info.getValue("HDMI-A-1/orientation"), dH.info.getValue("HDMI-A-2/orientation")]
 				elif data["cmd"] == 8: #Set-display-orientation

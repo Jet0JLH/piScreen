@@ -20,6 +20,10 @@ def printHelp():
 --get-display-resolution
 	Return the current display resolution of output 1 and 2
 
+--set-display-resolution [<width> <height>] [output]
+	Set the display resolution or if no parameter is appended, it will reset resolution to auto.
+	You can set the HDMI Output interface optional
+
 --get-display-orientation
 	Return the current display orientation of output 1 and 2
 
@@ -120,6 +124,22 @@ if __name__ == "__main__":
 			exit()
 		elif item == "--get-display-resolution":
 			print(sendToCore({"cmd": 5}))
+			exit()
+		elif item == "--set-display-resolution":
+			if i + 3 < len(sys.argv):
+				print(sendToCore({"cmd": 6, "width": int(sys.argv[i + 1]), "height": int(sys.argv[i + 2]), "output": sys.argv[i + 3]}))
+			elif i + 2 < len(sys.argv):
+				if piScreenUtils.isInt(sys.argv[i + 1]) and piScreenUtils.isInt(sys.argv[i + 2]):
+					print(sendToCore({"cmd": 6, "width": int(sys.argv[i + 1]), "height": int(sys.argv[i + 2])}))
+				else:
+					print("Parameter are not int")
+			elif i + 1 < len(sys.argv):
+				if piScreenUtils.isInt(sys.argv[i + 1]) == False:
+					print(sendToCore({"cmd": 6, "output": sys.argv[i + 1]}))
+				else:
+					print("Two int parameter are requiered for resolution or one string for the name of the output")
+			else:
+				print(sendToCore({"cmd": 6}))
 			exit()
 		elif item == "--get-display-orientation":
 			print(sendToCore({"cmd": 7}))
