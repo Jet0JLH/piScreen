@@ -8,6 +8,7 @@ class Paths():
 class Constants():
 	CORE_MGMT_PORT = 28888
 	DATE_FORMATE = "%Y-%m-%d %H:%M"
+	DEFAULT_DISPLAY_OUTPUT = "HDMI-A-1"
 
 def isInt(s):
 	if s == None: return False

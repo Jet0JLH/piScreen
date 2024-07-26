@@ -271,7 +271,7 @@ class socketHandler(threading.Thread):
 				elif data["cmd"] == 5: #Get-display-resolution
 					returnValue["currentResolution"] = [dH.info.getValue("HDMI-A-1/currentResolution"), dH.info.getValue("HDMI-A-2/currentResolution")]
 				elif data["cmd"] == 6: #Set-display-resolution
-					output = "HDMI-A-1"
+					output = piScreenUtils.DEFAULT_DISPLAY_OUTPUT
 					if "output" in data: output = data["output"]
 					if {"width", "height"} <= data.keys():
 						if type(data["width"]) == int and type(data["height"]) == int:
@@ -290,7 +290,7 @@ class socketHandler(threading.Thread):
 						else:
 							if data["orientation"] not in [0, 1 , 2, 3, 4, 5, 6, 7]: returnValue["code"] = 7
 							else:
-								output = "HDMI-A-1"
+								output = piScreenUtils.DEFAULT_DISPLAY_OUTPUT
 								if "output" in data: output = data["output"]
 								result = dH.setOrientation(output, data["orientation"])
 								if result.returncode == 0:
@@ -303,7 +303,7 @@ class socketHandler(threading.Thread):
 					if "value" in data:
 						if data["value"] in [0, 1]: 
 							if "output" in data: dH.actions.push({"cmd": 0, "data": {"value": data["value"], "output": data["output"]}})
-							else: dH.actions.insert(0, {"cmd": 0, "data": {"value": data["value"], "output": "HDMI-A-1"}})
+							else: dH.actions.insert(0, {"cmd": 0, "data": {"value": data["value"], "output": piScreenUtils.DEFAULT_DISPLAY_OUTPUT}})
 						else: returnValue["code"] = 7
 					else: returnValue["code"] = 2
 
