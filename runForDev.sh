@@ -11,6 +11,7 @@ rm -R /opt/piScreen
 
 #Link development paths
 ln -s "$parent_path/opt/piScreen/" /opt/piScreen
+ln -s "$parent_path/srv/piScreen/" /srv/piScreen
 
 #Set rights
 setfacl -Rm d:u:pi:rwx /opt/piScreen

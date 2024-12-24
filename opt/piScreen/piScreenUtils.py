@@ -4,6 +4,7 @@ class Paths():
 	SOFTWARE_DIR = "/opt/piScreen/"
 	SETTINGS = f"{SOFTWARE_DIR}settings.json"
 	LOG = "/tmp/piScreen.log"
+	SCREENSHOT = "/tmp/piScreenScreenshot.png"
 
 class Constants():
 	CORE_MGMT_PORT = 28888
