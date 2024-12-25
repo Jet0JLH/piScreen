@@ -1,6 +1,7 @@
-#!/usr/bin/python3
+#!/opt/piScreen/env/bin/python
 import piScreenUtils
-import os, subprocess, copy, json, datetime, threading, time, socket
+import os, subprocess, copy, json, datetime, threading, time, socket, psutil
+from marionette_driver.marionette import Marionette
 
 ###############
 ### Classes ###
@@ -85,6 +86,63 @@ class JsonData:
 #########################
 ### General functions ###
 #########################
+
+def checkIfProcessRunning(processName):
+	for proc in psutil.process_iter():
+		try:
+			if processName.lower() in proc.name().lower():
+				return True
+		except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
+			logging.critical("Unable to check if tasks are running")
+	return False
+
+#############
+### Modes ###
+#############
+
+class firefoxHandler(threading.Thread):
+	client = Marionette(host='127.0.0.1', port=2828, socket_timeout=20)
+	info = JsonData("", False)
+	actions = []
+	lastContent = None
+
+	def __init__(self):
+		threading.Thread.__init__(self)
+
+	def run(self):
+		while active:
+			try:
+				while mode == 1 and active:
+					if not checkIfProcessRunning("firefox-esr"):
+						piScreenUtils.logging.info(f"Start firefox ({content})")
+						os.system(f'firefox-esr --marionette --kiosk-monitor 0 "{content}" &')
+						self.lastContent = content
+						time.sleep(2)
+					if checkIfProcessRunning("crashreporter"):
+						piScreenUtils.logging.warning("There is a crashreporter open. It will be killed now")
+						os.system("killall crashreporter")
+					#Marionette
+					try:
+						self.info.setValue(f"url", self.client.get_url(), True)
+						if self.lastContent != content:
+							self.lastContent = content
+							piScreenUtils.logging.info(f"Navigate browser to {content}")
+							self.client.navigate(content)
+					except:
+						try:
+							self.client.delete_session()
+							self.client.start_session(timeout=2)
+						except Exception as err:
+							piScreenUtils.logging.error("Unable to create marionette session")
+							piScreenUtils.logging.debug(err)
+					time.sleep(1)
+			except Exception as err:
+				piScreenUtils.logging.error("Error in firefox handler")
+				piScreenUtils.logging.debug(err)
+			
+			if checkIfProcessRunning("firefox-esr"): os.system("killall firefox-esr")
+			time.sleep(1)
+		piScreenUtils.logging.info("End firefox handler")
 
 #########################
 ### Display functions ###
@@ -235,11 +293,13 @@ class socketHandler(threading.Thread):
 	def cmdInterpreter(self, client_socket:socket.socket, data):
 		returnValue = {"code":0}
 		try:
+			global mode
+			global content
+			global active
 			data = json.loads(data)
 			if "cmd" not in data: piScreenUtils.logging.warning("There is no cmd field in the transmitted data")
 			else:
 				if data["cmd"] == 1: #Stop-Core
-					global active
 					active = False
 				elif data["cmd"] == 2: pass #Get-Core-Status
 				elif data["cmd"] == 3: #Get Setting
@@ -306,6 +366,13 @@ class socketHandler(threading.Thread):
 							else: dH.actions.insert(0, {"cmd": 0, "data": {"value": data["value"], "output": piScreenUtils.Constants.DEFAULT_DISPLAY_OUTPUT}})
 						else: returnValue["code"] = 7
 					else: returnValue["code"] = 2
+				elif data["cmd"] == 99: #stop-modes
+					mode = 0
+					content = None
+				elif data["cmd"] == 100: #start-firefox
+					if "value" in data:
+						mode = 1
+						content = data["value"]
 
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to convert recieved command to json")
@@ -326,6 +393,8 @@ class socketHandler(threading.Thread):
 
 active = True
 os.environ["WAYLAND_DISPLAY"] = "wayland-1"
+mode = 0
+content = None
 
 
 ############
@@ -341,6 +410,10 @@ if __name__ == "__main__":
 	dH = displayHandler()
 	dH.start()
 
+	piScreenUtils.logging.info("Start firefox handler")
+	fH = firefoxHandler()
+	fH.start()
+
 	piScreenUtils.logging.info("Start communcation socket")
 	sH = socketHandler()
 	sH.start()
@@ -351,3 +424,5 @@ if __name__ == "__main__":
 		time.sleep(5)
 	piScreenUtils.logging.info("Stop core")
 	active = False
+	mode = 0
+	content = None

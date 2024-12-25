@@ -41,6 +41,13 @@ def printHelp():
 	0 for off
 	1 for on
 
+=== Modes ===
+--stop-mode
+	Stops the current running mode and switches back to 'none'.
+ == Firefox ==
+--start-firefox <url>
+	Starts the Browser or navigate it to new location if already open.
+
 === Settings ===
 --get-setting [setting/path]
 	Get all settings or an explicit value
@@ -172,6 +179,15 @@ if __name__ == "__main__":
 					print(sendToCore({"cmd": 10, "value": int(sys.argv[i + 1])}))
 				else:
 					print("Status is not an integer value")
+			else:
+				print("Missing parameter")
+			exit()
+		elif item == "--stop-modes":
+			print(sendToCore({"cmd": 99}))
+			exit()
+		elif item == "--start-firefox":
+			if i + 1 < len(sys.argv):
+				print(sendToCore({"cmd": 100, "value": sys.argv[i + 1]}))
 			else:
 				print("Missing parameter")
 			exit()

@@ -1,0 +1,15 @@
+blessed==1.20.0
+distro==1.9.0
+marionette-driver==3.4.0
+mozdevice==4.2.0
+mozfile==3.0.0
+mozinfo==1.2.3
+mozlog==8.0.0
+mozprocess==1.4.0
+mozprofile==3.0.0
+mozrunner==8.3.2
+mozterm==1.0.0
+mozversion==2.4.0
+psutil==6.1.1
+six==1.17.0
+wcwidth==0.2.13
