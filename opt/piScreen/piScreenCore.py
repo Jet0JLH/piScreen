@@ -124,6 +124,12 @@ class firefoxHandler(threading.Thread):
 					#Marionette
 					try:
 						self.info.setValue(f"url", self.client.get_url(), True)
+						self.info.setValue(f"url", self.title, True)
+						for item in self.actions:
+							if item == "refresh": piScreenUtils.logging.info("Refresh firefox") ; self.client.refresh()
+							elif item == "restart":
+								if checkIfProcessRunning("firefox-esr"): os.system("killall firefox-esr")
+						self.actions.clear()
 						if self.lastContent != content:
 							self.lastContent = content
 							piScreenUtils.logging.info(f"Navigate browser to {content}")
@@ -141,6 +147,7 @@ class firefoxHandler(threading.Thread):
 				piScreenUtils.logging.debug(err)
 			
 			if checkIfProcessRunning("firefox-esr"): os.system("killall firefox-esr")
+			self.actions.clear()
 			time.sleep(1)
 		piScreenUtils.logging.info("End firefox handler")
 
@@ -373,6 +380,10 @@ class socketHandler(threading.Thread):
 					if "value" in data:
 						mode = 1
 						content = data["value"]
+				elif data["cmd"] == 101: #do-firefox-restart
+					fH.actions.append("restart")
+				elif data["cmd"] == 102: #do-firefox-refresh
+					fH.actions.append("refresh")
 
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to convert recieved command to json")

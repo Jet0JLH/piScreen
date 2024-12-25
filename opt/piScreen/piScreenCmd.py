@@ -47,6 +47,10 @@ def printHelp():
  == Firefox ==
 --start-firefox <url>
 	Starts the Browser or navigate it to new location if already open.
+--do-firefox-restart
+	Restart the Browser when active.
+--do-firefox-refresh
+	Refresh browser when active.
 
 === Settings ===
 --get-setting [setting/path]
@@ -191,5 +195,10 @@ if __name__ == "__main__":
 			else:
 				print("Missing parameter")
 			exit()
-	
+		elif item == "--do-firefox-restart":
+			print(sendToCore({"cmd": 101}))
+			exit()
+		elif item == "--do-firefox-refresh":
+			print(sendToCore({"cmd": 102}))
+			exit()
 	printHelp()
