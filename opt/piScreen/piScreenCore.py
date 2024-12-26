@@ -93,7 +93,7 @@ def checkIfProcessRunning(processName):
 			if processName.lower() in proc.name().lower():
 				return True
 		except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
-			logging.critical("Unable to check if tasks are running")
+			piScreenUtils.logging.critical("Unable to check if tasks are running")
 	return False
 
 #############
@@ -124,7 +124,7 @@ class firefoxHandler(threading.Thread):
 					#Marionette
 					try:
 						self.info.setValue(f"url", self.client.get_url(), True)
-						self.info.setValue(f"url", self.title, True)
+						self.info.setValue(f"title", self.client.title, True)
 						for item in self.actions:
 							if item == "refresh": piScreenUtils.logging.info("Refresh firefox") ; self.client.refresh()
 							elif item == "restart":
@@ -176,6 +176,18 @@ class vlcHandler(threading.Thread):
 					self.info.setValue(f"time", self.vlcMediaPlayer.get_time(), True)
 					self.info.setValue(f"length", self.vlcMediaPlayer.get_length(), True)
 					self.info.setValue(f"volume", self.vlcMediaPlayer.audio_get_volume(), True)
+					for item in self.actions:
+						if item == "play": piScreenUtils.logging.info("Play VLC") ; self.vlcMediaPlayer.play()
+						elif item == "play/pause": piScreenUtils.logging.info("Play / Pause VLC") ; self.vlcMediaPlayer.pause()
+						elif item == "pause": piScreenUtils.logging.info("Pause VLC") ; self.vlcMediaPlayer.set_pause(1)
+						elif item == "restart": piScreenUtils.logging.info("Restart VLC") ; self.vlcMediaPlayer.play() ; self.vlcMediaPlayer.set_position(0.0)
+						elif item.startswith("volume"):
+							try:
+								piScreenUtils.logging.info(f"Set volume to {item[6:]}")
+								self.vlcMediaPlayer.audio_set_volume(int(item[6:]))
+							except:
+								piScreenUtils.logging.error("The volume is no int")
+					self.actions.clear()
 				except Exception as err:
 					piScreenUtils.logging.error("Error in vlc handler")
 					piScreenUtils.logging.debug(err)
@@ -420,8 +432,20 @@ class socketHandler(threading.Thread):
 				elif data["cmd"] == 102: #do-firefox-refresh
 					fH.actions.append("refresh")
 				elif data["cmd"] == 200: #start-vlc
-					mode = 2
-					content = data["value"]
+					if "value" in data:
+						mode = 2
+						content = data["value"]
+				elif data["cmd"] == 201: #play
+					vH.actions.append("play")
+				elif data["cmd"] == 202: #play/pause
+					vH.actions.append("play/pause")
+				elif data["cmd"] == 203: #pause
+					vH.actions.append("pause")
+				elif data["cmd"] == 204: #restart
+					vH.actions.append("restart")
+				elif data["cmd"] == 205: #volume
+					if "value" in data:
+						vH.actions.append("volume" + str(data["value"]))
 
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to convert recieved command to json")

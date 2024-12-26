@@ -54,6 +54,16 @@ def printHelp():
  == VLC ==
 --start-vlc <pathToFile>
 	Starts VLC Player.
+--do-vlc-restart
+	Restarts VLC Player.
+--do-vlc-play
+	Play the video if mode is VLC.
+--do-vlc-pause
+	Pause the video if mode is VLC.
+--do-vlc-toggle-play-pause
+	Pause/Play the video if mode is VLC.
+--set-vlc-volume <valueInPercent>
+	Set the audio volume to the given value.
 
 === Settings ===
 --get-setting [setting/path]
@@ -207,6 +217,27 @@ if __name__ == "__main__":
 		elif item == "--start-vlc":
 			if i + 1 < len(sys.argv):
 				print(sendToCore({"cmd": 200, "value": sys.argv[i + 1]}))
+			else:
+				print("Missing parameter")
+			exit()
+		elif item == "--do-vlc-restart":
+			print(sendToCore({"cmd": 204}))
+			exit()
+		elif item == "--do-vlc-play":
+			print(sendToCore({"cmd": 201}))
+			exit()
+		elif item == "--do-vlc-pause":
+			print(sendToCore({"cmd": 203}))
+			exit()
+		elif item == "--do-vlc-toggle-play-pause":
+			print(sendToCore({"cmd": 202}))
+			exit()
+		elif item == "--set-vlc-volume":
+			if i + 1 < len(sys.argv):
+				if piScreenUtils.isInt(sys.argv[i + 1]) and int(sys.argv[i + 1]) >= 0 and int(sys.argv[i + 1]) <= 100:
+					print(sendToCore({"cmd": 205, "value": int(sys.argv[i + 1])}))
+				else:
+					print("Volume is not an integer value between 0 and 100")
 			else:
 				print("Missing parameter")
 			exit()
