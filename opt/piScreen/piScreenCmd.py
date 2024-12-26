@@ -16,6 +16,12 @@ def printHelp():
 --stop-core
 	Sends to core the command to halt the piScreenCore service
 
+=== Hostcontrol ===
+--do-reboot
+	Restarts the Device.
+--do-shutdown
+	Shutdown the Device.
+
 === Display ===
 --get-display-resolution
 	Return the current display resolution of output 1 and 2
@@ -198,6 +204,12 @@ if __name__ == "__main__":
 					print("Status is not an integer value")
 			else:
 				print("Missing parameter")
+			exit()
+		elif item == "--do-reboot":
+			print(sendToCore({"cmd": 11}))
+			exit()
+		elif item == "--do-shutdown":
+			print(sendToCore({"cmd": 12}))
 			exit()
 		elif item == "--stop-modes":
 			print(sendToCore({"cmd": 99}))

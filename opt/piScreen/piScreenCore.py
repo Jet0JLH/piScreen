@@ -420,6 +420,14 @@ class socketHandler(threading.Thread):
 							else: dH.actions.insert(0, {"cmd": 0, "data": {"value": data["value"], "output": piScreenUtils.Constants.DEFAULT_DISPLAY_OUTPUT}})
 						else: returnValue["code"] = 7
 					else: returnValue["code"] = 2
+				elif data["cmd"] == 11: #reboot
+					piScreenUtils.logging.info("Perform system reboot")
+					active = False
+					os.system("sudo reboot")
+				elif data["cmd"] == 12: #shutdown
+					piScreenUtils.logging.info("Perform system shutdown")
+					active = False
+					os.system("sudo poweroff")
 				elif data["cmd"] == 99: #stop-modes
 					mode = 0
 					content = None
