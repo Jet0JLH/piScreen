@@ -51,6 +51,9 @@ def printHelp():
 	Restart the Browser when active.
 --do-firefox-refresh
 	Refresh browser when active.
+ == VLC ==
+--start-vlc <pathToFile>
+	Starts VLC Player.
 
 === Settings ===
 --get-setting [setting/path]
@@ -200,5 +203,11 @@ if __name__ == "__main__":
 			exit()
 		elif item == "--do-firefox-refresh":
 			print(sendToCore({"cmd": 102}))
+			exit()
+		elif item == "--start-vlc":
+			if i + 1 < len(sys.argv):
+				print(sendToCore({"cmd": 200, "value": sys.argv[i + 1]}))
+			else:
+				print("Missing parameter")
 			exit()
 	printHelp()

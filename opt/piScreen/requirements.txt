@@ -11,5 +11,6 @@ mozrunner==8.3.2
 mozterm==1.0.0
 mozversion==2.4.0
 psutil==6.1.1
+python-vlc==3.0.21203
 six==1.17.0
 wcwidth==0.2.13

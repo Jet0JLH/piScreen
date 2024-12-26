@@ -1,6 +1,6 @@
 #!/opt/piScreen/env/bin/python
 import piScreenUtils
-import os, subprocess, copy, json, datetime, threading, time, socket, psutil
+import os, subprocess, copy, json, datetime, threading, time, socket, psutil, vlc
 from marionette_driver.marionette import Marionette
 
 ###############
@@ -150,6 +150,41 @@ class firefoxHandler(threading.Thread):
 			self.actions.clear()
 			time.sleep(1)
 		piScreenUtils.logging.info("End firefox handler")
+
+class vlcHandler(threading.Thread):
+	info = JsonData("", False)
+	actions = []
+	lastContent = None
+	vlcPlayer = vlc.Instance('--video-wallpaper','--input-repeat=999999999')
+	vlcMediaPlayer = vlcPlayer.media_player_new()
+	vlcMedia = vlc.Media("")
+
+	def __init__(self):
+		threading.Thread.__init__(self)
+
+	def run(self):
+		while active:
+			while mode == 2 and active:
+				try:
+					if self.lastContent != content:
+						self.vlcMedia = vlc.Media(content)
+						self.vlcMediaPlayer.set_media(self.vlcMedia)
+						self.vlcMediaPlayer.play()
+						self.lastContent = content
+					self.info.setValue(f"source", self.vlcMedia.get_mrl(), True)
+					self.info.setValue(f"state", str(self.vlcMediaPlayer.get_state()), True)
+					self.info.setValue(f"time", self.vlcMediaPlayer.get_time(), True)
+					self.info.setValue(f"length", self.vlcMediaPlayer.get_length(), True)
+					self.info.setValue(f"volume", self.vlcMediaPlayer.audio_get_volume(), True)
+				except Exception as err:
+					piScreenUtils.logging.error("Error in vlc handler")
+					piScreenUtils.logging.debug(err)
+				time.sleep(1)
+			
+			self.vlcMediaPlayer.stop()
+			self.actions.clear()
+			time.sleep(1)
+		piScreenUtils.logging.info("End vlc handler")
 
 #########################
 ### Display functions ###
@@ -384,6 +419,9 @@ class socketHandler(threading.Thread):
 					fH.actions.append("restart")
 				elif data["cmd"] == 102: #do-firefox-refresh
 					fH.actions.append("refresh")
+				elif data["cmd"] == 200: #start-vlc
+					mode = 2
+					content = data["value"]
 
 		except Exception as err:
 			piScreenUtils.logging.error("Unable to convert recieved command to json")
@@ -404,6 +442,7 @@ class socketHandler(threading.Thread):
 
 active = True
 os.environ["WAYLAND_DISPLAY"] = "wayland-1"
+os.environ["DISPLAY"] = ":0"
 mode = 0
 content = None
 
@@ -424,6 +463,10 @@ if __name__ == "__main__":
 	piScreenUtils.logging.info("Start firefox handler")
 	fH = firefoxHandler()
 	fH.start()
+
+	piScreenUtils.logging.info("Start vlc handler")
+	vH = vlcHandler()
+	vH.start()
 
 	piScreenUtils.logging.info("Start communcation socket")
 	sH = socketHandler()
