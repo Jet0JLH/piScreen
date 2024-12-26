@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import piScreenUtils
-import socket, json, sys
+import socket, json, sys, os
 
 def printHelp():
 	print(
@@ -21,6 +21,10 @@ def printHelp():
 	Restarts the Device.
 --do-shutdown
 	Shutdown the Device.
+--set-desktop-configuration [<--mode> <mode>] [<--wallpaper> <path>] [<--background-color> <hexColor>]
+	Configure the desktop wallpaper.
+	Possible modes are: color|stretch|fit|crop|center|tile|screen
+	Hex colors has 6 characters and starts with a hash. Keep in mind, this character has to be escaped with a backslash!
 
 === Display ===
 --get-display-resolution
@@ -210,6 +214,39 @@ if __name__ == "__main__":
 			exit()
 		elif item == "--do-shutdown":
 			print(sendToCore({"cmd": 12}))
+			exit()
+		elif item == "--set-desktop-configuration":
+			msg = {"cmd": 13, "value":{}}
+			if "--mode" in sys.argv:
+				indexOfElement = sys.argv.index("--mode") + 1
+				if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+					print("No parameter for --mode given")
+				else:
+					if sys.argv[indexOfElement].lower() in ["color", "stretch", "fit", "crop", "center", "tile", "screen"]:
+						msg["value"]["mode"] = sys.argv[indexOfElement]
+					else:
+						print("No possible mode selected")
+			if "--wallpaper" in sys.argv:
+				indexOfElement = sys.argv.index("--wallpaper") + 1
+				if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+					print("No parameter for --wallpaper given")
+				else:
+					if os.path.exists(sys.argv[indexOfElement]):
+						msg["value"]["wallpaper"] = os.path.abspath(sys.argv[indexOfElement])
+					else:
+						print("Wallpaper File doesn't exist")
+			if f"--background-color" in sys.argv:
+				indexOfElement = sys.argv.index(f"--background-color") + 1
+				if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+					print("No parameter for --background-color given")
+				else:
+					import re
+					if re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', sys.argv[indexOfElement]):
+						msg["value"]["background-color"] = sys.argv[indexOfElement]
+					else:
+						print("Given color is no valid hex string")
+			if len(msg["value"]) > 0: print(sendToCore(msg))
+			else: print("Nothing to do")
 			exit()
 		elif item == "--stop-modes":
 			print(sendToCore({"cmd": 99}))

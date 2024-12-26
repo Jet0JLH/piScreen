@@ -1,6 +1,6 @@
 #!/opt/piScreen/env/bin/python
 import piScreenUtils
-import os, subprocess, copy, json, datetime, threading, time, socket, psutil, vlc
+import os, subprocess, copy, json, datetime, threading, time, socket, psutil, vlc, re
 from marionette_driver.marionette import Marionette
 
 ###############
@@ -428,6 +428,39 @@ class socketHandler(threading.Thread):
 					piScreenUtils.logging.info("Perform system shutdown")
 					active = False
 					os.system("sudo poweroff")
+				elif data["cmd"] == 13: #set-desktop-configuration
+					try:
+						if "value" in data:
+							if "mode" in data["value"]:
+								if data["value"]["mode"] in ["color", "stretch", "fit", "crop", "center", "tile", "screen"]:
+									piScreenUtils.logging.info(f"Set wallpaper mode to {data['value']['mode']}")
+									os.system(f"pcmanfm --wallpaper-mode={data['value']['mode']}")
+									time.sleep(0.5)
+							if "wallpaper" in data["value"]:
+								if os.path.exists(data["value"]["wallpaper"]):
+									piScreenUtils.logging.info(f"Set wallpaper to {data['value']['wallpaper']}")
+									os.system(f'pcmanfm "--set-wallpaper={data["value"]["wallpaper"]}"')
+									time.sleep(0.5)
+							if "background-color" in data["value"]:
+								if re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', data["value"]["background-color"]):
+									piScreenUtils.logging.info(f"Set backgroundcolor to {data['value']['background-color']}")
+									for f in os.listdir("/home/pi/.config/pcmanfm/LXDE-pi/"):
+										desktopConfig = open("/home/pi/.config/pcmanfm/LXDE-pi/" + f,"r").readlines()
+										count = 0
+										found = False
+										for i in desktopConfig:
+											if i.startswith("desktop_bg="):
+												desktopConfig[count] = f"desktop_bg={data['value']['background-color']}\n"
+												found = True
+												break
+											count = count + 1
+										if not found:
+											desktopConfig.append(f"desktop_bg={data['value']['background-color']}\n")
+										open("/home/pi/.config/pcmanfm/LXDE-pi/" + f,"w").writelines(desktopConfig)
+									os.system("pcmanfm --reconfigure")
+					except Exception as err:
+						piScreenUtils.logging.error("Unable to set desktop configuration")
+						piScreenUtils.logging.debug(err)
 				elif data["cmd"] == 99: #stop-modes
 					mode = 0
 					content = None
