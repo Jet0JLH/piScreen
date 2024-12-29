@@ -461,6 +461,18 @@ class socketHandler(threading.Thread):
 					except Exception as err:
 						piScreenUtils.logging.error("Unable to set desktop configuration")
 						piScreenUtils.logging.debug(err)
+				elif data["cmd"] == 14: #get-desktop-configuration
+					returnValue["config"] = {}
+					returnValue["config"]["desktop_bg"] = ""
+					returnValue["config"]["wallpaper"] = ""
+					returnValue["config"]["wallpaper_mode"] = ""
+					for f in os.listdir("/home/pi/.config/pcmanfm/LXDE-pi/"):
+						desktopConfig = open("/home/pi/.config/pcmanfm/LXDE-pi/" + f,"r").readlines()
+						for i in desktopConfig:
+							if i.startswith("desktop_bg="): returnValue["config"]["desktop_bg"] = i[11:-1]
+							elif i.startswith("wallpaper="): returnValue["config"]["wallpaper"] = i[10:-1]
+							elif i.startswith("wallpaper_mode="): returnValue["config"]["wallpaper_mode"] = i[15:-1]
+						break
 				elif data["cmd"] == 99: #stop-modes
 					mode = 0
 					content = None

@@ -21,6 +21,8 @@ def printHelp():
 	Restarts the Device.
 --do-shutdown
 	Shutdown the Device.
+--get-desktop-configuration
+	Returns the full desktop configuration.
 --set-desktop-configuration [<--mode> <mode>] [<--wallpaper> <path>] [<--background-color> <hexColor>]
 	Configure the desktop wallpaper.
 	Possible modes are: color|stretch|fit|crop|center|tile|screen
@@ -247,6 +249,9 @@ if __name__ == "__main__":
 						print("Given color is no valid hex string")
 			if len(msg["value"]) > 0: print(sendToCore(msg))
 			else: print("Nothing to do")
+			exit()
+		elif item == "--get-desktop-configuration":
+			print(sendToCore({"cmd": 14}))
 			exit()
 		elif item == "--stop-modes":
 			print(sendToCore({"cmd": 99}))
