@@ -96,6 +96,21 @@ def checkIfProcessRunning(processName):
 			piScreenUtils.logging.critical("Unable to check if tasks are running")
 	return False
 
+def changeDesktopConfiguration(para:str, value:str):	
+	for f in os.listdir(desktopConfigPath):
+		desktopConfig = open(desktopConfigPath + f,"r").readlines()
+		count = 0
+		found = False
+		for i in desktopConfig:
+			if i.startswith(para):
+				desktopConfig[count] = f"{para}{value}\n"
+				found = True
+				break
+			count = count + 1
+		if not found:
+			desktopConfig.append(f"{para}{value}\n")
+		open(desktopConfigPath + f,"w").writelines(desktopConfig)
+
 #############
 ### Modes ###
 #############
@@ -444,19 +459,17 @@ class socketHandler(threading.Thread):
 							if "background-color" in data["value"]:
 								if re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', data["value"]["background-color"]):
 									piScreenUtils.logging.info(f"Set backgroundcolor to {data['value']['background-color']}")
-									for f in os.listdir("/home/pi/.config/pcmanfm/LXDE-pi/"):
-										desktopConfig = open("/home/pi/.config/pcmanfm/LXDE-pi/" + f,"r").readlines()
-										count = 0
-										found = False
-										for i in desktopConfig:
-											if i.startswith("desktop_bg="):
-												desktopConfig[count] = f"desktop_bg={data['value']['background-color']}\n"
-												found = True
-												break
-											count = count + 1
-										if not found:
-											desktopConfig.append(f"desktop_bg={data['value']['background-color']}\n")
-										open("/home/pi/.config/pcmanfm/LXDE-pi/" + f,"w").writelines(desktopConfig)
+									changeDesktopConfiguration("desktop_bg=", data['value']['background-color'])
+									os.system("pcmanfm --reconfigure")
+							if "show-trash" in data["value"]:
+								data["value"]["show-trash"] = data["value"]["show-trash"].lower()
+								if data["value"]["show-trash"] == "true" or data["value"]["show-trash"] == "1":
+									piScreenUtils.logging.info("Make trash icon visible")
+									changeDesktopConfiguration("show_trash=", "1")
+									os.system("pcmanfm --reconfigure")
+								elif data["value"]["show-trash"] == "false" or data["value"]["show-trash"] == "0":
+									piScreenUtils.logging.info("Make trash icon invisible")
+									changeDesktopConfiguration("show_trash=", "0")
 									os.system("pcmanfm --reconfigure")
 					except Exception as err:
 						piScreenUtils.logging.error("Unable to set desktop configuration")
@@ -466,12 +479,14 @@ class socketHandler(threading.Thread):
 					returnValue["config"]["desktop_bg"] = ""
 					returnValue["config"]["wallpaper"] = ""
 					returnValue["config"]["wallpaper_mode"] = ""
-					for f in os.listdir("/home/pi/.config/pcmanfm/LXDE-pi/"):
-						desktopConfig = open("/home/pi/.config/pcmanfm/LXDE-pi/" + f,"r").readlines()
+					returnValue["config"]["show_trash"] = ""
+					for f in os.listdir(desktopConfigPath):
+						desktopConfig = open(desktopConfigPath + f,"r").readlines()
 						for i in desktopConfig:
 							if i.startswith("desktop_bg="): returnValue["config"]["desktop_bg"] = i[11:-1]
 							elif i.startswith("wallpaper="): returnValue["config"]["wallpaper"] = i[10:-1]
 							elif i.startswith("wallpaper_mode="): returnValue["config"]["wallpaper_mode"] = i[15:-1]
+							elif i.startswith("show_trash="): returnValue["config"]["show_trash"] = i[11:-1]
 						break
 				elif data["cmd"] == 99: #stop-modes
 					mode = 0
@@ -522,6 +537,7 @@ os.environ["WAYLAND_DISPLAY"] = "wayland-1"
 os.environ["DISPLAY"] = ":0"
 mode = 0
 content = None
+desktopConfigPath = "/home/pi/.config/pcmanfm/LXDE-pi/"
 
 
 ############

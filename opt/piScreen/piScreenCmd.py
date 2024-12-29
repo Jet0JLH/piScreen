@@ -23,7 +23,7 @@ def printHelp():
 	Shutdown the Device.
 --get-desktop-configuration
 	Returns the full desktop configuration.
---set-desktop-configuration [<--mode> <mode>] [<--wallpaper> <path>] [<--background-color> <hexColor>]
+--set-desktop-configuration [<--mode> <mode>] [<--wallpaper> <path>] [<--background-color> <hexColor>] [<--show-trash><0/1>]
 	Configure the desktop wallpaper.
 	Possible modes are: color|stretch|fit|crop|center|tile|screen
 	Hex colors has 6 characters and starts with a hash. Keep in mind, this character has to be escaped with a backslash!
@@ -237,8 +237,8 @@ if __name__ == "__main__":
 						msg["value"]["wallpaper"] = os.path.abspath(sys.argv[indexOfElement])
 					else:
 						print("Wallpaper File doesn't exist")
-			if f"--background-color" in sys.argv:
-				indexOfElement = sys.argv.index(f"--background-color") + 1
+			if "--background-color" in sys.argv:
+				indexOfElement = sys.argv.index("--background-color") + 1
 				if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
 					print("No parameter for --background-color given")
 				else:
@@ -247,6 +247,15 @@ if __name__ == "__main__":
 						msg["value"]["background-color"] = sys.argv[indexOfElement]
 					else:
 						print("Given color is no valid hex string")
+			if "--show-trash" in sys.argv:
+				indexOfElement = sys.argv.index("--show-trash") + 1
+				if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+					print("No parameter for --show-trash given")
+				else:
+					if sys.argv[indexOfElement].lower() in ["true", "false", "1", "0"]:
+						msg["value"]["show-trash"] = sys.argv[indexOfElement]
+					else:
+						print("Given value is no bool")
 			if len(msg["value"]) > 0: print(sendToCore(msg))
 			else: print("Nothing to do")
 			exit()
