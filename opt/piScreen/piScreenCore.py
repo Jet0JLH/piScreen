@@ -471,6 +471,26 @@ class socketHandler(threading.Thread):
 									piScreenUtils.logging.info("Make trash icon invisible")
 									changeDesktopConfiguration("show_trash=", "0")
 									os.system("pcmanfm --reconfigure")
+							if "show-documents" in data["value"]:
+								data["value"]["show-documents"] = data["value"]["show-documents"].lower()
+								if data["value"]["show-documents"] == "true" or data["value"]["show-documents"] == "1":
+									piScreenUtils.logging.info("Make trash icon visible")
+									changeDesktopConfiguration("show_documents=", "1")
+									os.system("pcmanfm --reconfigure")
+								elif data["value"]["show-documents"] == "false" or data["value"]["show-documents"] == "0":
+									piScreenUtils.logging.info("Make trash icon invisible")
+									changeDesktopConfiguration("show_documents=", "0")
+									os.system("pcmanfm --reconfigure")
+							if "show-mounts" in data["value"]:
+								data["value"]["show-mounts"] = data["value"]["show-mounts"].lower()
+								if data["value"]["show-mounts"] == "true" or data["value"]["show-mounts"] == "1":
+									piScreenUtils.logging.info("Make trash icon visible")
+									changeDesktopConfiguration("show_mounts=", "1")
+									os.system("pcmanfm --reconfigure")
+								elif data["value"]["show-mounts"] == "false" or data["value"]["show-mounts"] == "0":
+									piScreenUtils.logging.info("Make trash icon invisible")
+									changeDesktopConfiguration("show_mounts=", "0")
+									os.system("pcmanfm --reconfigure")
 					except Exception as err:
 						piScreenUtils.logging.error("Unable to set desktop configuration")
 						piScreenUtils.logging.debug(err)
@@ -480,6 +500,8 @@ class socketHandler(threading.Thread):
 					returnValue["config"]["wallpaper"] = ""
 					returnValue["config"]["wallpaper_mode"] = ""
 					returnValue["config"]["show_trash"] = ""
+					returnValue["config"]["show_documents"] = ""
+					returnValue["config"]["show_mounts"] = ""
 					for f in os.listdir(desktopConfigPath):
 						desktopConfig = open(desktopConfigPath + f,"r").readlines()
 						for i in desktopConfig:
@@ -487,6 +509,8 @@ class socketHandler(threading.Thread):
 							elif i.startswith("wallpaper="): returnValue["config"]["wallpaper"] = i[10:-1]
 							elif i.startswith("wallpaper_mode="): returnValue["config"]["wallpaper_mode"] = i[15:-1]
 							elif i.startswith("show_trash="): returnValue["config"]["show_trash"] = i[11:-1]
+							elif i.startswith("show_documents="): returnValue["config"]["show_documents"] = i[15:-1]
+							elif i.startswith("show_mounts="): returnValue["config"]["show_mounts"] = i[12:-1]
 						break
 				elif data["cmd"] == 99: #stop-modes
 					mode = 0

@@ -23,7 +23,7 @@ def printHelp():
 	Shutdown the Device.
 --get-desktop-configuration
 	Returns the full desktop configuration.
---set-desktop-configuration [<--mode> <mode>] [<--wallpaper> <path>] [<--background-color> <hexColor>] [<--show-trash><0/1>]
+--set-desktop-configuration [<--mode> <mode>] [<--wallpaper> <path>] [<--background-color> <hexColor>] [<--show-trash><0/1>] [<--show-documents><0/1>] [<--show-mounts><0/1>]
 	Configure the desktop wallpaper.
 	Possible modes are: color|stretch|fit|crop|center|tile|screen
 	Hex colors has 6 characters and starts with a hash. Keep in mind, this character has to be escaped with a backslash!
@@ -254,6 +254,24 @@ if __name__ == "__main__":
 				else:
 					if sys.argv[indexOfElement].lower() in ["true", "false", "1", "0"]:
 						msg["value"]["show-trash"] = sys.argv[indexOfElement]
+					else:
+						print("Given value is no bool")
+			if "--show-documents" in sys.argv:
+				indexOfElement = sys.argv.index("--show-documents") + 1
+				if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+					print("No parameter for --show-documents given")
+				else:
+					if sys.argv[indexOfElement].lower() in ["true", "false", "1", "0"]:
+						msg["value"]["show-documents"] = sys.argv[indexOfElement]
+					else:
+						print("Given value is no bool")
+			if "--show-mounts" in sys.argv:
+				indexOfElement = sys.argv.index("--show-mounts") + 1
+				if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+					print("No parameter for --show-mounts given")
+				else:
+					if sys.argv[indexOfElement].lower() in ["true", "false", "1", "0"]:
+						msg["value"]["show-mounts"] = sys.argv[indexOfElement]
 					else:
 						print("Given value is no bool")
 			if len(msg["value"]) > 0: print(sendToCore(msg))
