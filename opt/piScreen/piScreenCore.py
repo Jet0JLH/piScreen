@@ -53,6 +53,10 @@ class JsonData:
 		except KeyError:
 			return None
 
+	def getAllValues(self, orig:bool=False):
+		if orig: return self.origFile
+		else: return self.file
+
 	def setValue(self, keyPath:str, value, convert:bool=True, orig:bool=False):
 		oldValue = self.getValue(keyPath,orig)
 		if oldValue == value: piScreenUtils.logging.debug(f"Value {value} for key {keyPath} is already set") ; return
@@ -512,6 +516,16 @@ class socketHandler(threading.Thread):
 							elif i.startswith("show_documents="): returnValue["config"]["show_documents"] = i[15:-1]
 							elif i.startswith("show_mounts="): returnValue["config"]["show_mounts"] = i[12:-1]
 						break
+				elif data["cmd"] == 15: #get-status
+					returnValue["status"] = {}
+					returnValue["status"]["mode"] = mode
+					returnValue["status"]["displayInfo"] = {}
+					returnValue["status"]["displayInfo"] = dH.info.getAllValues()
+					returnValue["status"]["modeInfo"] = {}
+					if mode == 1:
+						returnValue["status"]["modeInfo"] = fH.info.getAllValues()
+					elif mode == 2:
+						returnValue["status"]["modeInfo"] = vH.info.getAllValues()
 				elif data["cmd"] == 99: #stop-modes
 					mode = 0
 					content = None

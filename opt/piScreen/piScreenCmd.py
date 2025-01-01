@@ -13,6 +13,9 @@ def printHelp():
 --get-core-status
 	Show if core is reachable
 
+--get-status
+	Returns a JSON String with statusinfos.
+
 --stop-core
 	Sends to core the command to halt the piScreenCore service
 
@@ -279,6 +282,9 @@ if __name__ == "__main__":
 			exit()
 		elif item == "--get-desktop-configuration":
 			print(sendToCore({"cmd": 14}))
+			exit()
+		elif item == "--get-status":
+			print(sendToCore({"cmd": 15}))
 			exit()
 		elif item == "--stop-modes":
 			print(sendToCore({"cmd": 99}))
