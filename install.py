@@ -3,7 +3,7 @@
 # add lines
 # autohide=true
 # autohide_duration=500
-import os, sys, subprocess, json
+import os, sys, subprocess, json, shutil
 from datetime import datetime
 from opt.piScreen.piScreenUtils import Paths
 
@@ -24,8 +24,11 @@ tmpPath = "/tmp"
 aptPackages = {
 	"current": {
 		"firefox-esr",
-		"vlc",},
-	"deprecated": {}
+		"vlc",
+	},
+	"deprecated": {
+		
+	}
 }
 
 piScreenFiles = {
@@ -47,7 +50,7 @@ piScreenFiles = {
 }
 
 def configurePythonEnv():
-	not info["dry"] and subprocess.call(f"python -m venv env {Paths.SOFTWARE_DIR} && source {Paths.SOFTWARE_DIR}bin/activate && pip install -r {Paths.SOFTWARE_DIR}requirements.txt", shell=True)
+	not info["dry"] and subprocess.call(f"bash -c 'python -m venv env {Paths.SOFTWARE_DIR} && source {Paths.SOFTWARE_DIR}bin/activate && pip install -r {Paths.SOFTWARE_DIR}requirements.txt'", shell=True)
 
 def checkVersion():
 	printInfo("Load new manifest file",style=1)
@@ -104,10 +107,10 @@ def deletePiScreenFiles():
 		if os.path.exists(item["path"]):
 			if item["type"] == "file":
 				try: info["dry"] or os.unlink(item["path"])
-				except: printError(f"Unable to remove file {item['path']}",1)
+				except Exception as e: printError(f"Unable to remove file {item['path']}\n{e}",1)
 			elif item["type"] == "dir":
 				try: info["dry"] or shutil.rmtree(item["path"])
-				except: printError(f"Unable to delete dir {item['path']}",1)
+				except Exception as e: printError(f"Unable to delete dir {item['path']}\n{e}",1)
 		else:
 			printInfo(f"{item['type']} {item['path']} does not exists",style=3)
 
@@ -122,7 +125,7 @@ def installPiScreenFiles():
 					os.makedirs(os.path.abspath(os.path.join(item["path"],os.pardir)),exist_ok=True)
 					shutil.copyfile(tmpPath,item["path"])
 					setRights(item)
-			except: printError(f"Unable to copy file from {tmpPath} to {item['path']}",1)
+			except Exception as e: printError(f"Unable to copy file from {tmpPath} to {item['path']}\n{e}",1)
 		elif item["type"] == "dir":
 			printInfo(f"Copy {item['type']} {tmpPath} -> {item['path']}")
 			try:
@@ -130,12 +133,12 @@ def installPiScreenFiles():
 					os.makedirs(item["path"],exist_ok=True)
 					shutil.copytree(tmpPath,item["path"],dirs_exist_ok=True)
 					setRights(item)
-			except: printError(f"Unable to copy dir from {tmpPath} to {item['path']}",1)
+			except Exception as e: printError(f"Unable to copy dir from {tmpPath} to {item['path']}\n{e}",1)
 		elif item["type"] == "mkdir":
 			printInfo(f"Create directory {item['path']}")
 			try:
 				if not info["dry"]: os.makedirs(item["path"],exist_ok=True)
-			except: printError(f"Unable to create directory {item['path']}",1)
+			except Exception as e: printError(f"Unable to create directory {item['path']}\n{e}",1)
 		elif item["type"] == "rights":
 			printInfo(f"Set rights for {item['path']}")
 			if not info["dry"]:
@@ -171,13 +174,13 @@ def saveUserFiles():
 					if not info["dry"]:
 						if os.path.exists(item["tmp"]): os.unlink(item["tmp"])
 						shutil.copyfile(item["path"],item["tmp"])
-				except: printError(f"Unable to copy file from {item['path']} to {item['tmp']}",1)
+				except Exception as e: printError(f"Unable to copy file from {item['path']} to {item['tmp']}\n{e}",1)
 			elif item["type"] == "dir":
 				try:
 					if not info["dry"]:
 						if os.path.exists(item["tmp"]): shutil.rmtree(item["tmp"])
 						shutil.copytree(item["path"],item["tmp"])
-				except: printError(f"Unable to copy dir from {item['path']} to {item['tmp']}",1)
+				except Exception as e: printError(f"Unable to copy dir from {item['path']} to {item['tmp']}\n{e}",1)
 		else:
 			printInfo(f"{item['type']} {item['path']} does not exists",style=3)
 	info["userdataSaved"] = True
@@ -195,7 +198,7 @@ def restoreUserFiles():
 						shutil.copyfile(item["tmp"],item["path"])
 						os.unlink(item["tmp"])
 						setRights(item)
-				except: printError(f"Unable to copy file from {item['tmp']} to {item['path']}",1)
+				except Exception as e: printError(f"Unable to copy file from {item['tmp']} to {item['path']}\n{e}",1)
 			elif item["type"] == "dir":
 				try:
 					if not info["dry"]:
@@ -203,7 +206,7 @@ def restoreUserFiles():
 						shutil.copytree(item["tmp"],item["path"],dirs_exist_ok=True)
 						shutil.rmtree(item["tmp"])
 						setRights(item)
-				except: printError(f"Unable to copy dir from {item['tmp']} to {item['path']}",1)
+				except Exception as e: printError(f"Unable to copy dir from {item['tmp']} to {item['path']}\n{e}",1)
 		else:
 			printInfo(f"{item['type']} {item['tmp']} does not exists",style=3)
 
