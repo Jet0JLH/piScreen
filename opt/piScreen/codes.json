@@ -1,0 +1,11 @@
+[
+	{"id": -1, "descr": "Core dosen't respond"},
+	{"id": 0, "descr": "Successfull"},
+	{"id": 1, "descr": "Unknown error"},
+	{"id": 2, "descr": "Missing parameter"},
+	{"id": 3, "descr": "Unknown datatype"},
+	{"id": 4, "descr": "Datatype is not bool"},
+	{"id": 5, "descr": "Unable to convert datatype"},
+	{"id": 6, "descr": "Datatype is not int"},
+	{"id": 7, "descr": "Value not in range"}
+]
