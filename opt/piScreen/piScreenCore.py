@@ -295,7 +295,7 @@ class displayHandler(threading.Thread):
 	def checkOrientation(self, output:str):
 		wantedOrientation = settings.getValue(f"display/{output}/orientation")
 		currentOrientation = self.info.getValue(f"{output}/orientation")
-		if currentOrientation != None and wantedOrientation != currentOrientation:
+		if wantedOrientation != None and wantedOrientation != currentOrientation:
 			piScreenUtils.logging.debug(f"Wanted display orientation differs to current orientation. Change orientation from {currentOrientation} to {wantedOrientation}")
 			self.setOrientation(output, wantedOrientation)
 	
@@ -571,7 +571,6 @@ class socketHandler(threading.Thread):
 ###################
 
 active = True
-os.environ["WAYLAND_DISPLAY"] = "wayland-1"
 os.environ["DISPLAY"] = ":0"
 mode = 0
 content = None

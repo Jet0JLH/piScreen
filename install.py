@@ -50,7 +50,7 @@ piScreenFiles = {
 }
 
 def configurePythonEnv():
-	not info["dry"] and subprocess.call(f"bash -c 'python -m venv env {Paths.SOFTWARE_DIR} && source {Paths.SOFTWARE_DIR}bin/activate && pip install -r {Paths.SOFTWARE_DIR}requirements.txt'", shell=True)
+	not info["dry"] and subprocess.call(f"bash -c 'python -m venv {Paths.SOFTWARE_DIR}env && source {Paths.SOFTWARE_DIR}env/bin/activate && pip install -r {Paths.SOFTWARE_DIR}requirements.txt'", shell=True)
 
 def checkVersion():
 	printInfo("Load new manifest file",style=1)
