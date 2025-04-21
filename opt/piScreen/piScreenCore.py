@@ -171,19 +171,25 @@ class firefoxHandler(threading.Thread):
 		piScreenUtils.logging.info("End firefox handler")
 
 class vlcHandler(threading.Thread):
-	info = JsonData("", False)
-	actions = []
-	lastContent = None
-	vlcPlayer = vlc.Instance('--video-wallpaper','--input-repeat=999999999')
-	vlcMediaPlayer = vlcPlayer.media_player_new()
-	vlcMedia = vlc.Media("")
-
+	initiated = False
+	
 	def __init__(self):
 		threading.Thread.__init__(self)
 
+	def startUp(self):
+		self.info = JsonData("", False)
+		self.actions = []
+		self.lastContent = None
+		self.vlcPlayer = vlc.Instance('--video-wallpaper','--input-repeat=999999999')
+		self.vlcMediaPlayer = self.vlcPlayer.media_player_new()
+		self.vlcMedia = vlc.Media("")
+		self.initiated = True
+
 	def run(self):
+		self.startUp()
 		while active:
 			while mode == 2 and active:
+				if not self.initiated: self.startUp()
 				try:
 					if self.lastContent != content:
 						self.vlcMedia = vlc.Media(content)
@@ -214,6 +220,7 @@ class vlcHandler(threading.Thread):
 			
 			self.vlcMediaPlayer.stop()
 			self.actions.clear()
+			self.initiated = False
 			time.sleep(1)
 		piScreenUtils.logging.info("End vlc handler")
 
