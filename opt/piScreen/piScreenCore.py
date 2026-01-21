@@ -581,7 +581,8 @@ active = True
 os.environ["DISPLAY"] = ":0"
 mode = 0
 content = None
-desktopConfigPath = "/home/pi/.config/pcmanfm/LXDE-pi/"
+#desktopConfigPath = "/home/pi/.config/pcmanfm/LXDE-pi/" Path for bookworm
+desktopConfigPath = "/home/pi/.config/pcmanfm/default/"
 
 
 ############

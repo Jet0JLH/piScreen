@@ -57,7 +57,7 @@ def printHelp():
 	1 for on
 
 === Modes ===
---stop-mode
+--stop-modes
 	Stops the current running mode and switches back to 'none'.
  == Firefox ==
 --start-firefox <url>
