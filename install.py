@@ -25,6 +25,7 @@ aptPackages = {
 	"current": {
 		"firefox-esr",
 		"vlc",
+		"wtype",
 	},
 	"deprecated": {
 		
