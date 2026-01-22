@@ -533,6 +533,32 @@ class socketHandler(threading.Thread):
 						returnValue["status"]["modeInfo"] = fH.info.getAllValues()
 					elif mode == 2:
 						returnValue["status"]["modeInfo"] = vH.info.getAllValues()
+				elif data["cmd"] == 16: #get-schedule
+					if "path" in data:
+						returnValue.update({"value": schedule.getValue(data["path"])})
+					else:
+						returnValue.update(schedule.file)
+				elif data["cmd"] == 17: #set-schedule
+					if {"path", "value", "type"} <= data.keys():
+						try:
+							if data["type"].lower() == "int": data["value"] = int(data["value"])
+							elif data["type"].lower() == "float": data["value"] = float(data["value"])
+							elif data["type"].lower() == "str": data["value"] = str(data["value"])
+							elif data["type"].lower() == "json": data["value"] = json.loads(data["value"])
+							elif data["type"].lower() == "bool":
+								if data["value"].lower() == "true": data["value"] = True
+								elif data["value"].lower() == "false": data["value"] = False
+								else: returnValue["code"] = 4
+							else: returnValue["code"] = 3
+						except:
+							returnValue["code"] = 5
+						if returnValue["code"] == 0: schedule.setValue(data["path"], data["value"], convert=False)
+					elif {"path", "value"} <= data.keys():
+						schedule.setValue(data["path"], data["value"])
+					elif {"path"} <= data.keys():
+						schedule.setValue(data["path"], None)
+					else:
+						returnValue["code"] = 2
 				elif data["cmd"] == 99: #stop-modes
 					mode = 0
 					content = None
@@ -570,8 +596,118 @@ class socketHandler(threading.Thread):
 			piScreenUtils.logging.warning("Unable to send return value to requester")
 		client_socket.close()
 
+################
+### Schedule ###
+################
 
+class scheduleHandler(threading.Thread):
+	info = JsonData("", False)
+	actions = []
+	lastCheckedMinute = 61
 
+	def __init__(self):
+		threading.Thread.__init__(self)
+
+	def run(self):
+		while active:
+			now = datetime.datetime.now()
+			if self.lastCheckedMinute is not now.minute:
+				self.lastCheckedMinute = now.minute
+				self.checkMinutely(now)
+			time.sleep(1)
+		piScreenUtils.logging.info("End schedule handler")
+
+	def checkMinutely(self, now:datetime.datetime):
+		piScreenUtils.logging.debug("Check minutely events")
+		for cronEntryID in schedule.getValue("cron"):
+			cronEntry = schedule.getValue(f"cron/{cronEntryID}")
+			try:
+				#CheckEnabled
+				if cronEntry["enabled"] == False: continue
+				#CheckWeekday
+				if not self.checkPattern(cronEntry["weekday"], now.weekday()): continue
+				#CheckYear
+				if not self.checkPattern(cronEntry["year"], now.year): continue
+				#CheckMonth
+				if not self.checkPattern(cronEntry["month"], now.month): continue
+				#CheckDay
+				if not self.checkPattern(cronEntry["day"], now.day): continue
+				#CheckHour
+				if not self.checkPattern(cronEntry["hour"], now.hour): continue
+				#CheckMinute
+				if not self.checkPattern(cronEntry["minute"], now.minute): continue
+
+				piScreenUtils.logging.info(f"Trigger entry ID: {cronEntryID}")
+			except Exception as err:
+				piScreenUtils.logging.warning(f"Cron entry ID: {cronEntryID} is incomplete")
+				piScreenUtils.logging.debug(err)
+	
+	def checkPattern(self, pattern, check:int) -> bool:
+		if pattern == "*": return True
+		#x
+		if piScreenUtils.isInt(pattern): return int(pattern) == check
+		#---Cases---------------------------
+
+		#x,x-x/x			
+		if pattern.find("-") != -1 and pattern.find(",") != -1 and pattern.find("/") != -1:
+			pass
+			#This case does not exist
+		#x-x/x
+		elif pattern.find("-") != -1 and pattern.find("/") != -1:
+			splited1 = pattern.split("-")
+			if len(splited1) > 1:
+				splited2 = splited1[1].split("/")
+				if len(splited2) > 1:
+					if piScreenUtils.isInt(splited1[0]) and piScreenUtils.isInt(splited2[0]) and piScreenUtils.isInt(splited2[1]):
+						for item in range(int(splited1[0]), int(splited2[0])+1, int(splited2[1])):
+							if item == check:
+								return True
+		#x,x/x
+		elif pattern.find("-") != -1 and pattern.find("/") != -1:
+			pass
+			#This case does not exist
+		#x,x-x
+		elif pattern.find("-") != -1 and pattern.find(",") != -1:
+			for item in pattern.split(","):
+				if piScreenUtils.isInt(item):
+					if int(item) == check:
+						return True
+				else:
+					splited = item.split("-")
+					if len(splited) > 1:
+						if piScreenUtils.isInt(splited[0]) and piScreenUtils.isInt(splited[1]):
+							for item in range(int(splited[0]), int(splited[1])+1):
+								if item == check:
+									return True
+		#x/x
+		elif pattern.find("/") != -1:
+			splited = pattern.split("/")
+			if len(splited) > 1:
+				if (piScreenUtils.isInt(splited[0]) or splited[0] == "*") and piScreenUtils.isInt(splited[1]):
+					if splited[0] == "*":
+						if check % int(splited[1]) == 0:
+							return True
+					else:
+						#This case does not exist
+						pass
+		#x-x
+		elif pattern.find("-") != -1:
+			splited = pattern.split("-")
+			if len(splited) > 1:
+				if piScreenUtils.isInt(splited[0]) and piScreenUtils.isInt(splited[1]):
+					for item in range(int(splited[0]), int(splited[1])+1):
+						if item == check:
+							return True
+		#x,x
+		elif pattern.find(",") != -1:
+			for item in pattern.split(","):
+				if piScreenUtils.isInt(item):
+					if int(item) == check:
+						return True
+
+		#---End-Cases---------------------------
+
+		return False
 
 ###################
 ### Global vars ###
@@ -593,6 +729,7 @@ if __name__ == "__main__":
 	piScreenUtils.logging.info("Startup core")
 	piScreenUtils.logging.debug("Loading settings")
 	settings = JsonData(piScreenUtils.Paths.SETTINGS, True)
+	schedule = JsonData(piScreenUtils.Paths.SCHEDULE, True)
 
 	piScreenUtils.logging.info("Start display handler")
 	dH = displayHandler()
@@ -609,6 +746,10 @@ if __name__ == "__main__":
 	piScreenUtils.logging.info("Start communcation socket")
 	sH = socketHandler()
 	sH.start()
+
+	piScreenUtils.logging.info("Start schedule handler")
+	scH = scheduleHandler()
+	scH.start()
 	
 	while active:
 		#Create screenshot

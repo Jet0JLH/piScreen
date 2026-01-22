@@ -88,6 +88,17 @@ def printHelp():
 	Set value of setting. If a type is declared, the settings will be cast in this type.
 	Allowed types are int, float, bool, str and json
 
+=== Schedule ===
+--get-schedule [schedule/path]
+	Get all schedule entries or an explicit value
+
+--set-schedule <schedule/path> <value> [type]
+	Set value of schedule entry. If a type is declared, the schedule entry will be cast in this type.
+	Allowed types are int, float, bool, str and json
+
+ == Cron ==
+
+
 """)
 
 def sendToCore(data) -> dict:
@@ -285,6 +296,23 @@ if __name__ == "__main__":
 			exit()
 		elif item == "--get-status":
 			print(sendToCore({"cmd": 15}))
+			exit()
+		elif item == "--get-schedule":
+			if i + 1 < len(sys.argv): #Load single value
+				print(sendToCore({"cmd": 16, "path": sys.argv[i + 1]}))
+			else:
+				print(sendToCore({"cmd": 16}))
+			exit()
+		elif item == "--set-schedule":
+			if i + 3 < len(sys.argv):
+				if sys.argv[i + 3].lower() in {"int", "float", "bool", "str", "json"}: evaluateResult(sendToCore({"cmd": 17, "path": sys.argv[i + 1], "value": sys.argv[i + 2], "type": sys.argv[i + 3]}), [{"code": 0, "result": "Change schedule successfully"}, {"code": 2, "result": "Missing parameter"}, {"code": 3, "result": "Unknown datatype", "log": 4}, {"code": 4, "result": "Datatype is not bool", "log": 3}, {"code": 5, "result": "Unable to convert datatype", "log": 3}], verbose=True)
+				else: print(f"{sys.argv[i + 3]} is no valid var type")
+			elif i + 2 < len(sys.argv):
+				evaluateResult(sendToCore({"cmd": 17, "path": sys.argv[i + 1], "value": sys.argv[i + 2]}), [{"code": 0, "result": "Change schedule successfully"}, {"code": 2, "result": "Missing parameter"}, {"code": 3, "result": "Unknown datatype", "log": 4}, {"code": 4, "result": "Datatype is not bool", "log": 3}, {"code": 5, "result": "Unable to convert datatype", "log": 3}], verbose=True)
+			elif i + 1 < len(sys.argv):
+				evaluateResult(sendToCore({"cmd": 17, "path": sys.argv[i + 1]}), [{"code": 0, "result": "Change schedule successfully"}, {"code": 2, "result": "Missing parameter"}, {"code": 3, "result": "Unknown datatype", "log": 4}, {"code": 4, "result": "Datatype is not bool", "log": 3}, {"code": 5, "result": "Unable to convert datatype", "log": 3}], verbose=True)
+			else:
+				print("Missing parameter")
 			exit()
 		elif item == "--stop-modes":
 			print(sendToCore({"cmd": 99}))

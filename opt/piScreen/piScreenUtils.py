@@ -3,6 +3,7 @@ import logging, logging.handlers, __main__, os
 class Paths():
 	SOFTWARE_DIR = "/opt/piScreen/"
 	SETTINGS = f"{SOFTWARE_DIR}settings.json"
+	SCHEDULE = f"{SOFTWARE_DIR}schedule.json"
 	LOG = "/tmp/piScreen.log"
 	SCREENSHOT = "/tmp/piScreenScreenshot.png"
 	MANIFEST = f"{SOFTWARE_DIR}manifest.json"
