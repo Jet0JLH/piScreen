@@ -46,6 +46,7 @@ piScreenFiles = {
 	"install": [
 		{
 			"type":"dir","path":Paths.SOFTWARE_DIR,"chown":["pi","pi"],"chmod":"775","facl":[["pi","rwx"]],
+			"type":"delfile","path":"/etc/xdg/labwc/autostart",
 		}
 	]
 }
@@ -144,6 +145,15 @@ def installPiScreenFiles():
 			printInfo(f"Set rights for {item['path']}")
 			if not info["dry"]:
 				setRights(item)
+		elif item["type"] == "delfile":
+			printInfo(f"Delete {item['type']} {item['path']}")
+			try: 
+				if not info["dry"]:
+					if os.path.isfile(item["path"]):
+						os.remove(item["path"])
+					else:
+						printInfo(f"item["path"] is not a file")
+			except Exception as e: printError(f"Unable to copy file from {tmpPath} to {item['path']}\n{e}",1)
 		else:
 			printInfo(f"{item['type']} {item['path']} does not exists",style=3)
 

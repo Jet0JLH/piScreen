@@ -1,1 +1,3 @@
+/usr/bin/lwrespawn /usr/bin/pcmanfm-pi &
 wtype -M alt -M shift m -m alt -m shift &
+/opt/piScreen/piScreenCore.py &
