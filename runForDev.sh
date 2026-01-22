@@ -14,6 +14,7 @@ ln -s "$parent_path/opt/piScreen/" /opt/piScreen
 ln -s "$parent_path/srv/piScreen/" /srv/piScreen
 cp "$parent_path/home/pi/.config/labwc/rc.xml" /home/pi/.config/labwc/rc.xml
 cp "$parent_path/home/pi/.config/labwc/autostart" /home/pi/.config/labwc/autostart
+rm /etc/xdg/labwc/autostart
 
 #Set rights
 setfacl -Rm d:u:pi:rwx /opt/piScreen

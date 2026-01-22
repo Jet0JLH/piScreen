@@ -47,6 +47,7 @@ piScreenFiles = {
 		{
 			"type":"dir","path":Paths.SOFTWARE_DIR,"chown":["pi","pi"],"chmod":"775","facl":[["pi","rwx"]],
 			"type":"delfile","path":"/etc/xdg/labwc/autostart",
+			"type":"dir","path":"/home/pi/.config/labwc/","chown":["pi","pi"],"chmod":"775",
 		}
 	]
 }
