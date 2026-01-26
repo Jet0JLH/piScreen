@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 import piScreenUtils
-import socket, json, sys, os
+import socket, json, sys, os, re
 
 def printHelp():
 	print(
@@ -97,7 +97,18 @@ def printHelp():
 	Allowed types are int, float, bool, str and json
 
  == Cron ==
+--add-cron-entry [--minute <value>] [--hour <value>] [--day <value>] [--month <value>] [--year <value>] [--weekday <value>] [--enabled <0/1>]
+	Add a cron entry to schedule and return its ID
+	The value for time can be on of the following or a combination of them:
+	* = 	Placeholder for every number (Keep in mind, this character has to be escaped with a backslash!)
+	1 = 	An explicit number
+	1,4,5 = A list of numbers
+	1-5 =	A range of numbers
+	*/2 =	Every n numbers
+	If one of the time parameters is not passed, this value is replaced with *
 
+--delete-cron-entry <id>
+	Delete a cron entry by ID form schedule
 
 """)
 
@@ -139,6 +150,32 @@ def evaluateResult(data:dict, results:dict, verbose:bool=False) -> dict:
 	piScreenUtils.logging.debug("Unknown result")
 	return data
 
+def getParameterValue(parameter:str, filter:dict={}) -> dict:
+	## filter = {"values": ["true","false"], "regex": r"^[a-z]{3,10}$"}
+	result = {"code": 1, "parameter": None}
+
+	if parameter in sys.argv:
+		indexOfElement = sys.argv.index(parameter) + 1
+		if indexOfElement >= len(sys.argv) or sys.argv[indexOfElement].startswith("--"):
+			print(f"No parameter for {parameter} given")
+		else:
+			found = False
+			lowerParameter = sys.argv[indexOfElement].lower()
+			if "values" in filter:
+				for item in filter["values"]:
+					if item == "[BOOL]" and lowerParameter in ["0", "1"]: found = True
+					elif item == "[INT]" and piScreenUtils.isInt(lowerParameter): found = True
+					elif item == "[FLOAT]" and piScreenUtils.isFloat(lowerParameter): found = True
+					elif item == "[STRING]" and isinstance(lowerParameter, str): found = True
+					elif lowerParameter == item: found = True
+			if "regex" in filter:
+				found = bool(re.fullmatch(filter["regex"], lowerParameter))
+			if found:
+				result["code"] = 0
+				result["parameter"] = sys.argv[indexOfElement]
+			else:
+				print(f"No possible parameter for {parameter} selected")
+	return result
 
 if __name__ == "__main__":
 	sys.argv.pop(0) #Remove Path
@@ -313,6 +350,32 @@ if __name__ == "__main__":
 				evaluateResult(sendToCore({"cmd": 17, "path": sys.argv[i + 1]}), [{"code": 0, "result": "Change schedule successfully"}, {"code": 2, "result": "Missing parameter"}, {"code": 3, "result": "Unknown datatype", "log": 4}, {"code": 4, "result": "Datatype is not bool", "log": 3}, {"code": 5, "result": "Unable to convert datatype", "log": 3}], verbose=True)
 			else:
 				print("Missing parameter")
+			exit()
+		elif item == "--add-cron-entry":
+			msg = {"cmd": 18, "value":{}}
+			enabled = getParameterValue("--enabled", {"values": ["[BOOL]"]})
+			minute = getParameterValue("--minute", {"regex": piScreenUtils.Regex.cronMinute})
+			hour = getParameterValue("--hour", {"regex": piScreenUtils.Regex.cronHour})
+			day = getParameterValue("--day", {"regex": piScreenUtils.Regex.cronDay})
+			month = getParameterValue("--month", {"regex": piScreenUtils.Regex.cronMonth})
+			weekday = getParameterValue("--weekday", {"regex": piScreenUtils.Regex.cronWeekday})
+			year = getParameterValue("--year", {"regex": piScreenUtils.Regex.cronYear})
+			if enabled["code"] == 0: msg["value"]["enabled"] = enabled["parameter"]
+			if minute["code"] == 0: msg["value"]["minute"] = minute["parameter"]
+			if hour["code"] == 0: msg["value"]["hour"] = hour["parameter"]
+			if day["code"] == 0: msg["value"]["day"] = day["parameter"]
+			if month["code"] == 0: msg["value"]["month"] = month["parameter"]
+			if weekday["code"] == 0: msg["value"]["hour"] = hour["parameter"]
+			if year["code"] == 0: msg["value"]["year"] = year["parameter"]
+			if len(msg["value"]) > 0: print(sendToCore(msg))
+			else: print("Missing parameter")
+			exit()
+		elif item == "--delete-cron-entry":
+			msg = {"cmd": 19, "value":{}}
+			entryID = getParameterValue("--id", {"values": ["[STRING]"]})
+			if entryID["code"] == 0: msg["value"]["id"] = entryID["parameter"]
+			if len(msg["value"]) > 0: print(sendToCore(msg))
+			else: print("Missing parameter")
 			exit()
 		elif item == "--stop-modes":
 			print(sendToCore({"cmd": 99}))

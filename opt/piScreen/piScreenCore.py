@@ -468,7 +468,7 @@ class socketHandler(threading.Thread):
 									os.system(f'pcmanfm "--set-wallpaper={data["value"]["wallpaper"]}"')
 									time.sleep(0.5)
 							if "background-color" in data["value"]:
-								if re.search(r'^#(?:[0-9a-fA-F]{3}){1,2}$', data["value"]["background-color"]):
+								if re.search(piScreenUtils.Regex.hexColor, data["value"]["background-color"]):
 									piScreenUtils.logging.info(f"Set backgroundcolor to {data['value']['background-color']}")
 									changeDesktopConfiguration("desktop_bg=", data['value']['background-color'])
 									os.system("pcmanfm --reconfigure")
@@ -557,6 +557,70 @@ class socketHandler(threading.Thread):
 						schedule.setValue(data["path"], data["value"])
 					elif {"path"} <= data.keys():
 						schedule.setValue(data["path"], None)
+					else:
+						returnValue["code"] = 2
+				elif data["cmd"] == 18: #add-cron-entry
+					enabled = 1 ; minute = "*" ; hour = "*" ; day = "*" ; month = "*" ; weekday = "*" ; year = "*"
+					if "value" in data:
+						if "enabled" in data["value"]:
+							if data["value"]["enabled"] in ["0", "1"]:
+								enabled = data["value"]["enabled"]
+							else:
+								returnValue["code"] = 4
+						if "minute" in data["value"]:
+							if re.fullmatch(piScreenUtils.Regex.cronMinute, data["value"]["minute"]):
+								minute = data["value"]["minute"]
+							else:
+								returnValue["code"] = 7
+						if "hour" in data["value"]:
+							if re.fullmatch(piScreenUtils.Regex.cronHour, data["value"]["hour"]):
+								hour = data["value"]["hour"]
+							else:
+								returnValue["code"] = 7
+						if "day" in data["value"]:
+							if re.fullmatch(piScreenUtils.Regex.cronDay, data["value"]["day"]):
+								day = data["value"]["day"]
+							else:
+								returnValue["code"] = 7
+						if "month" in data["value"]:
+							if re.fullmatch(piScreenUtils.Regex.cronMonth, data["value"]["month"]):
+								month = data["value"]["month"]
+							else:
+								returnValue["code"] = 7
+						if "weekday" in data["value"]:
+							if re.fullmatch(piScreenUtils.Regex.cronWeekday, data["value"]["weekday"]):
+								weekday = data["value"]["weekday"]
+							else:
+								returnValue["code"] = 7
+						if "year" in data["value"]:
+							if re.fullmatch(piScreenUtils.Regex.cronYear, data["value"]["year"]):
+								year = data["value"]["year"]
+							else:
+								returnValue["code"] = 7
+						if returnValue["code"] == 0:
+							now = str(datetime.datetime.now().timestamp())
+							entry = {now:{
+								"enabled": enabled,
+								"minute": minute,
+								"hour": hour,
+								"day": day,
+								"month": month,
+								"weekday": weekday,
+								"year": year
+							}}
+							cron = schedule.getValue("cron")
+							cron.update(entry)
+							schedule.setValue("cron", cron, convert=False)
+							schedule.saveFile()
+							returnValue.update({"value": now})
+							piScreenUtils.logging.info(f"Added cron entry {now}")
+				elif data["cmd"] == 19: #delete-cron-entry
+					if "value" in data:
+						if "id" in data["value"]:
+							schedule.setValue(f"cron/{data['value']['id']}", None)
+							#It would be nice to return it if successful
+						else:
+							returnValue["code"] = 2
 					else:
 						returnValue["code"] = 2
 				elif data["cmd"] == 99: #stop-modes
