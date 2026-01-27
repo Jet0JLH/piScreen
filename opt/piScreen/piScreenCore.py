@@ -275,7 +275,12 @@ class socketHandler(threading.Thread):
 				piScreenUtils.logging.debug(f"Connection from {address} accepted.")
 				data = client_socket.recv(16384)
 				if data:
-					self.cmdInterpreter(client_socket, data.decode())
+					result = self.cmdInterpreter(json.loads(data.decode()))
+					try:
+						client_socket.sendall(json.dumps(result).encode())
+					except:
+						piScreenUtils.logging.warning("Unable to send return value to requester")
+					client_socket.close()
 				else:
 					client_socket.close()
 			except socket.error as e:
@@ -288,13 +293,12 @@ class socketHandler(threading.Thread):
 		self.server_socket.close()
 		piScreenUtils.logging.info("End socket listener")
 
-	def cmdInterpreter(self, client_socket:socket.socket, data):
+	def cmdInterpreter(self, data) -> dict:
 		returnValue = {"code":0}
 		try:
 			global mode
 			global content
 			global active
-			data = json.loads(data)
 			if "cmd" not in data: piScreenUtils.logging.warning("There is no cmd field in the transmitted data")
 			else:
 				if data["cmd"] == 1: #Stop-Core
@@ -478,7 +482,7 @@ class socketHandler(threading.Thread):
 					else:
 						returnValue["code"] = 2
 				elif data["cmd"] == 18: #add-cron-entry
-					enabled = 1 ; minute = "*" ; hour = "*" ; day = "*" ; month = "*" ; weekday = "*" ; year = "*"
+					enabled = 1 ; minute = "*" ; hour = "*" ; day = "*" ; month = "*" ; weekday = "*" ; year = "*" ; action = {"cmd": None, "parameter": None} ; commandset = None
 					if "value" in data:
 						if "enabled" in data["value"]:
 							if data["value"]["enabled"] in ["0", "1"]:
@@ -515,6 +519,17 @@ class socketHandler(threading.Thread):
 								year = data["value"]["year"]
 							else:
 								returnValue["code"] = 7
+						if "action" in data["value"]:
+							if "id" in data["value"]["action"]:
+								if piScreenUtils.isInt(data["value"]["action"]["cmd"]):
+									action["cmd"] = int(data["value"]["action"]["cmd"])
+								else:
+									returnValue["code"] = 6
+							if "parameter" in data["value"]["action"]:
+								action["parameter"] = data["value"]["action"]["parameter"]
+						if "commandset" in data["value"]:
+							if piScreenUtils.isInt(data["value"]["commandset"]):
+								commandset = int(data["value"]["commandset"])
 						if returnValue["code"] == 0:
 							now = str(datetime.datetime.now().timestamp())
 							entry = {now:{
@@ -524,7 +539,9 @@ class socketHandler(threading.Thread):
 								"day": day,
 								"month": month,
 								"weekday": weekday,
-								"year": year
+								"year": year,
+								"action": action,
+								"commandset": commandset
 							}}
 							cron = schedule.getValue("cron")
 							cron.update(entry)
@@ -572,11 +589,7 @@ class socketHandler(threading.Thread):
 			piScreenUtils.logging.error("Unable to convert recieved command to json")
 			piScreenUtils.logging.debug(err)
 
-		try:
-			client_socket.sendall(json.dumps(returnValue).encode())
-		except:
-			piScreenUtils.logging.warning("Unable to send return value to requester")
-		client_socket.close()
+		return returnValue
 
 ################
 ### Schedule ###
@@ -620,6 +633,12 @@ class scheduleHandler(threading.Thread):
 				if not self.checkPattern(cronEntry["minute"], now.minute): continue
 
 				piScreenUtils.logging.info(f"Trigger entry ID: {cronEntryID}")
+				result = sH.cmdInterpreter(cronEntry["action"])
+				if result["code"] == 0:
+					piScreenUtils.logging.debug(f"Run action successfull in cron entry ID: {cronEntryID}")
+				else:
+					piScreenUtils.logging.warning(f"Run action failed in cron entry ID: {cronEntryID} with error {result['code']}")
+
 			except Exception as err:
 				piScreenUtils.logging.warning(f"Cron entry ID: {cronEntryID} is incomplete")
 				piScreenUtils.logging.debug(err)
