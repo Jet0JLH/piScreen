@@ -38,6 +38,14 @@ def isFloat(s):
 	except ValueError:
 		return False
 
+def isJson(s):
+	import json
+	try:
+		json.loads(s)
+		return True
+	except:
+		return False
+
 def setLogForRoot():
 	if os.geteuid() == 0 and os.path.exists(Paths.LOG):
 		os.chmod(Paths.LOG, 0o777)

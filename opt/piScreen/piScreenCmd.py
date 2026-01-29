@@ -167,6 +167,7 @@ def getParameterValue(parameter:str, filter:dict={}) -> dict:
 					elif item == "[INT]" and piScreenUtils.isInt(lowerParameter): found = True
 					elif item == "[FLOAT]" and piScreenUtils.isFloat(lowerParameter): found = True
 					elif item == "[STRING]" and isinstance(lowerParameter, str): found = True
+					elif item == "[JSON]" and piScreenUtils.isJson(lowerParameter): found = True
 					elif lowerParameter == item: found = True
 			if "regex" in filter:
 				found = bool(re.fullmatch(filter["regex"], lowerParameter))
@@ -360,6 +361,8 @@ if __name__ == "__main__":
 			month = getParameterValue("--month", {"regex": piScreenUtils.Regex.cronMonth})
 			weekday = getParameterValue("--weekday", {"regex": piScreenUtils.Regex.cronWeekday})
 			year = getParameterValue("--year", {"regex": piScreenUtils.Regex.cronYear})
+			action = getParameterValue("--action", {"values": ["[JSON]"]})
+			commandset = getParameterValue("--commandset", {"values": ["[INT]"]})
 			if enabled["code"] == 0: msg["value"]["enabled"] = enabled["parameter"]
 			if minute["code"] == 0: msg["value"]["minute"] = minute["parameter"]
 			if hour["code"] == 0: msg["value"]["hour"] = hour["parameter"]
@@ -367,6 +370,8 @@ if __name__ == "__main__":
 			if month["code"] == 0: msg["value"]["month"] = month["parameter"]
 			if weekday["code"] == 0: msg["value"]["hour"] = hour["parameter"]
 			if year["code"] == 0: msg["value"]["year"] = year["parameter"]
+			if action["code"] == 0: msg["value"]["action"] = json.loads(action["parameter"])
+			if commandset["code"] == 0: msg["value"]["commandset"] = int(commandset["parameter"])
 			if len(msg["value"]) > 0: print(sendToCore(msg))
 			else: print("Missing parameter")
 			exit()
