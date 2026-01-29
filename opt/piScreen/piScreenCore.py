@@ -368,11 +368,11 @@ class socketHandler(threading.Thread):
 							else: dH.actions.insert(0, {"cmd": 0, "data": {"value": data["value"], "output": piScreenUtils.Constants.DEFAULT_DISPLAY_OUTPUT}})
 						else: returnValue["code"] = 7
 					else: returnValue["code"] = 2
-				elif data["cmd"] == 11: #reboot
+				elif data["cmd"] == 11: #do-reboot
 					piScreenUtils.logging.info("Perform system reboot")
 					active = False
 					os.system("sudo reboot")
-				elif data["cmd"] == 12: #shutdown
+				elif data["cmd"] == 12: #do-shutdown
 					piScreenUtils.logging.info("Perform system shutdown")
 					active = False
 					os.system("sudo poweroff")
@@ -520,7 +520,7 @@ class socketHandler(threading.Thread):
 							else:
 								returnValue["code"] = 7
 						if "action" in data["value"]:
-							if "id" in data["value"]["action"]:
+							if "cmd" in data["value"]["action"]:
 								if piScreenUtils.isInt(data["value"]["action"]["cmd"]):
 									action["cmd"] = int(data["value"]["action"]["cmd"])
 								else:
@@ -573,15 +573,15 @@ class socketHandler(threading.Thread):
 					if "value" in data:
 						mode = 2
 						content = data["value"]
-				elif data["cmd"] == 201: #play
+				elif data["cmd"] == 201: #do-vlc-play
 					vH.actions.append("play")
-				elif data["cmd"] == 202: #play/pause
+				elif data["cmd"] == 202: #do-vlc-toggle-play-pause
 					vH.actions.append("play/pause")
-				elif data["cmd"] == 203: #pause
+				elif data["cmd"] == 203: #do-vlc-pause
 					vH.actions.append("pause")
-				elif data["cmd"] == 204: #restart
+				elif data["cmd"] == 204: #do-vlc-restart
 					vH.actions.append("restart")
-				elif data["cmd"] == 205: #volume
+				elif data["cmd"] == 205: #set-vlc-volume
 					if "value" in data:
 						vH.actions.append("volume" + str(data["value"]))
 
