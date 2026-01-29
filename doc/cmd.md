@@ -347,6 +347,33 @@ Removes a cron entrie of the cron section by id.
 {"code": 0}
 ```
 
+## CMD 20 (update-cron-entry)
+**Description**:  
+Updates a cron entry by id.   
+**Packages**:  
+```
+{
+    "cmd": 20,
+    "id": <cronID>
+    "enabled": <0/1>,
+    "minute": <pattern>,
+    "hour": <pattern>,
+    "day": <pattern>,
+    "month": <pattern>,
+    "year": <pattern>,
+    "weekday": <pattern>,
+    "action": {
+        "cmd": <cmdID>,
+        "parameter": {}
+    }
+    "commandset": <commandsetID>
+}
+```
+**Return**:  
+```
+{"code": 0}
+```
+
 ## CMD 99 (stop-modes)
 **Description**:
 Stops the active mode and returns to mode 0 (idle).  

@@ -558,6 +558,65 @@ class socketHandler(threading.Thread):
 							returnValue["code"] = 2
 					else:
 						returnValue["code"] = 2
+				elif data["cmd"] == 20: #update-cron-entry
+					if "value" in data:
+						if "id" in data["value"]:
+							cron = schedule.getValue(f"cron/{data['value']['id']}")
+							if cron != None:
+								if "enabled" in data["value"]:
+									if data["value"]["enabled"] in ["0", "1"]:
+										cron["enabled"] = data["value"]["enabled"]
+									else:
+										returnValue["code"] = 4
+								if "minute" in data["value"]:
+									if re.fullmatch(piScreenUtils.Regex.cronMinute, data["value"]["minute"]):
+										cron["minute"] = data["value"]["minute"]
+									else:
+										returnValue["code"] = 7
+								if "hour" in data["value"]:
+									if re.fullmatch(piScreenUtils.Regex.cronHour, data["value"]["hour"]):
+										cron["hour"] = data["value"]["hour"]
+									else:
+										returnValue["code"] = 7
+								if "day" in data["value"]:
+									if re.fullmatch(piScreenUtils.Regex.cronDay, data["value"]["day"]):
+										cron["day"] = data["value"]["day"]
+									else:
+										returnValue["code"] = 7
+								if "month" in data["value"]:
+									if re.fullmatch(piScreenUtils.Regex.cronMonth, data["value"]["month"]):
+										cron["month"] = data["value"]["month"]
+									else:
+										returnValue["code"] = 7
+								if "weekday" in data["value"]:
+									if re.fullmatch(piScreenUtils.Regex.cronWeekday, data["value"]["weekday"]):
+										cron["weekday"] = data["value"]["weekday"]
+									else:
+										returnValue["code"] = 7
+								if "year" in data["value"]:
+									if re.fullmatch(piScreenUtils.Regex.cronYear, data["value"]["year"]):
+										cron["year"] = data["value"]["year"]
+									else:
+										returnValue["code"] = 7
+								if "action" in data["value"]:
+									if "cmd" in data["value"]["action"]:
+										if piScreenUtils.isInt(data["value"]["action"]["cmd"]):
+											cron["action"]["cmd"] = int(data["value"]["action"]["cmd"])
+										else:
+											returnValue["code"] = 6
+									if "parameter" in data["value"]["action"]:
+										cron["action"]["parameter"] = data["value"]["action"]["parameter"]
+								if "commandset" in data["value"]:
+									if piScreenUtils.isInt(data["value"]["commandset"]):
+										cron["commandset"] = int(data["value"]["commandset"])
+								schedule.setValue(f"cron/{data['value']['id']}", cron, convert=False)
+								schedule.saveFile()
+							else:
+								returnValue["code"] = 8
+						else:
+							returnValue["code"] = 2
+					else:
+						returnValue["code"] = 2
 				elif data["cmd"] == 99: #stop-modes
 					mode = 0
 					content = None

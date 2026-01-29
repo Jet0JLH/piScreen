@@ -97,7 +97,7 @@ def printHelp():
 	Allowed types are int, float, bool, str and json
 
  == Cron ==
---add-cron-entry [--minute <value>] [--hour <value>] [--day <value>] [--month <value>] [--year <value>] [--weekday <value>] [--enabled <0/1>]
+--add-cron-entry [--minute <value>] [--hour <value>] [--day <value>] [--month <value>] [--year <value>] [--weekday <value>] [--enabled <0/1>] [--action <json>] [--commandset <commandsetID>]
 	Add a cron entry to schedule and return its ID
 	The value for time can be on of the following or a combination of them:
 	* = 	Placeholder for every number (Keep in mind, this character has to be escaped with a backslash!)
@@ -107,9 +107,11 @@ def printHelp():
 	*/2 =	Every n numbers
 	If one of the time parameters is not passed, this value is replaced with *
 
---delete-cron-entry <id>
+--delete-cron-entry --id <id>
 	Delete a cron entry by ID form schedule
 
+--update-cron-entry --id <id> [--minute <value>] [--hour <value>] [--day <value>] [--month <value>] [--year <value>] [--weekday <value>] [--enabled <0/1>] [--action <json>] [--commandset <commandsetID>]
+	Update an existing cron entrie by id
 """)
 
 def sendToCore(data) -> dict:
@@ -381,6 +383,31 @@ if __name__ == "__main__":
 			if entryID["code"] == 0: msg["value"]["id"] = entryID["parameter"]
 			if len(msg["value"]) > 0: print(sendToCore(msg))
 			else: print("Missing parameter")
+			exit()
+		elif item == "--update-cron-entry":
+			msg = {"cmd": 20, "value":{}}
+			entryID = getParameterValue("--id", {"values": ["[STRING]"]})
+			if entryID["code"] == 0: msg["value"]["id"] = entryID["parameter"]
+			else: print("ID is missing") ; exit()
+			enabled = getParameterValue("--enabled", {"values": ["[BOOL]"]})
+			minute = getParameterValue("--minute", {"regex": piScreenUtils.Regex.cronMinute})
+			hour = getParameterValue("--hour", {"regex": piScreenUtils.Regex.cronHour})
+			day = getParameterValue("--day", {"regex": piScreenUtils.Regex.cronDay})
+			month = getParameterValue("--month", {"regex": piScreenUtils.Regex.cronMonth})
+			weekday = getParameterValue("--weekday", {"regex": piScreenUtils.Regex.cronWeekday})
+			year = getParameterValue("--year", {"regex": piScreenUtils.Regex.cronYear})
+			action = getParameterValue("--action", {"values": ["[JSON]"]})
+			commandset = getParameterValue("--commandset", {"values": ["[INT]"]})
+			if enabled["code"] == 0: msg["value"]["enabled"] = enabled["parameter"]
+			if minute["code"] == 0: msg["value"]["minute"] = minute["parameter"]
+			if hour["code"] == 0: msg["value"]["hour"] = hour["parameter"]
+			if day["code"] == 0: msg["value"]["day"] = day["parameter"]
+			if month["code"] == 0: msg["value"]["month"] = month["parameter"]
+			if weekday["code"] == 0: msg["value"]["hour"] = hour["parameter"]
+			if year["code"] == 0: msg["value"]["year"] = year["parameter"]
+			if action["code"] == 0: msg["value"]["action"] = json.loads(action["parameter"])
+			if commandset["code"] == 0: msg["value"]["commandset"] = int(commandset["parameter"])
+			print(sendToCore(msg))
 			exit()
 		elif item == "--stop-modes":
 			print(sendToCore({"cmd": 99}))

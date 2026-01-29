@@ -13,26 +13,15 @@ class JsonData:
 	def saveFile(self, orig:bool=False):
 		if not os.path.exists(self.path): piScreenUtils.logging.error(f"Unable to find {self.path}") ; return
 		try:
-			print(1)
 			with open(self.path, "w") as f:
-				print(2)
 				if orig:
-					print(3)
 					piScreenUtils.logging.debug(f"Save original JSON to {self.path}")
-					print(4)
 					json.dump(self.origFile, f, indent=4)
-					print(5)
 				else:
-					print(6)
 					piScreenUtils.logging.debug(f"Save JSON to {self.path}")
-					print(7)
 					json.dump(self.file, f, indent=4)
-					print(8)
 					self.origFile = copy.deepcopy(self.file)
-					print(9)
-			print(10)
 			self.whenSaved = os.path.getmtime(self.path)
-			print(11)
 		except:
 			piScreenUtils.logging.error(f"Unable to save {self.path}")
 

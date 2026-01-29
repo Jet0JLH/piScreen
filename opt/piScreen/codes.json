@@ -7,5 +7,6 @@
 	{"id": 4, "descr": "Datatype is not bool"},
 	{"id": 5, "descr": "Unable to convert datatype"},
 	{"id": 6, "descr": "Datatype is not int"},
-	{"id": 7, "descr": "Value not in range"}
+	{"id": 7, "descr": "Value not in range"},
+	{"id": 8, "descr": "Entry not found"}
 ]
