@@ -1,7 +1,7 @@
 #!/opt/piScreen/env/bin/python
 import piScreenUtils
 from piScreenJsonData import JsonData
-import os, subprocess, copy, json, datetime, threading, time, socket, psutil, vlc, re
+import os, subprocess, json, datetime, threading, time, socket, psutil, vlc, re
 from marionette_driver.marionette import Marionette
 
 
@@ -730,7 +730,7 @@ if __name__ == "__main__":
 	piScreenUtils.logging.info("Startup core")
 	piScreenUtils.logging.debug("Loading settings")
 	settings = JsonData(piScreenUtils.Paths.SETTINGS, True)
-	schedule = JsonData(piScreenUtils.Paths.SCHEDULE, True)
+	schedule = JsonData(piScreenUtils.Paths.SCHEDULE, False)
 
 	piScreenUtils.logging.info("Start display handler")
 	dH = displayHandler()
