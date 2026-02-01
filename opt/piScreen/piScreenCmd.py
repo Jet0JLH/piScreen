@@ -379,14 +379,14 @@ if __name__ == "__main__":
 			exit()
 		elif item == "--delete-cron-entry":
 			msg = {"cmd": 19, "value":{}}
-			entryID = getParameterValue("--id", {"values": ["[STRING]"]})
+			entryID = getParameterValue("--id", {"values": ["[INT]"]})
 			if entryID["code"] == 0: msg["value"]["id"] = entryID["parameter"]
 			if len(msg["value"]) > 0: print(sendToCore(msg))
 			else: print("Missing parameter")
 			exit()
 		elif item == "--update-cron-entry":
 			msg = {"cmd": 20, "value":{}}
-			entryID = getParameterValue("--id", {"values": ["[STRING]"]})
+			entryID = getParameterValue("--id", {"values": ["[INT]"]})
 			if entryID["code"] == 0: msg["value"]["id"] = entryID["parameter"]
 			else: print("ID is missing") ; exit()
 			enabled = getParameterValue("--enabled", {"values": ["[BOOL]"]})

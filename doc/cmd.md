@@ -165,7 +165,7 @@ Get the current display status of both HDMI outputs.
 }
 ```
 
-## CMD 10 (set-dsiplay-status)
+## CMD 10 (set-display-status)
 **Description**:  
 Set the display status to on or off with value 1 for on and 0 for off. If you dosen't define the output parameter, it will use the default output.  
 **Packages**:  

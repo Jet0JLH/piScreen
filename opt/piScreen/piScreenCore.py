@@ -33,6 +33,13 @@ def changeDesktopConfiguration(para:str, value:str):
 			desktopConfig.append(f"{para}{value}\n")
 		open(desktopConfigPath + f,"w").writelines(desktopConfig)
 
+def runCommandset(commandset:str) -> bool:
+	entry = schedule.getValue(f"commandsets/{commandset}")
+	if entry == None: return False
+	for command in entry:
+		sH.cmdInterpreter(command)
+	return True
+
 #############
 ### Modes ###
 #############
@@ -485,8 +492,8 @@ class socketHandler(threading.Thread):
 					enabled = 1 ; minute = "*" ; hour = "*" ; day = "*" ; month = "*" ; weekday = "*" ; year = "*" ; action = {"cmd": None, "parameter": None} ; commandset = None
 					if "value" in data:
 						if "enabled" in data["value"]:
-							if data["value"]["enabled"] in ["0", "1"]:
-								enabled = data["value"]["enabled"]
+							if data["value"]["enabled"] in ["0", "1", 0, 1]:
+								enabled = int(data["value"]["enabled"])
 							else:
 								returnValue["code"] = 4
 						if "minute" in data["value"]:
@@ -531,7 +538,7 @@ class socketHandler(threading.Thread):
 							if piScreenUtils.isInt(data["value"]["commandset"]):
 								commandset = int(data["value"]["commandset"])
 						if returnValue["code"] == 0:
-							now = str(datetime.datetime.now().timestamp())
+							now = str(datetime.datetime.now().timestamp()).split(".")[0]
 							entry = {now:{
 								"enabled": enabled,
 								"minute": minute,
@@ -692,11 +699,14 @@ class scheduleHandler(threading.Thread):
 				if not self.checkPattern(cronEntry["minute"], now.minute): continue
 
 				piScreenUtils.logging.info(f"Trigger entry ID: {cronEntryID}")
-				result = sH.cmdInterpreter(cronEntry["action"])
-				if result["code"] == 0:
-					piScreenUtils.logging.debug(f"Run action successfull in cron entry ID: {cronEntryID}")
-				else:
-					piScreenUtils.logging.warning(f"Run action failed in cron entry ID: {cronEntryID} with error {result['code']}")
+				if cronEntry["action"] != None:
+					result = sH.cmdInterpreter(cronEntry["action"])
+					if result["code"] == 0:
+						piScreenUtils.logging.debug(f"Run action successfull in cron entry ID: {cronEntryID}")
+					else:
+						piScreenUtils.logging.warning(f"Run action failed in cron entry ID: {cronEntryID} with error {result['code']}")
+				if cronEntry["commandset"] != None:
+					runCommandset(cronEntry["commandset"])
 
 			except Exception as err:
 				piScreenUtils.logging.warning(f"Cron entry ID: {cronEntryID} is incomplete")
