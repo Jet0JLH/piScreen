@@ -393,6 +393,21 @@ Name is optional.
 {"code": 0, "value": <idOfTheCreatedEntry>}
 ```
 
+## CMD 22 (delete-commandset)
+**Description**:  
+Removes a commandset of the commandset section by id.  
+**Packages**:  
+```
+{
+    "cmd": 22,
+    "id": <commandsetID>
+}
+```
+**Return**:  
+```
+{"code": 0}
+```
+
 ## CMD 99 (stop-modes)
 **Description**:
 Stops the active mode and returns to mode 0 (idle).  

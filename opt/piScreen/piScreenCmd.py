@@ -116,6 +116,9 @@ def printHelp():
  == Commandsets ==
 --add-commandset <--commands <jsonStructure>> [--name <name>]
 	Adds an commandset to schedule and returns its ID
+
+--delete-commandset <--id <id>>
+	Delete a commandset by ID from schedule
 """)
 
 def sendToCore(data) -> dict:
@@ -425,6 +428,13 @@ if __name__ == "__main__":
 			if name["code"] == 0:
 				msg["value"]["name"] = name["parameter"]
 			print(sendToCore(msg))
+			exit()
+		elif item == "--delete-commandset":
+			msg = {"cmd": 22, "value":{}}
+			entryID = getParameterValue("--id", {"values": ["[INT]"]})
+			if entryID["code"] == 0: msg["value"]["id"] = entryID["parameter"]
+			if len(msg["value"]) > 0: print(sendToCore(msg))
+			else: print("Missing parameter")
 			exit()
 		elif item == "--stop-modes":
 			print(sendToCore({"cmd": 99}))

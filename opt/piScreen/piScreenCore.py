@@ -648,6 +648,16 @@ class socketHandler(threading.Thread):
 							returnValue["code"] = 2
 					else:
 						returnValue["code"] = 2
+				elif data["cmd"] == 22: #delete-commandset
+					if "value" in data:
+						if "id" in data["value"]:
+							schedule.setValue(f"commandsets/{data['value']['id']}", None)
+							schedule.saveFile()
+							#It would be nice to return it if successful
+						else:
+							returnValue["code"] = 2
+					else:
+						returnValue["code"] = 2
 				elif data["cmd"] == 99: #stop-modes
 					mode = 0
 					content = None
