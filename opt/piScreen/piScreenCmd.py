@@ -112,6 +112,10 @@ def printHelp():
 
 --update-cron-entry --id <id> [--minute <value>] [--hour <value>] [--day <value>] [--month <value>] [--year <value>] [--weekday <value>] [--enabled <0/1>] [--action <json>] [--commandset <commandsetID>]
 	Update an existing cron entrie by id
+
+ == Commandsets ==
+--add-commandset --commands <jsonStructure>
+	Adds an commandset to schedule and returns its ID
 """)
 
 def sendToCore(data) -> dict:
@@ -407,6 +411,13 @@ if __name__ == "__main__":
 			if year["code"] == 0: msg["value"]["year"] = year["parameter"]
 			if action["code"] == 0: msg["value"]["action"] = json.loads(action["parameter"])
 			if commandset["code"] == 0: msg["value"]["commandset"] = int(commandset["parameter"])
+			print(sendToCore(msg))
+			exit()
+		elif item == "--add-commandset":
+			msg = {"cmd": 21, "value": {"commands": []}}
+			commands = getParameterValue("--commands", {"values": ["[JSON]"]})
+			if commands["code"] == 0: 
+				msg["value"]["commands"] = json.loads(commands["parameter"])
 			print(sendToCore(msg))
 			exit()
 		elif item == "--stop-modes":

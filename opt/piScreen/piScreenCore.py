@@ -624,6 +624,24 @@ class socketHandler(threading.Thread):
 							returnValue["code"] = 2
 					else:
 						returnValue["code"] = 2
+				elif data["cmd"] == 21: #add-commandset
+					if "value" in data:
+						if "commands" in data["value"]:
+							if isinstance(data["value"]["commands"], list):
+								now = str(datetime.datetime.now().timestamp()).split(".")[0]
+								entry = {now:data["value"]["commands"]}
+								commandsets = schedule.getValue("commandsets")
+								commandsets.update(entry)
+								schedule.setValue("commandsets", commandsets, convert=False)
+								schedule.saveFile()
+								returnValue.update({"value": now})
+								piScreenUtils.logging.info(f"Added commandset entry {now}")
+							else:
+								returnValue["code"] = 9
+						else:
+							returnValue["code"] = 2
+					else:
+						returnValue["code"] = 2
 				elif data["cmd"] == 99: #stop-modes
 					mode = 0
 					content = None

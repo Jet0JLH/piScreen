@@ -374,6 +374,23 @@ Updates a cron entry by id.
 {"code": 0}
 ```
 
+## CMD 21 (add-commandset)
+**Description**:  
+Adds a commandset entry to the commandset section of the schedule.  
+**Packages**:  
+```
+{
+    "cmd": 21,
+    "value": {
+        "commands": []
+    }
+}
+```
+**Return**:  
+```
+{"code": 0, "value": <idOfTheCreatedEntry>}
+```
+
 ## CMD 99 (stop-modes)
 **Description**:
 Stops the active mode and returns to mode 0 (idle).  
