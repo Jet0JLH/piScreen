@@ -34,11 +34,15 @@ def changeDesktopConfiguration(para:str, value:str):
 		open(desktopConfigPath + f,"w").writelines(desktopConfig)
 
 def runCommandset(commandset:str) -> bool:
-	entry = schedule.getValue(f"commandsets/{commandset}")
-	if entry == None: return False
-	for command in entry:
-		sH.cmdInterpreter(command)
-	return True
+	try:
+		entry = schedule.getValue(f"commandsets/{commandset}")
+		if entry == None: return False
+		for command in entry["commands"]:
+			sH.cmdInterpreter(command)
+		return True
+	except Exception as err:
+		piScreenUtils.logging.error("Error while running commandset")
+		piScreenUtils.logging.debug(err)
 
 #############
 ### Modes ###
@@ -625,11 +629,13 @@ class socketHandler(threading.Thread):
 					else:
 						returnValue["code"] = 2
 				elif data["cmd"] == 21: #add-commandset
+					name = None
 					if "value" in data:
+						if "name" in data["value"]: name = data["value"]["name"]
 						if "commands" in data["value"]:
 							if isinstance(data["value"]["commands"], list):
 								now = str(datetime.datetime.now().timestamp()).split(".")[0]
-								entry = {now:data["value"]["commands"]}
+								entry = {now:{"name": name, "commands":data["value"]["commands"]}}
 								commandsets = schedule.getValue("commandsets")
 								commandsets.update(entry)
 								schedule.setValue("commandsets", commandsets, convert=False)

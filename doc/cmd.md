@@ -377,11 +377,13 @@ Updates a cron entry by id.
 ## CMD 21 (add-commandset)
 **Description**:  
 Adds a commandset entry to the commandset section of the schedule.  
+Name is optional.  
 **Packages**:  
 ```
 {
     "cmd": 21,
     "value": {
+        "name": <name>,
         "commands": []
     }
 }

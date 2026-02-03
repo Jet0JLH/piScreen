@@ -107,14 +107,14 @@ def printHelp():
 	*/2 =	Every n numbers
 	If one of the time parameters is not passed, this value is replaced with *
 
---delete-cron-entry --id <id>
+--delete-cron-entry <--id <id>>
 	Delete a cron entry by ID form schedule
 
---update-cron-entry --id <id> [--minute <value>] [--hour <value>] [--day <value>] [--month <value>] [--year <value>] [--weekday <value>] [--enabled <0/1>] [--action <json>] [--commandset <commandsetID>]
+--update-cron-entry <--id <id>> [--minute <value>] [--hour <value>] [--day <value>] [--month <value>] [--year <value>] [--weekday <value>] [--enabled <0/1>] [--action <json>] [--commandset <commandsetID>]
 	Update an existing cron entrie by id
 
  == Commandsets ==
---add-commandset --commands <jsonStructure>
+--add-commandset <--commands <jsonStructure>> [--name <name>]
 	Adds an commandset to schedule and returns its ID
 """)
 
@@ -414,10 +414,16 @@ if __name__ == "__main__":
 			print(sendToCore(msg))
 			exit()
 		elif item == "--add-commandset":
-			msg = {"cmd": 21, "value": {"commands": []}}
+			msg = {"cmd": 21, "value": {"name": None, "commands": []}}
 			commands = getParameterValue("--commands", {"values": ["[JSON]"]})
+			name = getParameterValue("--name", {"values": ["[STRING]"]})
 			if commands["code"] == 0: 
 				msg["value"]["commands"] = json.loads(commands["parameter"])
+			else:
+				print("No commands in json format given")
+				exit()
+			if name["code"] == 0:
+				msg["value"]["name"] = name["parameter"]
 			print(sendToCore(msg))
 			exit()
 		elif item == "--stop-modes":
