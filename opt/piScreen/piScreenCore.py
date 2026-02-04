@@ -658,6 +658,23 @@ class socketHandler(threading.Thread):
 							returnValue["code"] = 2
 					else:
 						returnValue["code"] = 2
+				elif data["cmd"] == 23: #update-commandset
+					if "value" in data:
+						if "id" in data["value"]:
+							commandset = schedule.getValue(f"commandsets/{data['value']['id']}")
+							if commandset != None:
+								if "name" in data["value"]: commandset["name"] = data["value"]["name"]
+								if "commands" in data["value"]:
+									if isinstance(data["value"]["commands"], list):
+										commandset["commands"] = data["value"]["commands"]
+								schedule.setValue(f"commandsets/{data['value']['id']}", commandset, convert=False)
+								schedule.saveFile()
+							else:
+								returnValue["code"] = 8
+						else:
+							returnValue["code"] = 2
+					else:
+						returnValue["code"] = 2
 				elif data["cmd"] == 99: #stop-modes
 					mode = 0
 					content = None

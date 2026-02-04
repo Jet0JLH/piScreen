@@ -408,6 +408,23 @@ Removes a commandset of the commandset section by id.
 {"code": 0}
 ```
 
+## CMD 23 (update-commandset)
+**Description**:  
+Updates a commandset by id.   
+**Packages**:  
+```
+{
+    "cmd": 23,
+    "id": <commandsetID>,
+    "name": <name>,
+    "commands": []
+}
+```
+**Return**:  
+```
+{"code": 0}
+```
+
 ## CMD 99 (stop-modes)
 **Description**:
 Stops the active mode and returns to mode 0 (idle).  
